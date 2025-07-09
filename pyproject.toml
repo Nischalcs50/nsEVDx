@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nsEVDx"
+version = "0.1.0"
+description = "Modeling Nonstationary Extreme Value Distributions"
+authors = [
+  { name="Nischal Kafle", email="nkafle.29@gmail.com" }
+]
+dependencies = [
+  "numpy",
+  "scipy",
+  "matplotlib",
+  "seaborn"
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+keywords = ["Bayesian inference", "Frequentist", "Generalised extreme value", "Generalised pareto", "Frequency analyses","Hydroclimatology"]
+
+[project.urls]
+Homepage = "https://github.com/Nischalcs50/nsEVDx"
+Repository = "https://github.com/Nischalcs50/nsEVDx"
+Documentation = "https://github.com/Nischalcs50/nsEVDx/docs"
+
+[project.optional-dependencies]
+dev = [
+  "pytest"
+]

@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: 'If you use this software, please cite it as below.'
+authors:
+  - family-names: Kafle
+    given-names: Nischal
+    orcid: '0009-0004-3187-4920'
+  - family-names: Meier
+    given-names: Claudio
+    
+title: 'nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions'
+version: 0.1.0
+doi: xx.xxxx/zenodo.xxxxxxx
+url: 'https://github.com/Nischalcs50/nsEVDx'
+date-released: 2025-06-25

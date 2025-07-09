@@ -1,0 +1,8 @@
+loader:
+  type: python
+  search_path: ["."]
+  modules: ["nsEVDx"]
+
+renderer:
+  type: markdown
+  filename: API.md
