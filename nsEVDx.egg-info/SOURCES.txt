@@ -1,0 +1,17 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+nsEVDx/__init__.py
+nsEVDx/_version.py
+nsEVDx/evd_model.py
+nsEVDx/utils.py
+nsEVDx.egg-info/PKG-INFO
+nsEVDx.egg-info/SOURCES.txt
+nsEVDx.egg-info/dependency_links.txt
+nsEVDx.egg-info/requires.txt
+nsEVDx.egg-info/top_level.txt
+tests/__init__.py
+tests/test_evd_model.py
+tests/test_utils.py

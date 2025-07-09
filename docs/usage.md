@@ -16,7 +16,7 @@ This gives flexibility to model non-stationarity while maintaining parsimony.
 ## Example usage
 
 ``` python
-import nsEVD as ns 
+import nsEVDx as ns 
 from scipy.stats import genextreme
 ```
 
@@ -29,7 +29,7 @@ covariate = [...] # covariate values (same length as data)
 
 #### Know the configuration you want to model
 
-nsEVD supports non-stationarity through a configuration vector config = [a, b, c], where each entry specifies the number of covariates used to model the location, scale, and shape parameters of the extreme value distribution (GEV or GPD), respectively. A value of 0 implies that the corresponding parameter is stationary, while values greater than 0 indicate non-stationary modeling using that many covariates.
+`nsEVDx` supports non-stationarity through a configuration vector `config = [a, b, c]`, where each entry specifies the number of covariates used to model the location, scale, and shape parameters of the extreme value distribution (GEV or GPD), respectively. A value of 0 implies that the corresponding parameter is stationary, while values greater than 0 indicate non-stationary modeling using that many covariates.
 
 #### Instantiate the sampler
 

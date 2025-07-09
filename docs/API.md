@@ -1,16 +1,12 @@
-------------------------------------------------------------------------
+<a id="nsEVDx"></a>
 
-------------------------------------------------------------------------
+# nsEVDx
 
-<a id="nsEVD"></a>
+<a id="nsEVDx.evd_model"></a>
 
-# nsEVD
+# nsEVDx.evd_model
 
-<a id="nsEVD.evd_model"></a>
-
-# nsEVD.evd_model
-
-<a id="nsEVD.evd_model.NonStationaryEVD"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD"></a>
 
 ## NonStationaryEVD Objects
 
@@ -18,7 +14,7 @@
 class NonStationaryEVD()
 ```
 
-<a id="nsEVD.evd_model.NonStationaryEVD.__init__"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.__init__"></a>
 
 ## \_\_init\_\_
 
@@ -81,7 +77,7 @@ Format: `[(dist_name, params_dict), ...]`
 
 **NonStationaryEVD** **object :** An instance of the NonStationaryEVD class initialized with the specified configuration, data, covariates, and distribution.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.get_param_description"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.get_param_description"></a>
 
 ## get_param_description
 
@@ -112,7 +108,7 @@ Whereas, config = [2,2,2] and n_cov =2, would have nine parameters as follows:
 
 `['B0 (location intercept)', 'B1 (location slope for covariate 1)', 'B2 (location slope for covariate 2)',` `'a0 (scale intercept)', 'a1 (scale slope for covariate 1)', 'a2 (scale slope for covariate 2)',` `'k0 (shape intercept)', 'k1 (shape slope for covariate 1)','k2 (shape slope for covariate 2)']`
 
-<a id="nsEVD.evd_model.NonStationaryEVD.suggest_priors"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.suggest_priors"></a>
 
 ## suggest_priors
 
@@ -128,7 +124,7 @@ Suggest default prior distributions for model parameters based on the current co
 
 List of prior specifications for each parameter in the order expected by the sampler. Each element is a tuple like (distribution_name, distribution_parameters_dict).
 
-<a id="nsEVD.evd_model.NonStationaryEVD.suggest_bounds"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.suggest_bounds"></a>
 
 ## suggest_bounds
 
@@ -150,7 +146,7 @@ Fractional buffer around stationary parameter estimates.
 
 List of (lower, upper) tuples for each parameter in order.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.log_prior"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.log_prior"></a>
 
 ## log_prior
 
@@ -182,7 +178,7 @@ A 1D array of parameter values corresponding to the linear or exponential models
 
     prior_specs = [('normal', {'loc': 0, 'scale': 10}), ...]
 
-<a id="nsEVD.evd_model.NonStationaryEVD.neg_log_likelihood"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.neg_log_likelihood"></a>
 
 ## neg_log_likelihood
 
@@ -204,7 +200,7 @@ A 1D array of model parameters corresponding to the location, scale, and shape c
 
 **float :** The negative log-likelihood value.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.posterior_log_prob"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.posterior_log_prob"></a>
 
 ## posterior_log_prob
 
@@ -224,7 +220,7 @@ The posterior is calculated as the sum of the log-prior and the log-likelihood (
 
 **float :** The log posterior probability. If the prior is improper or evaluates to -inf, the result will reflect that.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.numerical_grad_log_posterior"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.numerical_grad_log_posterior"></a>
 
 ## numerical_grad_log_posterior
 
@@ -250,7 +246,7 @@ The step size for finite difference approximation. Can be a scalar or an array o
 
 **grad** : ndarray A 1D array containing the approximate gradient of the log-posterior with respect to each parameter.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.MH_Mala"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.MH_Mala"></a>
 
 ## MH_Mala
 
@@ -289,7 +285,7 @@ Array of shape `(num_samples, n_parameters)` containing sampled parameter vector
 
 **acceptance_rate** : float Fraction of proposals accepted.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.MH_RandWalk"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.MH_RandWalk"></a>
 
 ## MH_RandWalk
 
@@ -322,7 +318,7 @@ ValueError If the length of `proposal_widths` does not match the number of param
 
 **acceptance_rate** : float Fraction of proposals accepted.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.hamiltonian"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.hamiltonian"></a>
 
 ## hamiltonian
 
@@ -346,7 +342,7 @@ The Hamiltonian is the sum of the potential energy and kinetic energy. In this c
 
 **float** : The total Hamiltonian energy (scaled potential + kinetic energy).
 
-<a id="nsEVD.evd_model.NonStationaryEVD.MH_Hmc"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.MH_Hmc"></a>
 
 ## MH_Hmc
 
@@ -376,7 +372,7 @@ Perform HMC sampling to generate samples from the posterior distribution.
 
 **samples** : np.ndarray Array of shape (num_samples, n_parameters) containing parameter vectors. **acceptance_rate** : float Fraction of proposals accepted.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.frequentist_nsEVD"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.frequentist_nsEVD"></a>
 
 ## frequentist_nsEVD
 
@@ -397,7 +393,7 @@ Estimate non-stationary EVD parameters via MLE with retries.
 
 **params** : array-like Estimated parameters.
 
-<a id="nsEVD.evd_model.NonStationaryEVD.ns_EVDrvs"></a>
+<a id="nsEVDx.evd_model.NonStationaryEVD.ns_EVDrvs"></a>
 
 ## ns_EVDrvs
 
@@ -423,11 +419,11 @@ Generate non-stationary GEV or GPD random samples.
 
 **np.ndarray** Generated non-stationary random variates.
 
-<a id="nsEVD.utils"></a>
+<a id="nsEVDx.utils"></a>
 
 # nsEVD.utils
 
-<a id="nsEVD.utils.neg_log_likelihood"></a>
+<a id="nsEVDx.utils.neg_log_likelihood"></a>
 
 ## neg_log_likelihood
 
@@ -447,7 +443,7 @@ Compute the negative log-likelihood for given parameters and distribution.
 
 **float** Negative log-likelihood. Returns np.inf if parameters are invalid or evaluation fails.
 
-<a id="nsEVD.utils.neg_log_likelihood_ns"></a>
+<a id="nsEVDx.utils.neg_log_likelihood_ns"></a>
 
 ## neg_log_likelihood_ns
 
@@ -477,7 +473,7 @@ Calculate the negative log-likelihood of the non-stationary extreme value distri
 
 **float** Negative log-likelihood value. Returns np.inf if invalid parameters.
 
-<a id="nsEVD.utils.EVD_parsViaMLE"></a>
+<a id="nsEVDx.utils.EVD_parsViaMLE"></a>
 
 ## EVD_parsViaMLE
 
@@ -499,7 +495,7 @@ Estimate EVD (GEV or GPD) parameters via MLE.
 
 ValueError If optimization fails.
 
-<a id="nsEVD.utils.comb"></a>
+<a id="nsEVDx.utils.comb"></a>
 
 ## comb
 
@@ -517,7 +513,7 @@ Compute the binomial coefficient "n choose k".
 
 **float** The binomial coefficient C(n, k).
 
-<a id="nsEVD.utils.l_moments"></a>
+<a id="nsEVDx.utils.l_moments"></a>
 
 ## l_moments
 
@@ -543,7 +539,7 @@ Compute L-moments from the given data sample.
 
 -   T3, T4: L-skewness and L-kurtosis
 
-<a id="nsEVD.utils.GPD_parsViaLM"></a>
+<a id="nsEVDx.utils.GPD_parsViaLM"></a>
 
 ## GPD_parsViaLM
 
@@ -561,7 +557,7 @@ Estimate Generalized Pareto Distribution (GPD) parameters using L-moments, based
 
 **np.ndarray** A NumPy array of size 3 containing the estimated GPD parameters: [shape, location, scale].
 
-<a id="nsEVD.utils.GEV_parsViaLM"></a>
+<a id="nsEVDx.utils.GEV_parsViaLM"></a>
 
 ## GEV_parsViaLM
 
@@ -579,7 +575,7 @@ Estimate Generalized Extreme Value (GEV) parameters using L-moments, based on th
 
 **np.ndarray** A NumPy array of size 3 containing the estimated GEV parameters: [shape, location, scale].
 
-<a id="nsEVD.utils.plot_trace"></a>
+<a id="nsEVDx.utils.plot_trace"></a>
 
 ## plot_trace
 
@@ -599,7 +595,7 @@ Plot MCMC trace plots for each parameter based on config.
 
 **param_names_override** : list of str Optional custom names for parameters.
 
-<a id="nsEVD.utils.plot_posterior"></a>
+<a id="nsEVDx.utils.plot_posterior"></a>
 
 ## plot_posterior
 
@@ -619,7 +615,7 @@ Plot histograms with density curves for each parameter based on config.
 
 **param_names_override** : list of str, optional Custom parameter names to override default naming from config.
 
-<a id="nsEVD.utils.bayesian_metrics"></a>
+<a id="nsEVDx.utils.bayesian_metrics"></a>
 
 ## bayesian_metrics
 
@@ -655,7 +651,7 @@ This function evaluates the model's performance using Deviance Information Crite
 
 -   The log-likelihood is computed using the negative log-likelihood function for each sample.
 
-<a id="nsEVD.utils.gelman_rubin"></a>
+<a id="nsEVDx.utils.gelman_rubin"></a>
 
 ## gelman_rubin
 
@@ -675,8 +671,8 @@ Compute the Gelman-Rubin R-hat statistic for each parameter.
 
 R-hat values for each parameter
 
-<a id="nsEVD._version"></a>
+<a id="nsEVDx._version"></a>
 
-## nsEVD.\_version
+## nsEVDx.\_version
 
 Returns the current version of the software.

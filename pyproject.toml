@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Modeling Nonstationary Extreme Value Distributions"
 authors = [
   { name="Nischal Kafle", email="nkafle.29@gmail.com" }
+  { name = "Claudio Meier", email = "cimeier@memphis.edu" }
 ]
 dependencies = [
   "numpy",

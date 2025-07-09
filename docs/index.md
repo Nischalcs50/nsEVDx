@@ -1,6 +1,6 @@
-# nsEVD: A python Library for modelling non-stationary extreme value distributions
+# nsEVDx: A python Library for modeling non-stationary extreme value distributions
 
-**nsEVD** is a Python package for estimating parameters of extreme value distributions (EVD) under both stationary and non-stationary conditions. It supports:
+**nsEVDx** is a Python package for estimating parameters of extreme value distributions (EVD) under both stationary and non-stationary conditions. It supports:
 
 -   Generalized Extreme Value (GEV) and Generalized Pareto (GPD) models
 -   Frequentist and Bayesian inference frameworks

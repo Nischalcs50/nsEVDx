@@ -34,7 +34,7 @@ Still stuck? Post your question as an [issue on GitHub][new_issue].
 
 While we cannot offer user support, we'll try to do our best to address it, as questions often lead to better documentation or the discovery of bugs.
 
-Want to ask a question in private? Contact the package maintainer by email : nkafle.29@gmail.com or nkafle@memphis.edu
+Want to ask a question in private? Contact the package maintainer by email : <nkafle.29@gmail.com> or <nkafle@memphis.edu>
 
 ### Propose an idea 💡
 

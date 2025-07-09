@@ -10,8 +10,8 @@ authors:
 affiliations:
 - name: Department of Civil Engineering, University of Memphis, USA
   affialiation: 1
-date: 2025-06-25
-software_repository_url: https://github.com/Nischalcs50/nsEVD
+date: 2025-07-08
+software_repository_url: https://github.com/Nischalcs50/nsEVDx
 archive_url: https://zenodo.org/record/XXXXXXX
 license: MIT
 tags:
@@ -28,7 +28,7 @@ csl: apa.csl
 
 # Summary
 
-`nsEVDx` is an open-source Python package for fitting stationary and non-stationary Extreme Value Distributions (EVDs) to extreme value data. It can be used to model extreme events in fields like hydrology, climate science, finance, and insurance, using both frequentist and Bayesian methods. For Bayesian inference it employs advanced Monte Carlo sampling techniques such as the Metropolis-Hastings, Metropolis-adjusted Langevin (MALA), and Hamiltonian Monte Carlo (HMC) algorithms. Unlike many existing extreme value theory (EVT) tools, which can be complex or lack Bayesian options, `nsEVD` offers an intuitive, python-native interface that is both user-friendly and extensible. It requires only standard scientific python libraries (`numpy`, `scipy`) for its core functionality, while optional features like plotting and diagnostics use `matplotlib` and `seaborn`. A key feature of `nsEVDx` is its flexible support for non-stationary modeling, where the location, scale, and shape parameters can each depend on arbitrary, user-defined covariates. This enables practical applications such as linking extremes to other variables (e.g., rainfall extremes to temperature or maximum stock market losses to market volatility indices). Overall, `nsEVD` aims to serve as a practical, easy-to-use, and extensible tool for researchers and practitioners analyzing extreme events in non-stationary environments.
+`nsEVDx` is an open-source Python package for fitting stationary and non-stationary Extreme Value Distributions (EVDs) to extreme value data. It can be used to model extreme events in fields like hydrology, climate science, finance, and insurance, using both frequentist and Bayesian methods. For Bayesian inference it employs advanced Monte Carlo sampling techniques such as the Metropolis-Hastings, Metropolis-adjusted Langevin (MALA), and Hamiltonian Monte Carlo (HMC) algorithms. Unlike many existing extreme value theory (EVT) tools, which can be complex or lack Bayesian options, `nsEVDx` offers an intuitive, python-native interface that is both user-friendly and extensible. It requires only standard scientific python libraries (`numpy`, `scipy`) for its core functionality, while optional features like plotting and diagnostics use `matplotlib` and `seaborn`. A key feature of `nsEVDx` is its flexible support for non-stationary modeling, where the location, scale, and shape parameters can each depend on arbitrary, user-defined covariates. This enables practical applications such as linking extremes to other variables (e.g., rainfall extremes to temperature or maximum stock market losses to market volatility indices). Overall, `nsEVDx` aims to serve as a practical, easy-to-use, and extensible tool for researchers and practitioners analyzing extreme events in non-stationary environments.
 
 # Statement of Need
 
@@ -54,7 +54,7 @@ To bridge this gap, we developed `nsEVDx`, a flexible, user-friendly python pack
 
 # Implementation
 
-The core class `NonStationaryEVD` handles parameter parsing, log-likelihood construction, prior specification, and proposal generation. Frequentist method uses `scipy.optimize` to minimize the non-stationary negative log likelihood, while the Bayesian MCMC methods are implemented from scratch in numpy, allowing full transparency and customization. The concepts of non-stationarity and MCMC techniques used in `nsEVD` are based on the foundational texts by @christian_p_robert_introducing_2009 and @coles_introduction_2007. The implementation of L-moments in some utility methods follows the approach described by @j_r_m_hosking_regional_1997. Currently, `nsEVD` supports linear modeling for the location and shape parameters, and exponential (log-linear) modeling for the scale parameter, to ensure positivity.
+The core class `NonStationaryEVD` handles parameter parsing, log-likelihood construction, prior specification, and proposal generation. Frequentist method uses `scipy.optimize` to minimize the non-stationary negative log likelihood, while the Bayesian MCMC methods are implemented from scratch in numpy, allowing full transparency and customization. The concepts of non-stationarity and MCMC techniques used in `nsEVD` are based on the foundational texts by @christian_p_robert_introducing_2009 and @coles_introduction_2007. The implementation of L-moments in some utility methods follows the approach described by @j_r_m_hosking_regional_1997. Currently, `nsEVDx` supports linear modeling for the location and shape parameters, and exponential (log-linear) modeling for the scale parameter, to ensure positivity.
 
 Non-stationarity is controlled via a configuration vector `config = [a, b, c]`, where each entry specifies the number of covariates used to model the location, scale, and shape parameters of the EVD. Entry with a value of `0` implies stationarity (i.e., no covariate dependence), while integer values `> 0` indicate non-stationary modeling using the corresponding number of covariates for the parameter.
 
@@ -97,7 +97,7 @@ samples, acceptance_rate = sampler.MH_RandWalk(
 )
 ```
 
-See full documentation at: <https://github.com/Nischalcs50/nsEVD>/docs/API.md
+See full documentation at: <https://github.com/Nischalcs50/nsEVDx>/docs/API.md
 
 # Acknowledgements
 
