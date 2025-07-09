@@ -9,6 +9,6 @@ authors:
     
 title: 'nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions'
 version: 0.1.0
-doi: xx.xxxx/zenodo.xxxxxxx
+doi: https://doi.org/10.5281/zenodo.15850043
 url: 'https://github.com/Nischalcs50/nsEVDx'
 date-released: 2025-07-08
