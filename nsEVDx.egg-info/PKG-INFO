@@ -4,7 +4,7 @@ Version: 0.1.0
 Summary: Modeling Nonstationary Extreme Value Distributions
 Home-page: https://github.com/Nischalcs50/nsEVDx
 Author: Nischal Kafle
-Author-email: Nischal Kafle <nkafle.29@gmail.com>
+Author-email: Nischal Kafle <nkafle.29@gmail.com>, Claudio Meier <cimeier@memphis.edu>
 License: MIT License
         
         Copyright (c) 2025 Nischal Kafle
@@ -61,11 +61,11 @@ Dynamic: requires-python
 
 ## Implementation
 
-The core `NonStationaryEVD` class handles parameter parsing, log-likelihood construction, prior specification, and proposal generation. Frequentist estimation uses `scipy.optimize` to minimize the negative log-likelihood, while Bayesian MCMC methods are implemented in `numpy` for transparency and flexibility.
+The core `NonStationaryEVD` class handles parameter parsing, log-likelihood construction, prior specification, and proposal generation. Frequentist estimation uses `scipy.optimize` to minimize the negative log-likelihood, while Bayesian MCMC methods are implemented in `numpy` for transparency and flexibility.
 
 Non-stationarity is controlled via a configuration vector `config = [a, b, c]`, where each entry specifies the number of covariates used to model the location, scale, and shape parameters of the EVD. Entry with a value of `0` implies stationarity, while values `> 0` indicate non-stationary modeling using that many covariates.
 
-In Bayesian estimation, 'nsEVD\` can infer prior specifications based on the data and configuration or accept user-defined priors. In the frequentist mode, it can determine suitable parameter bounds automatically. However, user defined priors or bounds are recommended for better convergence and interpretability.
+In Bayesian estimation, `nsEVDx` can infer prior specifications based on the data and configuration or accept user-defined priors. In the frequentist mode, it can determine suitable parameter bounds automatically. However, user defined priors or bounds are recommended for better convergence and interpretability.
 
 ## Installation
 

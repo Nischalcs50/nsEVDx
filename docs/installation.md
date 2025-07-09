@@ -1,6 +1,6 @@
-x## Installation instructions
+## Installation instructions
 
-To install nsEVDx, ensure you have Python 3.9+ installed. The package has minimal dependencies and only requires numpy, scipy, matplotlib, and seaborn.
+To install `nsEVDx`, ensure you have Python 3.9+ installed. The package has minimal dependencies and only requires numpy, scipy, matplotlib, and seaborn.
 
 **For regular users**
 

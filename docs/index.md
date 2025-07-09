@@ -1,4 +1,4 @@
-# nsEVDx: A python Library for modeling non-stationary extreme value distributions
+# nsEVDx: A Python Library for modeling non-stationary extreme value distributions
 
 **nsEVDx** is a Python package for estimating parameters of extreme value distributions (EVD) under both stationary and non-stationary conditions. It supports:
 
@@ -20,4 +20,4 @@ MIT
 
 ## Author
 
-Nischal Kafle
+Nischal Kafle, Claudio Meier

@@ -421,7 +421,7 @@ Generate non-stationary GEV or GPD random samples.
 
 <a id="nsEVDx.utils"></a>
 
-# nsEVD.utils
+# nsEVDx.utils
 
 <a id="nsEVDx.utils.neg_log_likelihood"></a>
 
