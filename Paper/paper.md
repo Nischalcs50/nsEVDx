@@ -6,10 +6,10 @@ authors:
   affiliation: "1"
   corresponding: true
 - name: Claudio Meier
-  affilation: "1"
+  affiliation: "1"
 affiliations:
 - name: Department of Civil Engineering, University of Memphis, USA
-  affialiation: "1"
+  affiliation: "1"
 date: 2025-07-08
 software_repository_url: https://github.com/Nischalcs50/nsEVDx
 archive_url: https://zenodo.org/record/XXXXXXX
