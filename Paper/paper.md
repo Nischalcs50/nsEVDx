@@ -3,13 +3,13 @@ title: 'nsEVDx: A Python library for modeling non-Stationary extreme value distr
 authors:
 - name: Nischal Kafle
   orcid: 0009-0004-3187-4920
-  affiliation: "1"
+  affiliation: 1
   corresponding: true
 - name: Claudio Meier
-  affiliation: "1"
+  affiliation: 1
 affiliations:
 - name: Department of Civil Engineering, University of Memphis, USA
-  affiliation: "1"
+  index: 1
 date: 2025-07-08
 software_repository_url: https://github.com/Nischalcs50/nsEVDx
 archive_url: https://zenodo.org/record/XXXXXXX
