@@ -24,6 +24,26 @@ Non-stationarity is controlled via a configuration vector `config = [a, b, c]`, 
 
 In Bayesian estimation, `nsEVDx` can infer prior specifications based on the data and configuration or accept user-defined priors. In the frequentist mode, it can determine suitable parameter bounds automatically. However, user defined priors or bounds are recommended for better convergence and interpretability.
 
+### Config design
+
+This package allows modeling the extreme value distribution (EVD) parameters as functions of covariates. Each parameter can be configured independently:
+
+-   `location_model`: "constant" or "linear"
+-   `scale_model`: "constant" or "exponential"
+-   `shape_model`: "constant" or "linear"
+
+Internally, these options apply a regression of the form:
+
+-   Linear: θ(t) = θ₀ + θ₁·X(t)
+-   Exponential: θ(t) = exp(θ₀ + θ₁·X(t))
+
+This gives flexibility to model non-stationarity while maintaining parsimony.
+
+
+Note: Quadratic relationship can be modeled by squaring the covariates before passing them into the model.
+
+Splines : Comming soon...
+
 ## Installation
 
 **For regular users**
