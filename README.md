@@ -40,7 +40,7 @@ Internally, these options apply a regression of the form:
 This gives flexibility to model non-stationarity while maintaining parsimony.
 
 
-Note: Quadratic relationship can be modeled by squaring the covariates before passing them into the model.
+Note: Polynomial relationships between the covariates and the parameters can be modeled by raising the power of the covariates before passing them into the model.
 
 Splines : Comming soon...
 
