@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.9%252B-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15850043.svg)](https://doi.org/10.5281/zenodo.15850043)
 [![PyPI version](https://img.shields.io/pypi/v/nsEVDx)](https://pypi.org/project/nsEVDx/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/nsEVDx)](https://pypi.org/project/nsEVDx/)
+[![PyPI downloads](https://pepy.tech/badge/nsEVDx)](https://pepy.tech/project/nsEVDx)
 [![GitHub issues](https://img.shields.io/github/issues/nischalcs50/nsEVDx)](https://github.com/nischalcs50/nsEVDx/issues)
 [![GitHub stars](https://img.shields.io/github/stars/nischalcs50/nsEVDx?style=social)](https://github.com/nischalcs50/nsEVDx)
 
