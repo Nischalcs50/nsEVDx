@@ -6,8 +6,7 @@
 [![PyPI downloads](https://pepy.tech/badge/nsEVDx)](https://pepy.tech/project/nsEVDx)
 [![GitHub issues](https://img.shields.io/github/issues/nischalcs50/nsEVDx)](https://github.com/nischalcs50/nsEVDx/issues)
 [![GitHub stars](https://img.shields.io/github/stars/nischalcs50/nsEVDx?style=social)](https://github.com/nischalcs50/nsEVDx)
-HTML: <a href="https://joss.theoj.org/papers/43fd4c5a681f7f4a79879320930678c5"><img src="https://joss.theoj.org/papers/43fd4c5a681f7f4a79879320930678c5/status.svg"></a>
-Markdown: [![status](https://joss.theoj.org/papers/43fd4c5a681f7f4a79879320930678c5/status.svg)](https://joss.theoj.org/papers/43fd4c5a681f7f4a79879320930678c5)
+[![status](https://joss.theoj.org/papers/43fd4c5a681f7f4a79879320930678c5/status.svg)](https://joss.theoj.org/papers/43fd4c5a681f7f4a79879320930678c5)
 
 `nsEVDx` is a Python library for estimating the parameters of Generalized Extreme Value (GEV) and Generalized Pareto Distributions (GPD), collectively referred to as extreme value distributions (EVDs), under both stationary and non-stationary assumptions, using frequentist and Bayesian methods. Designed for hydrologists, climate scientists, and engineers, especially those working on extreme rainfall or flood frequency analysis, it supports time-varying covariates, MCMC samplings (Metropolis hasting-Randomwalk, Adjusted Langevin Algorithm, Hamiltonian Monte Carlo) and essential model diagnostics. Although developed for environmental extremes, its features are broadly applicable to financial risk modeling and other domains concerned with rare, high-impact events.
 
