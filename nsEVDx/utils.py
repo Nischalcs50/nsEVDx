@@ -121,7 +121,84 @@ def neg_log_likelihood_ns(
         return -log_likelihood
     except Exception:
         return np.inf
-    
+
+
+def neg_log_likelihood_ns2(
+    params: Union[List[float], np.ndarray],
+    data: Union[List[float], np.ndarray],
+    cov: Union[List[List[float]], np.ndarray],
+    config: List[int],
+    dist: rv_continuous  # type hint for scipy cont. distribution objects 
+                         # like genpareto/genextreme
+) -> float:
+    """
+    Calculate the negative log-likelihood of the non-stationary extreme 
+    value distribution.
+
+    Parameters
+    ----------
+    params : np.ndarray
+        Parameter vector ordered according to the config.
+    data : list or np.ndarray
+        Observed extreme values (e.g., annual maxima).
+    cov : list of lists or np.ndarray
+        Covariate matrix with shape (n_covariates, n_samples).
+    config : list of int
+        Non-stationarity configuration [location, scale, shape], where
+        0 = stationary, >=1 = number of covariates for non-stationary.
+    dist : rv_continuous
+        SciPy continuous distribution object (e.g., genextreme or 
+                                              genpareto).
+
+    Returns
+    -------
+    float
+        Negative log-likelihood value. Returns np.inf if invalid 
+        parameters.
+    """
+    cov = np.asarray(cov)
+    cov  =  np.atleast_2d(cov)
+    if cov.ndim > 1:
+        n_cov = cov.shape[0]
+    else :
+        n_cov = 1
+    idx = 0
+    # Location: linear relationship with covariates
+    if config[0] >= 1:
+        n_cov_ = int(config[0])
+        B = params[idx:idx + n_cov_ + 1]  # B0 + B1*x1 + B2*x2 + ...
+        idx += n_cov_ + 1
+        mu = B[0] + B[1:] @ cov[0:n_cov_,:]
+    else:
+        mu = np.full_like(data, fill_value=params[idx])
+        idx += 1
+    # Scale: exponential relationship with covariates
+    if config[1] >= 1:
+        n_cov_ = int(config[1])
+        A = params[idx:idx + n_cov_+1]
+        idx += n_cov_+1
+        sigma = np.exp(A[0] + A[1:] @ cov[0:n_cov_,:])
+    else:
+        sigma = np.full_like(data, fill_value=params[idx])
+        idx += 1
+    # Shape: linear relationship with covariates
+    if config[2] >= 1:
+        n_cov_ = int(config[2])
+        K = params[idx:idx + n_cov_+1]
+        xi = K[0] + K[1:] @ cov[0:n_cov_,:]
+    else:
+        xi = np.full_like(data, fill_value=params[idx])
+    # Ensure parameters are valid
+    if np.any(sigma <= 0):
+        return np.inf
+    try:
+        # Evaluate PDF and compute log-likelihood
+        pdf_values = dist.pdf(data, c=xi, loc=mu, scale=sigma)
+        pdf_values = np.clip(pdf_values, a_min=1e-10, a_max=None)
+        log_likelihood = np.sum(np.log(pdf_values))
+        return -log_likelihood
+    except Exception:
+        return np.inf    
 
 def EVD_parsViaMLE(data,dist, verbose=False):
     """
