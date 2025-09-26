@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nsEVDx"
-version = "0.1.0"
+version = "0.1.1"
 description = "Modeling Nonstationary Extreme Value Distributions"
 authors = [
   { name="Nischal Kafle", email="nkafle.29@gmail.com" },

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="nsEVDx",
-    version="0.1.0",
+    version="0.1.1",
     author="Nischal Kafle",
     description="Modeling Non-stationary Extreme Value Distributions using Bayesian and Frequentist Approach",
     packages=find_packages(),
