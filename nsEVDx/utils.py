@@ -555,10 +555,18 @@ def bayesian_metrics(samples, data, cov, config, dist):
     - The log-likelihood is computed using the negative log-likelihood function
         for each sample.
     """
-    log_likelihoods = np.array([
-        -neg_log_likelihood_ns(p, data, cov, config, dist)
-        for p in samples
-    ])
+    if np.sum(config) == 0:
+        # Stationary case
+        log_likelihoods = np.array([
+            -neg_log_likelihood(p, data, dist)  # stationary function
+            for p in samples
+        ])
+    else:
+        # Non-stationary case
+        log_likelihoods = np.array([
+            -neg_log_likelihood_ns(p, data, cov, config, dist)  # non-stationary
+            for p in samples
+        ])
     mean_ll = np.mean(log_likelihoods)
     max_ll = np.max(log_likelihoods)
     pD = 2 * (max_ll - mean_ll)

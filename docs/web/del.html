@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nsEVDx: Non-stationary Extreme Value Distributions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .main-content {
+            margin-top: 80px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px 20px 0 0;
+            min-height: calc(100vh - 80px);
+            box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            padding: 4rem 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .hero {
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px 20px 0 0;
+            padding: 6rem 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+            color: #667eea;
+        }
+
+        h4 {
+            font-size: 1.4rem;
+            margin: 1.5rem 0 0.5rem 0;
+            color: #764ba2;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'Python';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .math-block {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-family: 'Times New Roman', serif;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .feature-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: scale(1.05);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th, .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .table tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .installation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .installation-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .badges {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .method-section {
+            background: rgba(102, 126, 234, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">nsEVDx</div>
+            <ul class="nav-links">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#theory">Theory</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#api">API</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#citation">Citation</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <h1>nsEVDx</h1>
+            <p>A Python Library for Non-stationary Extreme Value Distributions</p>
+            
+            <div class="badges">
+                <span class="badge">Python 3.9+</span>
+                <span class="badge">MIT License</span>
+                <span class="badge">PyPI Available</span>
+                <span class="badge">Journal Reviewed</span>
+            </div>
+
+            <div>
+                <a href="#installation" class="btn">Get Started</a>
+                <a href="https://github.com/nischalcs50/nsEVDx" class="btn btn-secondary">GitHub</a>
+            </div>
+        </section>
+
+        <section id="overview" class="section">
+            <div class="container">
+                <h2>Overview</h2>
+                
+                <p>The <span class="highlight">nsEVDx</span> library provides comprehensive tools for modeling extreme value distributions under both stationary and non-stationary conditions. Designed for hydrologists, climate scientists, and engineers working with extreme events, it implements both frequentist and Bayesian inference frameworks with flexible covariate modeling capabilities.</p>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h4>GEV & GPD Models</h4>
+                        <p>Complete support for Generalized Extreme Value and Generalized Pareto distributions</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Non-stationary Modeling</h4>
+                        <p>Time-varying parameters with arbitrary covariates</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Bayesian & Frequentist</h4>
+                        <p>Dual inference frameworks with MCMC sampling</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Advanced MCMC</h4>
+                        <p>MALA, HMC, and Metropolis-Hastings samplers</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Model Diagnostics</h4>
+                        <p>Comprehensive convergence and goodness-of-fit metrics</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Minimal Dependencies</h4>
+                        <p>Only numpy, scipy, matplotlib, and seaborn required</p>
+                    </div>
+                </div>
+
+                <h3>Key Applications</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h3>Climate Extremes</h3>
+                        <p>Analysis of extreme precipitation, temperature, and drought events under changing climate conditions.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Flood Frequency Analysis</h3>
+                        <p>Non-stationary flood frequency modeling with time-varying design quantiles for infrastructure planning.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Risk Assessment</h3>
+                        <p>Financial and environmental risk modeling with time-dependent extreme value parameters.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Engineering Design</h3>
+                        <p>Design value estimation for structures under non-stationary extreme loads.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="theory" class="section">
+            <div class="container">
+                <h2>Theoretical Foundation</h2>
+
+                <h3>Extreme Value Theory</h3>
+                <p>Extreme Value Theory (EVT) provides the mathematical foundation for modeling the statistical behavior of extreme events. The theory is built on two fundamental theorems that establish the asymptotic distributions for extreme values.</p>
+
+                <h4>Fisher-Tippett-Gnedenko Theorem</h4>
+                <p>For a sequence of independent and identically distributed random variables, the distribution of properly normalized maxima converges to one of three types of extreme value distributions, unified in the Generalized Extreme Value (GEV) distribution.</p>
+
+                <div class="math-block">
+                    <h4>Generalized Extreme Value Distribution</h4>
+                    <p>The cumulative distribution function (CDF) of a GEV random variable Y with location μ, scale σ > 0, and shape ξ is:</p>
+                    <p><strong>F<sub>GEV</sub>(y; μ, σ, ξ) = exp{-[1 + ξ(y - μ)/σ]<sup>-1/ξ</sup>}</strong> for ξ ≠ 0</p>
+                    <p><strong>F<sub>GEV</sub>(y; μ, σ, 0) = exp{-exp[-(y - μ)/σ]}</strong> for ξ = 0</p>
+                </div>
+
+                <h4>Pickands-Balkema-de Haan Theorem</h4>
+                <p>For exceedances over a sufficiently high threshold, the distribution of excess values follows the Generalized Pareto Distribution (GPD).</p>
+
+                <div class="math-block">
+                    <h4>Generalized Pareto Distribution</h4>
+                    <p>For exceedances Y = X - u > 0 over threshold u, with scale σ > 0 and shape ξ:</p>
+                    <p><strong>F<sub>GPD</sub>(y; σ, ξ) = 1 - (1 + ξy/σ)<sup>-1/ξ</sup></strong> for ξ ≠ 0</p>
+                    <p><strong>F<sub>GPD</sub>(y; σ, 0) = 1 - exp(-y/σ)</strong> for ξ = 0</p>
+                </div>
+
+                <h3>Non-stationary Modeling Framework</h3>
+                <p>The nsEVDx library extends classical EVT to non-stationary conditions where distribution parameters vary with time or other covariates.</p>
+
+                <div class="method-section">
+                    <h4>Parameter Modeling</h4>
+                    <p>The library implements flexible regression models for each parameter:</p>
+                    
+                    <div class="math-block">
+                        <p><strong>Location Parameter (Linear):</strong> μ(t) = β₀ + β₁X₁(t) + β₂X₂(t) + ...</p>
+                        <p><strong>Scale Parameter (Exponential):</strong> σ(t) = exp(α₀ + α₁X₁(t) + α₂X₂(t) + ...)</p>
+                        <p><strong>Shape Parameter (Linear):</strong> ξ(t) = κ₀ + κ₁X₁(t) + κ₂X₂(t) + ...</p>
+                    </div>
+                    
+                    <p>where X₁(t), X₂(t), ... represent time-dependent covariates such as time indices, climate indices, or physical variables.</p>
+                </div>
+
+                <h3>Configuration System</h3>
+                <p>The non-stationarity is controlled through a configuration vector <strong>config = [a, b, c]</strong>, where:</p>
+                <ul>
+                    <li><strong>a</strong>: Number of covariates for location parameter (0 = stationary)</li>
+                    <li><strong>b</strong>: Number of covariates for scale parameter (0 = stationary)</li>
+                    <li><strong>c</strong>: Number of covariates for shape parameter (0 = stationary)</li>
+                </ul>
+
+                <div class="grid">
+                    <div class="card">
+                        <h4>Stationary Model</h4>
+                        <p><strong>config = [0, 0, 0]</strong></p>
+                        <p>All parameters constant over time</p>
+                    </div>
+                    <div class="card">
+                        <h4>Location Trend</h4>
+                        <p><strong>config = [1, 0, 0]</strong></p>
+                        <p>Linear trend in location parameter</p>
+                    </div>
+                    <div class="card">
+                        <h4>Full Non-stationary</h4>
+                        <p><strong>config = [2, 1, 1]</strong></p>
+                        <p>Multiple covariates for all parameters</p>
+                    </div>
+                </div>
+
+                <h3>Inference Methods</h3>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="bayesian">Bayesian Inference</button>
+                    <button class="tab" data-tab="frequentist">Frequentist Inference</button>
+                </div>
+
+                <div id="bayesian" class="tab-content active">
+                    <h4>Bayesian Framework</h4>
+                    <p>The Bayesian approach treats parameters as random variables with prior distributions, updating beliefs through observed data via Bayes' theorem:</p>
+                    
+                    <div class="math-block">
+                        <p><strong>π(θ|data) ∝ L(data|θ) × π(θ)</strong></p>
+                        <p>where π(θ|data) is the posterior, L(data|θ) is the likelihood, and π(θ) is the prior.</p>
+                    </div>
+
+                    <h4>MCMC Samplers</h4>
+                    <div class="grid">
+                        <div class="card">
+                            <h4>Metropolis-Hastings</h4>
+                            <p>Standard random-walk MCMC with Gaussian proposals</p>
+                        </div>
+                        <div class="card">
+                            <h4>MALA</h4>
+                            <p>Metropolis-Adjusted Langevin Algorithm using gradient information</p>
+                        </div>
+                        <div class="card">
+                            <h4>Hamiltonian MC</h4>
+                            <p>Advanced sampler using Hamiltonian dynamics for efficient exploration</p>
+                        </div>
+                    </div>
+
+                    <h4>Model Selection Criteria</h4>
+                    <ul>
+                        <li><strong>DIC (Deviance Information Criterion):</strong> Bayesian model comparison metric</li>
+                        <li><strong>AIC (Akaike Information Criterion):</strong> Information-theoretic approach</li>
+                        <li><strong>BIC (Bayesian Information Criterion):</strong> Penalizes model complexity</li>
+                    </ul>
+                </div>
+
+                <div id="frequentist" class="tab-content">
+                    <h4>Maximum Likelihood Estimation</h4>
+                    <p>The frequentist approach maximizes the likelihood function to find point estimates of parameters:</p>
+                    
+                    <div class="math-block">
+                        <p><strong>θ̂ = argmax L(data|θ)</strong></p>
+                        <p>Equivalently: <strong>θ̂ = argmin [-log L(data|θ)]</strong></p>
+                    </div>
+
+                    <h4>Hypothesis Testing</h4>
+                    <p>The library implements likelihood ratio tests to compare nested models:</p>
+                    
+                    <div class="math-block">
+                        <p><strong>LR = 2[log L(θ̂₁) - log L(θ̂₀)]</strong></p>
+                        <p>where θ̂₁ and θ̂₀ are MLE estimates for full and reduced models.</p>
+                        <p>Under H₀: LR ~ χ²(df), where df = difference in number of parameters</p>
+                    </div>
+
+                    <h4>Optimization Methods</h4>
+                    <ul>
+                        <li><strong>Nelder-Mead:</strong> Derivative-free optimization for robust convergence</li>
+                        <li><strong>BFGS:</strong> Quasi-Newton method for faster convergence</li>
+                        <li><strong>Automatic Bounds:</strong> Parameter bounds inferred from data characteristics</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="installation" class="section">
+            <div class="container">
+                <h2>Installation & Quick Start</h2>
+
+                <div class="installation-grid">
+                    <div class="card">
+                        <h3>Regular Users</h3>
+                        <div class="code-block">
+# Install from PyPI
+pip install nsEVDx
+
+# Or clone from GitHub
+git clone https://github.com/nischalcs50/nsEVDx
+cd nsEVDx
+pip install .</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Developers</h3>
+                        <div class="code-block">
+# Development installation
+git clone https://github.com/nischalcs50/nsEVDx
+cd nsEVDx
+pip install -e .[dev]</div>
+                    </div>
+                </div>
+
+                <h3>Dependencies</h3>
+                <p>The library has minimal dependencies, requiring only:</p>
+                <ul>
+                    <li><strong>numpy</strong> - Numerical computations and array operations</li>
+                    <li><strong>scipy</strong> - Statistical distributions and optimization</li>
+                    <li><strong>matplotlib</strong> - Basic plotting capabilities</li>
+                    <li><strong>seaborn</strong> - Enhanced statistical visualizations</li>
+                </ul>
+
+                <h3>Quick Start Example</h3>
+                <div class="code-block">
+import nsEVDx as ns
+import numpy as np
+from scipy.stats import genextreme
+
+# Generate sample data
+np.random.seed(42)
+data = np.random.gev(0.1, loc=10, scale=2, size=50)
+covariate = np.linspace(0, 1, 50).reshape(1, -1)
+
+# Initialize non-stationary GEV model
+# config = [1,0,0] means location varies with 1 covariate
+sampler = ns.NonStationaryEVD(
+    config=[1, 0, 0], 
+    data=data, 
+    cov=covariate, 
+    dist=genextreme
+)
+
+# Define priors
+prior_specs = [
+    ('normal', {'loc': 10, 'scale': 5}),    # B0 (location intercept)
+    ('normal', {'loc': 0, 'scale': 0.1}),   # B1 (location slope)
+    ('normal', {'loc': 2, 'scale': 1}),     # sigma (scale)
+    ('normal', {'loc': 0, 'scale': 0.3})    # xi (shape)
+]
+sampler.prior_specs = prior_specs
+
+# Run MCMC sampling
+samples, acceptance_rate = sampler.MH_RandWalk(
+    num_samples=10000,
+    initial_params=[10, 0.02, 2, 0.1],
+    proposal_widths=[0.5, 0.01, 0.2, 0.05],
+    T=1.0
+)
+
+print(f"Acceptance rate: {acceptance_rate:.3f}")
+print(f"Parameter estimates: {samples.mean(axis=0)}")
+
+# Visualize results
+ns.plot_trace(samples, [1, 0, 0])
+ns.plot_posterior(samples, [1, 0, 0])
+</div>
+            </div>
+        </section>
+
+        <section id="api" class="section">
+            <div class="container">
+                <h2>API Reference</h2>
+
+                <h3>Core Class: NonStationaryEVD</h3>
+                <p>The main class for extreme value distribution modeling under non-stationary conditions.</p>
+
+                <div class="method-section">
+                    <h4>Initialization</h4>
+                    <div class="code-block">
+NonStationaryEVD(config, data, cov, dist, prior_specs=None, bounds=None)</div>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>config</td>
+                                <td>list[int]</td>
+                                <td>Non-stationarity configuration [location, scale, shape]</td>
+                            </tr>
+                            <tr>
+                                <td>data</td>
+                                <td>array-like</td>
+                                <td>Observed extreme values in chronological order</td>
+                            </tr>
+                            <tr>
+                                <td>cov</td>
+                                <td>array-like</td>
+                                <td>Covariate matrix, shape (n_covariates, n_samples)</td>
+                            </tr>
+                            <tr>
+                                <td>dist</td>
+                                <td>scipy distribution</td>
+                                <td>genextreme or genpareto distribution object</td>
+                            </tr>
+                            <tr>
+                                <td>prior_specs</td>
+                                <td>list[tuple]</td>
+                                <td>Optional prior specifications for Bayesian inference</td>
+                            </tr>
+                            <tr>
+                                <td>bounds</td>
+                                <td>list[tuple]</td>
+                                <td>Optional parameter bounds for MLE optimization</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Bayesian Methods</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h4>MH_RandWalk</h4>
+                        <div class="code-block">
+samples, rate = sampler.MH_RandWalk(
+    num_samples, initial_params, 
+    proposal_widths, T=1.0
+)</div>
+                        <p>Standard Metropolis-Hastings with random walk proposals</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>MH_Mala</h4>
+                        <div class="code-block">
+samples, rate = sampler.MH_Mala(
+    num_samples, initial_params, 
+    step_sizes, T=1.0
+)</div>
+                        <p>Metropolis-Adjusted Langevin Algorithm using gradients</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>MH_Hmc</h4>
+                        <div class="code-block">
+samples, rate = sampler.MH_Hmc(
+    num_samples, initial_params, 
+    step_size=0.1, num_leapfrog_steps=10
+)</div>
+                        <p>Hamiltonian Monte Carlo for efficient sampling</p>
+                    </div>
+                </div>
+
+                <h3>Frequentist Methods</h3>
+                <div class="method-section">
+                    <h4>Maximum Likelihood Estimation</h4>
+                    <div class="code-block">
+params, neg_loglik = sampler.frequentist_nsEVD(
+    initial_params, max_retries=10
+)</div>
+                    <p>Estimates parameters via maximum likelihood optimization with automatic retry mechanisms for robust convergence.</p>
+                </div>
+
+                <h3>Utility Functions</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h4>Model Diagnostics</h4>
+                        <div class="code-block">
+# Bayesian model metrics
+metrics = ns.bayesian_metrics(
+    samples, data, cov, config, dist
+)
+
+# Gelman-Rubin diagnostic
+r_hat = ns.gelman_rubin(chains_list)
+</div>
+                        <p>Comprehensive model evaluation and convergence diagnostics</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Visualization Tools</h4>
+                        <div class="code-block">
+# MCMC trace plots
+ns.plot_trace(samples, config)
+
+# Posterior distributions
+ns.plot_posterior(samples, config)
+</div>
+                        <p>Built-in plotting functions for MCMC diagnostics and results</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Random Variate Generation</h4>
+                        <div class="code-block">
+# Generate non-stationary samples
+rvs = sampler.ns_EVDrvs(
+    dist, params, cov, config, size=1000
+)
+</div>
+                        <p>Generate synthetic data from fitted non-stationary models</p>
+                    </div>
+                </div>
+
+                <h3>Prior Specifications</h3>
+                <p>The Bayesian framework requires prior distributions for model parameters. The library supports several common distributions:</p>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Distribution</th>
+                            <th>Parameters</th>
+                            <th>Example</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Normal</td>
+                            <td>loc, scale</td>
+                            <td>('normal', {'loc': 0, 'scale': 10})</td>
+                            <td>Location and shape parameters</td>
+                        </tr>
+                        <tr>
+                            <td>Uniform</td>
+                            <td>loc, scale</td>
+                            <td>('uniform', {'loc': -5, 'scale': 10})</td>
+                            <td>Bounded parameter ranges</td>
+                        </tr>
+                        <tr>
+                            <td>Half-normal</td>
+                            <td>scale</td>
+                            <td>('halfnormal', {'scale': 2})</td>
+                            <td>Positive-only parameters (scale)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Configuration Examples</h3>
+                <div class="method-section">
+                    <h4>Common Model Configurations</h4>
+                    
+                    <div class="code-block">
+# Stationary model
+config = [0, 0, 0]  # All parameters constant
+
+# Linear trend in location
+config = [1, 0, 0]  # μ(t) = β₀ + β₁×t
+
+# Location and scale trends
+config = [1, 1, 0]  # μ(t) = β₀ + β₁×t, σ(t) = exp(α₀ + α₁×t)
+
+# Multiple covariates for location
+config = [2, 0, 0]  # μ(t) = β₀ + β₁×X₁(t) + β₂×X₂(t)
+
+# Full non-stationary model
+config = [2, 1, 1]  # All parameters vary with covariates
+</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="examples" class="section">
+            <div class="container">
+                <h2>Detailed Examples</h2>
+
+                <h3>Example 1: Climate Extreme Analysis</h3>
+                <p>Analyzing annual maximum precipitation with temperature as a covariate.</p>
+
+                <div class="code-block">
+import nsEVDx as ns
+import numpy as np
+from scipy.stats import genextreme
+import matplotlib.pyplot as plt
+
+# Load climate data (example)
+annual_max_precip = np.array([45, 52, 41, 67, 58, 71, 49, 63, 55, 76])
+temperature_anomaly = np.array([0.2, 0.5, -0.1, 0.8, 0.3, 1.1, 0.0, 0.7, 0.4, 1.3])
+years = np.arange(1990, 2000)
+
+# Prepare covariates matrix
+cov = np.vstack([years - 1990, temperature_anomaly])  # Time and temperature
+
+# Initialize model with location varying with both covariates
+sampler = ns.NonStationaryEVD(
+    config=[2, 0, 0],  # Location varies with 2 covariates
+    data=annual_max_precip,
+    cov=cov,
+    dist=genextreme
+)
+
+# Set informative priors based on domain knowledge
+prior_specs = [
+    ('normal', {'loc': 55, 'scale': 10}),     # B0: baseline precipitation
+    ('normal', {'loc': 0, 'scale': 2}),       # B1: time trend
+    ('normal', {'loc': 5, 'scale': 5}),       # B2: temperature effect
+    ('halfnormal', {'scale': 10}),            # sigma: scale parameter
+    ('normal', {'loc': 0, 'scale': 0.5})      # xi: shape parameter
+]
+sampler.prior_specs = prior_specs
+
+# Run MALA sampling for better efficiency
+samples, acc_rate = sampler.MH_Mala(
+    num_samples=15000,
+    initial_params=[55, 0.5, 3, 8, 0.1],
+    step_sizes=[0.5, 0.05, 0.2, 0.3, 0.02],
+    T=1.0
+)
+
+print(f"MALA Acceptance Rate: {acc_rate:.3f}")
+print("Parameter Estimates:")
+param_names = ['Baseline', 'Time Trend', 'Temp Effect', 'Scale', 'Shape']
+for i, name in enumerate(param_names):
+    print(f"{name}: {samples[5000:, i].mean():.3f} ± {samples[5000:, i].std():.3f}")
+
+# Compute model metrics
+metrics = ns.bayesian_metrics(samples[5000:], annual_max_precip, cov, [2,0,0], genextreme)
+print(f"Model Metrics - DIC: {metrics['DIC']:.2f}, AIC: {metrics['AIC']:.2f}")
+
+# Visualize results
+ns.plot_trace(samples, [2, 0, 0])
+ns.plot_posterior(samples, [2, 0, 0])
+</div>
+
+                <h3>Example 2: Flood Frequency Analysis</h3>
+                <p>Non-stationary flood frequency analysis with design quantile estimation.</p>
+
+                <div class="code-block">
+import nsEVDx as ns
+import numpy as np
+from scipy.stats import genpareto
+
+# Annual maximum streamflow data
+flows = np.array([250, 180, 320, 290, 410, 350, 380, 420, 460, 390])
+time_index = np.arange(len(flows))
+
+# Apply threshold for GPD analysis
+threshold = np.percentile(flows, 70)  # 70th percentile threshold
+exceedances = flows[flows > threshold] - threshold
+exc_times = time_index[flows > threshold]
+
+# Prepare time covariate for exceedances
+cov_exc = exc_times.reshape(1, -1)
+
+# Fit non-stationary GPD
+sampler_gpd = ns.NonStationaryEVD(
+    config=[1, 0, 0],  # Scale varies with time
+    data=exceedances,
+    cov=cov_exc,
+    dist=genpareto
+)
+
+# Use automatic prior suggestion
+sampler_gpd.prior_specs = sampler_gpd.suggest_priors()
+
+# Run HMC for efficient sampling
+samples_gpd, acc_rate = sampler_gpd.MH_Hmc(
+    num_samples=10000,
+    initial_params=[5, 0.1, 50, 0.2],
+    step_size=0.05,
+    num_leapfrog_steps=15
+)
+
+print(f"HMC Acceptance Rate: {acc_rate:.3f}")
+
+# Calculate time-varying design quantiles
+def design_quantile(params, time_val, return_period, threshold):
+    """Calculate design quantile for given return period"""
+    mu_t = params[0] + params[1] * time_val  # Time-varying location
+    sigma = params[2]  # Scale
+    xi = params[3]     # Shape
+    
+    # GPD quantile
+    p = 1 - 1/return_period
+    if xi != 0:
+        q = sigma * ((1-p)**(-xi) - 1) / xi
+    else:
+        q = -sigma * np.log(1-p)
+    
+    return threshold + q
+
+# Calculate 100-year design flows for different time periods
+future_times = np.array([10, 20, 30])  # 10, 20, 30 years from start
+design_flows = []
+
+for t in future_times:
+    quantiles = []
+    for sample in samples_gpd[2000::10]:  # Use every 10th sample after burn-in
+        q = design_quantile(sample, t, return_period=100, threshold=threshold)
+        quantiles.append(q)
+    
+    q_mean = np.mean(quantiles)
+    q_std = np.std(quantiles)
+    design_flows.append((q_mean, q_std))
+    print(f"100-year flow at time {t}: {q_mean:.1f} ± {q_std:.1f}")
+</div>
+
+                <h3>Example 3: Model Comparison</h3>
+                <p>Comparing stationary vs non-stationary models using information criteria.</p>
+
+                <div class="code-block">
+import nsEVDx as ns
+import numpy as np
+from scipy.stats import genextreme
+
+# Synthetic data with trend
+np.random.seed(123)
+n_years = 50
+time = np.linspace(0, 1, n_years)
+true_mu = 20 + 5 * time  # Linear trend in location
+true_sigma = 3
+true_xi = 0.1
+
+# Generate non-stationary GEV data
+data_ns = []
+for i in range(n_years):
+    data_ns.append(genextreme.rvs(true_xi, loc=true_mu[i], scale=true_sigma))
+data_ns = np.array(data_ns)
+
+cov = time.reshape(1, -1)
+
+# Model 1: Stationary GEV
+sampler_stat = ns.NonStationaryEVD([0,0,0], data_ns, cov, genextreme)
+sampler_stat.prior_specs = sampler_stat.suggest_priors()
+
+samples_stat, _ = sampler_stat.MH_RandWalk(
+    num_samples=8000,
+    initial_params=[22, 3, 0.1],
+    proposal_widths=[1, 0.3, 0.05],
+    T=1.0
+)
+
+# Model 2: Non-stationary location
+sampler_ns = ns.NonStationaryEVD([1,0,0], data_ns, cov, genextreme)
+sampler_ns.prior_specs = sampler_ns.suggest_priors()
+
+samples_ns, _ = sampler_ns.MH_RandWalk(
+    num_samples=8000,
+    initial_params=[20, 5, 3, 0.1],
+    proposal_widths=[1, 1, 0.3, 0.05],
+    T=1.0
+)
+
+# Compare models
+metrics_stat = ns.bayesian_metrics(samples_stat[2000:], data_ns, cov, [0,0,0], genextreme)
+metrics_ns = ns.bayesian_metrics(samples_ns[2000:], data_ns, cov, [1,0,0], genextreme)
+
+print("Model Comparison:")
+print(f"Stationary  - DIC: {metrics_stat['DIC']:.1f}, AIC: {metrics_stat['AIC']:.1f}")
+print(f"Non-stat    - DIC: {metrics_ns['DIC']:.1f}, AIC: {metrics_ns['AIC']:.1f}")
+print(f"Evidence for non-stationarity: {metrics_stat['DIC'] - metrics_ns['DIC']:.1f} DIC units")
+
+# Frequentist comparison using likelihood ratio test
+params_stat, nll_stat = sampler_stat.frequentist_nsEVD([22, 3, 0.1])
+params_ns, nll_ns = sampler_ns.frequentist_nsEVD([20, 5, 3, 0.1])
+
+lr_stat = 2 * (nll_stat - nll_ns)
+p_value = 1 - stats.chi2.cdf(lr_stat, df=1)
+print(f"Likelihood Ratio Test: LR = {lr_stat:.3f}, p = {p_value:.4f}")
+</div>
+
+                <h3>Example 4: Multiple Chain Diagnostics</h3>
+                <p>Running multiple MCMC chains for convergence assessment.</p>
+
+                <div class="code-block">
+import nsEVDx as ns
+import numpy as np
+from scipy.stats import genextreme
+
+# Setup data and model (using previous example data)
+sampler = ns.NonStationaryEVD([1,0,0], data_ns, cov, genextreme)
+sampler.prior_specs = sampler.suggest_priors()
+
+# Run multiple chains with different starting points
+n_chains = 4
+chains = []
+starting_points = [
+    [18, 3, 2.5, 0.05],
+    [22, 7, 3.5, 0.15], 
+    [20, 5, 3.0, 0.10],
+    [24, 1, 2.8, 0.08]
+]
+
+for i in range(n_chains):
+    print(f"Running chain {i+1}/{n_chains}...")
+    samples, acc_rate = sampler.MH_RandWalk(
+        num_samples=6000,
+        initial_params=starting_points[i],
+        proposal_widths=[0.8, 0.5, 0.2, 0.03],
+        T=1.0
+    )
+    chains.append(samples[1000:])  # Remove burn-in
+    print(f"Chain {i+1} acceptance rate: {acc_rate:.3f}")
+
+# Convergence diagnostics
+r_hat = ns.gelman_rubin(chains)
+print("\nGelman-Rubin R-hat statistics:")
+param_names = ['B0 (intercept)', 'B1 (slope)', 'sigma', 'xi']
+for i, (name, rhat) in enumerate(zip(param_names, r_hat)):
+    print(f"{name}: {rhat:.4f} {'✓' if rhat < 1.1 else '✗'}")
+
+# Combined posterior analysis
+combined_samples = np.vstack(chains)
+print(f"\nCombined posterior summary (n={len(combined_samples)}):")
+for i, name in enumerate(param_names):
+    mean_val = combined_samples[:, i].mean()
+    std_val = combined_samples[:, i].std()
+    q025, q975 = np.percentile(combined_samples[:, i], [2.5, 97.5])
+    print(f"{name}: {mean_val:.3f} ± {std_val:.3f} [{q025:.3f}, {q975:.3f}]")
+</div>
+            </div>
+        </section>
+
+        <section id="citation" class="section">
+            <div class="container">
+                <h2>Citation & References</h2>
+
+                <h3>Citing nsEVDx</h3>
+                <p>If you use nsEVDx in your research, please cite:</p>
+
+                <div class="code-block">
+@article{kafle2025nsevdx,
+    title={nsEVDx: A Python Library for modeling non-stationary extreme value distributions},
+    author={Kafle, Nischal and Meier, Claudio},
+    journal={Journal of Open Source Software},
+    year={2025},
+    doi={10.5281/zenodo.15850043}
+}
+</div>
+
+                <h3>Theoretical Background</h3>
+                <p>The mathematical foundation and methods implemented in nsEVDx are based on the following key references:</p>
+
+                <div class="grid">
+                    <div class="card">
+                        <h4>Extreme Value Theory</h4>
+                        <p><strong>Coles, S. (2001).</strong> An Introduction to Statistical Modeling of Extreme Values. Springer-Verlag.</p>
+                        <p>Foundational text for extreme value theory and applications.</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Bayesian Methods</h4>
+                        <p><strong>Robert, C.P. & Casella, G. (2009).</strong> Introducing Monte Carlo Methods with R. Springer.</p>
+                        <p>Comprehensive coverage of MCMC methods implemented in the library.</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Non-stationary Modeling</h4>
+                        <p><strong>Salas, J.D. & Obeysekera, J. (2014).</strong> Revisiting the concepts of return period and risk for nonstationary hydrologic extreme events. Journal of Hydrologic Engineering.</p>
+                        <p>Modern approaches to non-stationary extreme value analysis.</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>L-moments Methods</h4>
+                        <p><strong>Hosking, J.R.M. & Wallis, J.R. (1997).</strong> Regional Frequency Analysis: An Approach Based on L-Moments. Cambridge University Press.</p>
+                        <p>L-moments parameter estimation methods for extreme value distributions.</p>
+                    </div>
+                </div>
+
+                <h3>Related Software</h3>
+                <p>The nsEVDx library complements existing tools in the extreme value analysis ecosystem:</p>
+
+                <ul>
+                    <li><strong>extRemes (R):</strong> Comprehensive extreme value analysis package</li>
+                    <li><strong>ismev (R):</strong> Introduction to Statistical Modeling of Extreme Values</li>
+                    <li><strong>PyMC:</strong> Probabilistic programming for complex Bayesian models</li>
+                    <li><strong>climextRemes (R):</strong> Climate extreme analysis tools</li>
+                </ul>
+
+                <h3>Contributing</h3>
+                <p>We welcome contributions to nsEVDx! Please see our <a href="https://github.com/nischalcs50/nsEVDx/blob/main/CONTRIBUTING.md">contribution guidelines</a> for details on:</p>
+
+                <ul>
+                    <li>Reporting bugs and requesting features</li>
+                    <li>Contributing code and documentation</li>
+                    <li>Code style and testing requirements</li>
+                    <li>Review process for pull requests</li>
+                </ul>
+
+                <h3>License & Support</h3>
+                <p>nsEVDx is released under the <strong>MIT License</strong>, allowing free use, modification, and distribution. For support:</p>
+
+                <ul>
+                    <li><strong>Documentation:</strong> Complete API reference and examples</li>
+                    <li><strong>GitHub Issues:</strong> Bug reports and feature requests</li>
+                    <li><strong>Discussions:</strong> Community support and questions</li>
+                    <li><strong>Email:</strong> Direct contact for collaboration inquiries</li>
+                </ul>
+
+                <h3>Version History</h3>
+                <div class="method-section">
+                    <h4>Recent Updates</h4>
+                    <ul>
+                        <li><strong>v1.0.0:</strong> Initial release with GEV/GPD support and MCMC samplers</li>
+                        <li><strong>v1.1.0:</strong> Added HMC sampler and improved diagnostics</li>
+                        <li><strong>v1.2.0:</strong> Enhanced visualization tools and automatic prior selection</li>
+                        <li><strong>v1.3.0:</strong> Multiple covariate support and likelihood ratio tests</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.dataset.tab;
+                
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header background on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(255, 255, 255, 0.98)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+            }
+        });
+
+        // Add copy functionality to code blocks
+        document.querySelectorAll('.code-block').forEach(block => {
+            const button = document.createElement('button');
+            button.textContent = 'Copy';
+            button.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 50px;
+                background: rgba(255,255,255,0.2);
+                border: 1px solid rgba(255,255,255,0.3);
+                color: #f8f8f2;
+                padding: 5px 10px;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 0.8rem;
+            `;
+            
+            button.addEventListener('click', () => {
+                navigator.clipboard.writeText(block.textContent.trim());
+                button.textContent = 'Copied!';
+                setTimeout(() => button.textContent = 'Copy', 2000);
+            });
+            
+            block.appendChild(button);
+        });
+    </script>
+</body>
+</html>
