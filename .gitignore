@@ -2,8 +2,12 @@
 __pycache__/
 *.pyc
 *.pyo
+*.py[cod]
+*$py.class
 *.egg-info/
 .eggs/
+build/
+dist/
 
 # Virtual environments
 venv/
@@ -23,3 +27,6 @@ Thumbs.db
 *.pem
 *.crt
 
+# IDE files
+.vscode/
+.idea/
