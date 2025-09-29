@@ -22,9 +22,9 @@ requires-python = ">=3.9"
 keywords = ["Bayesian inference", "Frequentist", "Generalised extreme value", "Generalised pareto", "Frequency analyses","Hydroclimatology"]
 
 [project.urls]
-Homepage = "https://github.com/Nischalcs50/nsEVDx"
+Homepage = "https://nischalcs50.github.io/nsEVDx/"
 Repository = "https://github.com/Nischalcs50/nsEVDx"
-Documentation = "https://github.com/Nischalcs50/nsEVDx/docs"
+Documentation = "https://github.com/Nischalcs50/nsEVDx/API_docs"
 
 [project.optional-dependencies]
 dev = [
