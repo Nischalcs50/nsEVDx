@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nsEVDx API Reference</title>
+    <link rel="stylesheet" href="styles2.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="#" class="nav-logo">nsEVDx</a>
+                <span class="nav-version">v0.1.1</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#quickstart">Quick Start</a></li>
+                <li><a href="#api">nsEVDx module structures</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="https://github.com/nischalcs50/nsEVDx">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>Getting Started</h3>
+                <ul>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#theory">Theory</a></li>
+                    <li><a href="#quickstart">Quick Start</a></li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <details closed>
+                    <summary>Module Structure</summary>
+                    <ul>
+                        <li><a href="#nonstationary-evd">NonStationaryEVD</a></li>
+                        <li><a href="#initialization">Initialization</a></li>
+                        <li><a href="#parameter-setup">Parameter Setup</a></li>
+                        <li><a href="#bayesian-methods">Bayesian Methods</a></li>
+                        <li><a href="#frequentist-methods">Frequentist Methods</a></li>
+                        <li><a href="#simulation">Simulation</a></li>
+                        <li><a href="#utilities">Utility Functions</a></li>
+                        <li><a href="#diagnostics">Diagnostics</a></li>
+                    </ul>
+                </details>
+            </div>
+            
+            <div class="sidebar-section">
+                <details closed>
+                    <summary>Examples</summary>
+                <ul>
+                    <li><a href="#gev-fitting">GEV Fitting</a></li>
+                    <li><a href="#gpd-fitting">GPD Fitting</a></li>
+                    <li><a href="#model-comparison">Model Comparison</a></li>
+                </ul>
+                </details>
+            </div>
+
+            <div class="sidebar-section">
+                <li><a href="#citations">Citation</a></li>
+                <li><a href="#ref">References</a></li>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="page-header">
+                <h1>nsEVDx Users Reference</h1>
+                <p class="page-subtitle">A Python Library for modeling Non-stationary Extreme Value Distributions</p>
+            </header>
+            
+
+            <section id="overview">
+                 <h2>Overview</h2>
+                
+                <p>The <span class="highlight">nsEVDx</span> library provides comprehensive tools for modeling extreme value distributions under both stationary and non-stationary conditions. Designed for hydrologists, climate scientists, and engineers working with extreme events, it implements both frequentist and Bayesian inference frameworks with flexible covariate modeling capabilities.</p>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h4>GEV & GPD Models</h4>
+                        <p>Complete support for Generalized Extreme Value and Generalized Pareto distributions</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Non-stationary Modeling</h4>
+                        <p>Time-varying parameters with arbitrary covariates</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Bayesian & Frequentist</h4>
+                        <p>Dual inference frameworks with MCMC sampling</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Advanced MCMC</h4>
+                        <p>MALA, HMC, and Metropolis-Hastings samplers</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Model Diagnostics</h4>
+                        <p>Comprehensive convergence and goodness-of-fit metrics</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Minimal Dependencies</h4>
+                        <p>Only numpy, scipy, matplotlib, and seaborn required</p>
+                    </div>
+                </div>
+
+                <h3>Key Applications</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h3>Climate Extremes</h3>
+                        <p>Analysis of extreme precipitation, temperature, and drought events under changing climate conditions.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Flood Frequency Analysis</h3>
+                        <p>Non-stationary flood frequency modeling with time-varying design quantiles for infrastructure planning.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Risk Assessment</h3>
+                        <p>Financial and environmental risk modeling with time-dependent extreme value parameters.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Engineering Design</h3>
+                        <p>Design value estimation for structures under non-stationary extreme loads.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="installation">
+                <h2>Installation</h2>
+                <pre><code class="language-bash">pip install nsEVDx  
+# Or clone from GitHub:
+git clone https://github.com/Nischalcs50/nsEVDx
+cd nsEVDx
+pip install .</code></pre>
+
+For developers/contributors
+<pre><code class="language-bash">
+git clone https://github.com/Nischalcs50/nsEVDx
+cd nsEVDx
+pip install -e .[dev]</code></pre>
+                
+                <h3>Requirements</h3>
+                <ul>
+                    <li>Python 3.9+</li>
+                    <li>numpy</li>
+                    <li>scipy</li>
+                    <li>matplotlib</li>
+                    <li>seaborn</li>
+                </ul>
+            </section>
+
+            <section id="theory">
+                <h2>Theoretical Background</h2>
+                
+                <h3>Generalized Extreme Value Distribution</h3>
+                <p>The GEV distribution unifies the three types of extreme value distributions.
+                The cumulative distribution function (CDF) of a GEV random variable <span class="math-eq">X</span> with location <span class="math-eq">μ</span>, scale <span class="math-eq">σ > 0</span>, and shape <span class="math-eq">ξ</span> is:
+                </p>
+                <div class="math-block">
+                
+                    <strong>CDF:</strong>
+                    <p class="math-eq">
+                        <span class="math-fn">F</span>(<span class="math-eq">X</span>; <span class="math-eq">μ</span>, <span class="math-eq">σ</span>, <span class="math-eq">ξ</span>) = 
+                        <span class="math-fn">exp</span>{−[1 + <span class="math-eq">ξ</span>(<span class="math-eq">x</span> − <span class="math-eq">μ</span>)/<span class="math-eq">σ</span>]<sup>−1/<span class="math-eq">ξ</span></sup>} 
+                        &nbsp;&nbsp;for <span class="math-eq">ξ</span> ≠ 0
+                    </p>
+                    <p class="math-eq">
+                        <span class="math-fn">F</span>(<span class="math-eq">X</span>; <span class="math-eq">μ</span>, <span class="math-eq">σ</span>, 0) = 
+                        <span class="math-fn">exp</span>{−<span class="math-fn">exp</span>[−(<span class="math-eq">x</span> − <span class="math-eq">μ</span>)/<span class="math-eq">σ</span>]} 
+                        &nbsp;&nbsp;for <span class="math-eq">ξ</span> = 0
+                    </p>
+                </div>
+
+                <h3>Generalized Pareto Distribution</h3>
+                <p>The CDF of exceedances <span class="math-eq">Y = X-μ > 0</span> over threshold <span class="math-eq">μ</span> following a GPD, with scale <span class="math-eq">σ > 0</span> and shape <span class="math-eq">ξ</span></p>
+    
+                <div class="math-block">
+                    <strong>CDF:</strong>
+                    <p class="math-eq">
+                        <span class="math-fn">F</span>(<span class="math-eq">Y</span>; <span class="math-eq">μ</span>, <span class="math-eq">σ</span>, <span class="math-eq">ξ</span>) = 
+                        1 − (1 + <span class="math-eq">ξ</span>(<span class="math-eq">y</span> − <span class="math-eq">μ</span>)/<span class="math-eq">σ</span>)<sup>−1/<span class="math-eq">ξ</span></sup> 
+                        &nbsp;&nbsp;for <span class="math-eq">ξ</span> ≠ 0
+                    </p>
+                    <p class="math-eq">
+                        <span class="math-fn">F</span>(<span class="math-eq">Y</span>; <span class="math-eq">μ</span>, <span class="math-eq">σ</span>, 0) = 
+                        1 − <span class="math-fn">exp</span>(−(<span class="math-eq">y</span> − <span class="math-eq">μ</span>)/<span class="math-eq">σ</span>) 
+                        &nbsp;&nbsp;for <span class="math-eq">ξ</span> = 0
+                    </p>
+                </div>
+
+                <h3>Non-stationary Framework</h3>
+                <p>Parameters are modeled as functions of covariates:</p>
+    
+                <div class="math-block">
+                    <p><strong>Location (linear):</strong></p>
+                    <p class="math-eq">
+                        <span class="math-eq">μ</span>(<span class="math-eq">t</span>) = 
+                        <span class="math-eq">β</span><sub>0</sub> + 
+                        <span class="math-eq">β</span><sub>1</sub><span class="math-eq">Z</span><sub>1</sub>(<span class="math-eq">t</span>) + 
+                        <span class="math-eq">β</span><sub>2</sub><span class="math-eq">Z</span><sub>2</sub>(<span class="math-eq">t</span>) + ...
+                    </p>
+                    
+                    <p><strong>Scale (exponential):</strong></p>
+                    <p class="math-eq">
+                        <span class="math-eq">σ</span>(<span class="math-eq">t</span>) = 
+                        <span class="math-fn">exp</span>(<span class="math-eq">α</span><sub>0</sub> + 
+                        <span class="math-eq">α</span><sub>1</sub><span class="math-eq">Z</span><sub>1</sub>(<span class="math-eq">t</span>) + 
+                        <span class="math-eq">α</span><sub>2</sub><span class="math-eq">Z</span><sub>2</sub>(<span class="math-eq">t</span>) + ...)
+                    </p>
+                    
+                    <p><strong>Shape (linear):</strong></p>
+                    <p class="math-eq">
+                        <span class="math-eq">ξ</span>(<span class="math-eq">t</span>) = 
+                        <span class="math-eq">κ</span><sub>0</sub> + 
+                        <span class="math-eq">κ</span><sub>1</sub><span class="math-eq">Z</span><sub>1</sub>(<span class="math-eq">t</span>) + 
+                        <span class="math-eq">κ</span><sub>2</sub><span class="math-eq">Z</span><sub>2</sub>(<span class="math-eq">t</span>) + ...
+                    </p>
+                    where <span class="math-eq">Z(t)</span> is a dynamic covariate that changes with time and affects the extreme value distributions.
+                </div>
+
+                <div class="math-block">
+                    <p><strong>Non-Stationarity Configuration</strong></p>
+
+                    <p>
+                        In <code>nsEVDx</code>, non-stationarity is controlled via a configuration vector: 
+                        <span class="display-math">config = [a, b, c]</span>
+                    </p>
+
+                    <p>
+                        Each element in config specifies the number of covariates for the <strong>location</strong> (μ), 
+                        <strong>scale</strong> (σ), and <strong>shape</strong> (ξ) parameters. 
+                        A value of 0 indicates stationarity; values &gt;0 indicate non-stationary modeling using the corresponding number of covariates for modeling.
+                    
+                        This framework allows flexible, parsimonious modeling of non-stationary extreme value distributions, 
+                        including covariates only where supported by data.
+                    </p>
+                </div>
+
+            </section>
+
+            <section id="quickstart">
+                <h2>Quick Start</h2>
+                <pre><code class="language-python">import nsEVDx as ns
+import numpy as np
+from scipy.stats import genextreme
+
+# Generate sample data
+data = np.random.gev(0.1, loc=10, scale=2, size=50)
+covariate = np.linspace(0, 1, 50).reshape(1, -1)
+
+# Initialize model
+sampler = ns.NonStationaryEVD(
+    config=[1, 0, 0],  # Location varies with 1 covariate
+    data=data,
+    cov=covariate,
+    dist=genextreme
+)
+
+# Run MCMC
+samples, acc_rate = sampler.MH_RandWalk(
+    num_samples=5000,
+    initial_params=[10, 0.1, 2, 0.1],
+    proposal_widths=[0.5, 0.05, 0.2, 0.05],
+    T=1.0
+)
+
+print(f"Acceptance rate: {acc_rate:.3f}")
+print(f"Parameter means: {samples.mean(axis=0)}")
+</code></pre>
+            </section>
+
+            <section id="api">
+                <h2>Module Structure</h2>
+                
+                <div id="nonstationary-evd" class="api-section">
+                    <h3>nsEVDx.NonStationaryEVD</h3>
+                    <p class="api-signature">
+                        <code>class NonStationaryEVD(config, data, cov, dist, prior_specs=None, bounds=None)</code>
+                    </p>
+                    
+                    <div class="parameters">
+                        <h4>Parameters</h4>
+                        <dl>
+                            <dt>config : list of int</dt>
+                            <dd>Configuration vector [location, scale, shape] specifying number of covariates for each parameter. 0 = stationary.</dd>
+                            
+                            <dt>data : array_like</dt>
+                            <dd>Observed extreme values in chronological order.</dd>
+                            
+                            <dt>cov : array_like</dt>
+                            <dd>Covariate matrix, shape (n_covariates, n_samples).</dd>
+                            
+                            <dt>dist : scipy.stats distribution</dt>
+                            <dd>Either genextreme or genpareto distribution object.</dd>
+                            
+                            <dt>prior_specs : list of tuples, optional</dt>
+                            <dd>Prior specifications for Bayesian inference. Format: [('dist_name', {'param': value}), ...]</dd>
+                            
+                            <dt>bounds : list of tuples, optional</dt>
+                            <dd>Parameter bounds for MLE optimization. Format: [(lower, upper), ...]</dd>
+                        </dl>
+                    </div>
+
+                    <div class="math-block">
+                        <p><strong>Configuration Examples:</strong></p>
+                        <p class="math-eq">config = [0, 0, 0] → Full stationary model</p>
+                        <p class="math-eq">config = [1, 0, 0] → Non-stationary location with 1 covariate</p>
+                        <p class="math-eq">config = [2, 1, 0] → 2 covariates for location, 1 for scale</p>
+                    </div>
+
+                    
+                </div>
+
+                <!-- Initialization Methods -->
+    <div id="initialization" class="api-section">
+        <h3>Initialization</h3>
+        Initializing nsEVDx.NonStationaryEVD object for sampling.
+<div class="examples">
+                        <h4>Examples</h4>
+                        <pre><code class="language-python">from scipy.stats import genextreme
+# Stationary GEV model
+sampler = ns.NonStationaryEVD([0,0,0], data, cov, genextreme)
+
+# Non-stationary location only
+sampler = ns.NonStationaryEVD([1,0,0], data, cov, genextreme)
+
+# Multiple covariates for location and scale
+sampler = ns.NonStationaryEVD([3,2,0], data, cov, genextreme)
+                            </code></pre>
+                    </div>
+        
+        <div class="method">
+            <h4>get_param_description</h4>
+            <div class="api-signature">
+                <code>@staticmethod<br>get_param_description(config, n_cov)</code>
+            </div>
+            <p>Returns descriptions of each parameter in the parameter vector based on configuration.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>config : list of int</dt>
+                    <dd>Non-stationarity configuration [location, scale, shape].</dd>
+                    
+                    <dt>n_cov : int</dt>
+                    <dd>Total number of covariates available.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>list of str</dt>
+                    <dd>Descriptions of each parameter in order.</dd>
+                </dl>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python"># For config=[1,0,0] with n_cov=1
+descriptions = ns.NonStationaryEVD.get_param_description([1,0,0], 1)
+# Returns: ['B0 (location intercept)', 'B1 (location slope for covariate 1)', 
+#           'scale', 'shape']</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parameter Setup -->
+    <div id="parameter-setup" class="api-section">
+        <h3>Parameter Setup Methods</h3>
+        
+        <div class="method">
+            <h4>suggest_priors</h4>
+            <div class="api-signature">
+                <code>suggest_priors()</code>
+            </div>
+            <p>Suggest default prior distributions for model parameters based on configuration and data statistics.</p>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>prior_specs : list of tuples</dt>
+                    <dd>List of prior specifications for each parameter. Format: [('distribution_name', {'param': value}), ...]</dd>
+                </dl>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">sampler = ns.NonStationaryEVD([1,0,0], data, cov, genextreme)
+priors = sampler.suggest_priors()
+# Returns: [('normal', {'loc': 0, 'scale': 10}), ...]</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h4>suggest_bounds</h4>
+            <div class="api-signature">
+                <code>suggest_bounds(buffer=0.5)</code>
+            </div>
+            <p>Suggests bounds for MLE optimization based on config and distribution type.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>buffer : float, default 0.5</dt>
+                    <dd>Fractional buffer around stationary parameter estimates.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>bounds : list of tuples</dt>
+                    <dd>List of (lower, upper) tuples for each parameter in order.</dd>
+                </dl>
+            </div>
+        </div>
+
+        </div>
+
+                <!-- Bayesian Methods -->
+                <div id="bayesian-methods" class="api-section">
+                    <h3>Bayesian Methods</h3>
+                    
+                    <div class="method">
+                        <h4>MH_RandWalk</h4>
+                        <p class="api-signature">
+                            <code>MH_RandWalk(num_samples, initial_params, proposal_widths, T=1.0)</code>
+                        </p>
+                        <p>Metropolis-Hastings sampler with random walk proposals.</p>
+                        
+                        <div class="parameters">
+                            <h5>Parameters</h5>
+                            <dl>
+                                <dt>num_samples : int</dt>
+                                <dd>Number of samples to generate.</dd>
+                                
+                                <dt>initial_params : array_like</dt>
+                                <dd>Starting parameter values.</dd>
+                                
+                                <dt>proposal_widths : array_like</dt>
+                                <dd>Standard deviations for proposal distribution.</dd>
+                                
+                                <dt>T : float, default 1.0</dt>
+                                <dd>Temperature parameter for tempering.</dd>
+                            </dl>
+                        </div>
+                        
+                        <div class="returns">
+                            <h5>Returns</h5>
+                            <dl>
+                                <dt>samples : ndarray</dt>
+                                <dd>Array of shape (num_samples, n_parameters) containing parameter samples.</dd>
+                                
+                                <dt>acceptance_rate : float</dt>
+                                <dd>Fraction of proposals accepted.</dd>
+                            </dl>
+                        </div>
+                        <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">sampler = ns.NonStationaryEVD([1,0,0], data, cov, genextreme, prior_specs=priors)
+samples, acc_rate = sampler.MH_RandWalk(
+    num_samples=10000,
+    initial_params=[0, 0, 1, 0.1],
+    proposal_widths=[0.1, 0.05, 0.05, 0.02],
+    T=1.0
+)
+print(f"Acceptance rate: {acc_rate:.3f}")</code></pre>
+            </div>
+        </div>
+                    
+                    <div class="method">
+            <h4>MH_Mala</h4>
+            <div class="api-signature">
+                <code>MH_Mala(num_samples, initial_params, step_sizes, T=1.0)</code>
+            </div>
+            <p>Metropolis-Adjusted Langevin Algorithm using gradient information for more efficient sampling.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>num_samples : int</dt>
+                    <dd>Number of samples to generate.</dd>
+                    
+                    <dt>initial_params : array_like</dt>
+                    <dd>Starting parameter values.</dd>
+                    
+                    <dt>step_sizes : list of float</dt>
+                    <dd>Step sizes epsilon for MALA proposals.</dd>
+                    
+                    <dt>T : float, default 1.0</dt>
+                    <dd>Temperature factor for acceptance ratio.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>samples : ndarray</dt>
+                    <dd>Array of shape (num_samples, n_parameters).</dd>
+                    
+                    <dt>acceptance_rate : float</dt>
+                    <dd>Fraction of proposals accepted.</dd>
+                </dl>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">samples, acc_rate = sampler.MH_Mala(
+    num_samples=10000,
+    initial_params=[0, 0, 1, 0.1],
+    step_sizes=[0.01, 0.01, 0.01, 0.005]
+)</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h4>numerical_grad_log_posterior</h4>
+            <div class="api-signature">
+                <code>numerical_grad_log_posterior(params, h=1e-2)</code>
+            </div>
+            <p>Compute the numerical gradient of the log-posterior using central difference method for MH_Mala( ).</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>params : array_like</dt>
+                    <dd>Parameter values at which to evaluate the gradient.</dd>
+                    
+                    <dt>h : float or array_like, default 1e-2</dt>
+                    <dd>Step size for finite difference approximation.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>grad : ndarray</dt>
+                    <dd>Approximate gradient of the log-posterior with respect to each parameter.</dd>
+                </dl>
+            </div>
+        </div>
+        
+
+                    <div class="method">
+            <h4>MH_Hmc</h4>
+            <div class="api-signature">
+                <code>MH_Hmc(num_samples, initial_params, step_size=0.1, num_leapfrog_steps=10, T=1.0)</code>
+            </div>
+            <p>Hamiltonian Monte Carlo sampler for efficient exploration of posterior distribution.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>num_samples : int</dt>
+                    <dd>Number of samples to generate.</dd>
+                    
+                    <dt>initial_params : array_like</dt>
+                    <dd>Starting parameter values.</dd>
+                    
+                    <dt>step_size : float, default 0.1</dt>
+                    <dd>Leapfrog step size epsilon.</dd>
+                    
+                    <dt>num_leapfrog_steps : int, default 10</dt>
+                    <dd>Number of leapfrog steps per iteration.</dd>
+                    
+                    <dt>T : float, default 1.0</dt>
+                    <dd>Temperature scaling factor.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>samples : ndarray</dt>
+                    <dd>Array of shape (num_samples, n_parameters).</dd>
+                    
+                    <dt>acceptance_rate : float</dt>
+                    <dd>Fraction of proposals accepted.</dd>
+                </dl>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">samples, acc_rate = sampler.MH_Hmc(
+    num_samples=10000,
+    initial_params=[0, 0, 1, 0.1],
+    step_size=0.05,
+    num_leapfrog_steps=20
+)</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h4>hamiltonian</h4>
+            <div class="api-signature">
+                <code>hamiltonian(params, momentum, T)</code>
+            </div>
+            <p>Compute the Hamiltonian (total energy) for HMC sampling.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>params : array_like</dt>
+                    <dd>Current position in parameter space.</dd>
+                    
+                    <dt>momentum : array_like</dt>
+                    <dd>Auxiliary momentum variables.</dd>
+                    
+                    <dt>T : float</dt>
+                    <dd>Temperature scaling factor.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>float</dt>
+                    <dd>Total Hamiltonian energy (potential + kinetic).</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+                <div id="frequentist-methods" class="api-section">
+                    <h3>Frequentist Methods</h3>
+                    
+                    <div class="method">
+                        <h4>frequentist_nsEVD</h4>
+                        <p class="api-signature">
+                            <code>frequentist_nsEVD(initial_params, max_retries=10)</code>
+                        </p>
+                        <p>Maximum likelihood estimation of parameters.</p>
+                        
+                        <div class="parameters">
+                            <h5>Parameters</h5>
+                            <dl>
+                                <dt>initial_params : array_like</dt>
+                                <dd>Initial parameter guess.</dd>
+                                
+                                <dt>max_retries : int, default 10</dt>
+                                <dd>Number of optimization retries with perturbed starting points.</dd>
+                            </dl>
+                        </div>
+                        
+                        <div class="returns">
+                            <h5>Returns</h5>
+                            <dl>
+                                <dt>params : ndarray</dt>
+                                <dd>Estimated parameters.</dd>
+                                
+                                <dt>neg_loglik : float</dt>
+                                <dd>Negative log-likelihood at optimum.</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation -->
+    <div id="simulation" class="api-section">
+        <h3>Simulation</h3>
+        
+        <div class="method">
+            <h4>ns_EVDrvs</h4>
+            <div class="api-signature">
+                <code>@staticmethod<br>ns_EVDrvs(dist, params, cov, config, size)</code>
+            </div>
+            <p>Generate non-stationary GEV or GPD random samples.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>dist : rv_continuous</dt>
+                    <dd>SciPy continuous distribution object (genextreme or genpareto).</dd>
+                    
+                    <dt>params : array_like</dt>
+                    <dd>Flattened parameter list according to config.</dd>
+                    
+                    <dt>cov : ndarray</dt>
+                    <dd>Covariate matrix, shape (n_covariates, n_samples).</dd>
+                    
+                    <dt>config : list of int</dt>
+                    <dd>Non-stationarity config [loc, scale, shape].</dd>
+                    
+                    <dt>size : int</dt>
+                    <dd>Number of random samples to generate.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>ndarray</dt>
+                    <dd>Generated non-stationary random variates.</dd>
+                </dl>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">from scipy.stats import genextreme
+
+# Generate synthetic data
+synthetic_data = ns.NonStationaryEVD.ns_EVDrvs(
+    dist=genextreme,
+    params=[10, 0.5, 2, 0.1],  # location intercept, slope, scale, shape
+    cov=time_covariate,
+    config=[1, 0, 0],
+    size=100
+)</code></pre>
+            </div>
+        </div>
+    </div>
+
+                <!-- Utilities -->
+    <div id="utilities" class="api-section">
+        <h3>Utility Functions</h3>
+        
+        <div class="function">
+            <h4>nsEVDx.neg_log_likelihood</h4>
+            <div class="api-signature">
+                <code>neg_log_likelihood(params, data, dist)</code>
+            </div>
+            <p>Compute negative log-likelihood for stationary EVD.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>params : array_like</dt>
+                    <dd>Parameters [loc, scale, shape] for the distribution.</dd>
+                    
+                    <dt>data : array_like</dt>
+                    <dd>Observed data points.</dd>
+                    
+                    <dt>dist : scipy.stats distribution</dt>
+                    <dd>Distribution object (genpareto or genextreme).</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>float</dt>
+                    <dd>Negative log-likelihood. Returns np.inf if parameters are invalid.</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.neg_log_likelihood_ns</h4>
+            <div class="api-signature">
+                <code>neg_log_likelihood_ns(params, data, cov, config, dist)</code>
+            </div>
+            <p>Calculate negative log-likelihood for non-stationary EVD.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>params : array_like</dt>
+                    <dd>Parameter vector ordered according to config.</dd>
+                    
+                    <dt>data : array_like</dt>
+                    <dd>Observed extreme values.</dd>
+                    
+                    <dt>cov : array_like</dt>
+                    <dd>Covariate matrix, shape (n_covariates, n_samples).</dd>
+                    
+                    <dt>config : list of int</dt>
+                    <dd>Non-stationarity configuration [location, scale, shape].</dd>
+                    
+                    <dt>dist : rv_continuous</dt>
+                    <dd>SciPy distribution object.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>float</dt>
+                    <dd>Negative log-likelihood value. Returns np.inf if invalid.</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.EVD_parsViaMLE</h4>
+            <div class="api-signature">
+                <code>EVD_parsViaMLE(data, dist, verbose=False)</code>
+            </div>
+            <p>Estimate stationary EVD parameters via maximum likelihood.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>data : array_like</dt>
+                    <dd>Observed data.</dd>
+                    
+                    <dt>dist : scipy.stats distribution</dt>
+                    <dd>genextreme or genpareto distribution.</dd>
+                    
+                    <dt>verbose : bool, default False</dt>
+                    <dd>Whether to print optimization details.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>ndarray</dt>
+                    <dd>Estimated parameters [shape, location, scale].</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.GEV_parsViaLM</h4>
+            <div class="api-signature">
+                <code>GEV_parsViaLM(arr)</code>
+            </div>
+            <p>Estimate GEV parameters using L-moments (Hosking & Wallis, 1987).</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>arr : array_like</dt>
+                    <dd>Observed data sample.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>ndarray</dt>
+                    <dd>Array of size 3 containing [shape, location, scale].</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.GPD_parsViaLM</h4>
+            <div class="api-signature">
+                <code>GPD_parsViaLM(arr)</code>
+            </div>
+            <p>Estimate GPD parameters using L-moments (Hosking & Wallis, 1987).</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>arr : array_like</dt>
+                    <dd>Observed data sample.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>ndarray</dt>
+                    <dd>Array of size 3 containing [shape, location, scale].</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.l_moments</h4>
+            <div class="api-signature">
+                <code>l_moments(data)</code>
+            </div>
+            <p>Compute L-moments from data sample.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>data : array_like</dt>
+                    <dd>Sample data array.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>ndarray</dt>
+                    <dd>Array containing [n, mean, L1, L2, T3, T4].</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.comb</h4>
+            <div class="api-signature">
+                <code>comb(n, k)</code>
+            </div>
+            <p>Compute binomial coefficient "n choose k".</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>n : int</dt>
+                    <dd>Total number of items.</dd>
+                    
+                    <dt>k : int</dt>
+                    <dd>Number of items to choose.</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>float</dt>
+                    <dd>The binomial coefficient C(n, k).</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnostics -->
+    <div id="diagnostics" class="api-section">
+        <h3>Diagnostics & Visualization</h3>
+        
+        <div class="function">
+            <h4>nsEVDx.plot_trace</h4>
+            <div class="api-signature">
+                <code>plot_trace(samples, config, fig_size=None, param_names_override=None)</code>
+            </div>
+            <p>Generate MCMC trace plots for convergence diagnostics.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>samples : ndarray</dt>
+                    <dd>MCMC samples of shape (n_iterations, n_parameters).</dd>
+                    
+                    <dt>config : list of int</dt>
+                    <dd>Non-stationarity config [loc, scale, shape].</dd>
+                    
+                    <dt>fig_size : tuple, optional</dt>
+                    <dd>Figure size (width, height).</dd>
+                    <dt>param_names_override : list of str, optional</dt>
+                    <dd>Custom parameter names to override default naming.</dd>
+                </dl>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">import nsEVDx as ns
+
+# After MCMC sampling
+samples, acc_rate = sampler.MH_RandWalk(...)
+ns.plot_trace(samples, config=[1,0,0], fig_size=(12, 8))</code></pre>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.plot_posterior</h4>
+            <div class="api-signature">
+                <code>plot_posterior(samples, config, fig_size=None, param_names_override=None)</code>
+            </div>
+            <p>Generate posterior distribution plots with histograms and density curves.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>samples : ndarray</dt>
+                    <dd>MCMC samples of shape (n_iterations, n_parameters).</dd>
+                    
+                    <dt>config : list of int</dt>
+                    <dd>Non-stationarity config [loc, scale, shape].</dd>
+                    
+                    <dt>fig_size : tuple, optional</dt>
+                    <dd>Figure size (width, height). Default based on number of parameters.</dd>
+                    
+                    <dt>param_names_override : list of str, optional</dt>
+                    <dd>Custom parameter names.</dd>
+                </dl>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">ns.plot_posterior(samples, config=[1,0,0])
+
+# With custom names
+ns.plot_posterior(
+    samples, 
+    config=[1,0,0],
+    param_names_override=['μ₀', 'μ₁', 'σ', 'ξ']
+)</code></pre>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.bayesian_metrics</h4>
+            <div class="api-signature">
+                <code>bayesian_metrics(samples, data, cov, config, dist)</code>
+            </div>
+            <p>Compute Bayesian model selection criteria (DIC, AIC, BIC) from posterior samples.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>samples : ndarray</dt>
+                    <dd>Posterior samples, shape (n_samples, n_params).</dd>
+                    
+                    <dt>data : array_like</dt>
+                    <dd>Observed data used to compute likelihood.</dd>
+                    
+                    <dt>cov : array_like</dt>
+                    <dd>Covariates used in the non-stationary model.</dd>
+                    
+                    <dt>config : list of int</dt>
+                    <dd>Configuration settings for the model.</dd>
+                    
+                    <dt>dist : scipy.stats distribution</dt>
+                    <dd>Distribution type (genextreme or genpareto).</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>dict</dt>
+                    <dd>Dictionary containing computed values of DIC, AIC, and BIC.</dd>
+                </dl>
+            </div>
+            
+            <div class="math-block">
+                <p><strong>Metrics:</strong></p>
+                <p class="math-eq">DIC = −2 × <span class="math-fn">mean</span>(<span class="math-fn">log</span> <span class="math-eq">L</span>) + 2<span class="math-eq">p</span><sub>D</sub></p>
+                <p class="math-eq">AIC = −2 × <span class="math-fn">max</span>(<span class="math-fn">log</span> <span class="math-eq">L</span>) + 2<span class="math-eq">k</span></p>
+                <p class="math-eq">BIC = −2 × <span class="math-fn">max</span>(<span class="math-fn">log</span> <span class="math-eq">L</span>) + <span class="math-eq">k</span> × <span class="math-fn">log</span>(<span class="math-eq">n</span>)</p>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python">metrics = ns.bayesian_metrics(samples, data, cov, [1,0,0], genextreme)
+print(f"DIC: {metrics['DIC']:.2f}")
+print(f"AIC: {metrics['AIC']:.2f}")
+print(f"BIC: {metrics['BIC']:.2f}")</code></pre>
+            </div>
+        </div>
+
+        <div class="function">
+            <h4>nsEVDx.gelman_rubin</h4>
+            <div class="api-signature">
+                <code>gelman_rubin(chains)</code>
+            </div>
+            <p>Compute Gelman-Rubin R-hat statistic for MCMC convergence diagnostics.</p>
+            
+            <div class="parameters">
+                <h5>Parameters</h5>
+                <dl>
+                    <dt>chains : list of ndarray</dt>
+                    <dd>List of chains, each with shape [n_samples, n_params].</dd>
+                </dl>
+            </div>
+            
+            <div class="returns">
+                <h5>Returns</h5>
+                <dl>
+                    <dt>ndarray</dt>
+                    <dd>R-hat values for each parameter. Values close to 1.0 indicate convergence.</dd>
+                </dl>
+            </div>
+            
+            <div class="math-block">
+                <p><strong>Convergence criterion:</strong></p>
+                <p class="math-eq">R̂ < 1.1 indicates good convergence</p>
+                <p class="math-eq">R̂ > 1.1 suggests more iterations needed</p>
+            </div>
+            
+            <div class="examples">
+                <h5>Example</h5>
+                <pre><code class="language-python"># Run multiple chains
+chains = []
+for i in range(4):
+    samples, _ = sampler.MH_RandWalk(
+        num_samples=10000,
+        initial_params=init_params + np.random.randn(4)*0.1,
+        proposal_widths=[0.1, 0.05, 0.05, 0.02]
+    )
+    chains.append(samples)
+
+# Check convergence
+rhat = ns.gelman_rubin(chains)
+print("R-hat values:", rhat)
+print("Converged:", np.all(rhat < 1.1))</code></pre>
+            </div>
+        </div>
+    </div>
+for more detail visit <a href='https://github.com/Nischalcs50/nsEVDx/blob/master/docs/API.md'>API</a>
+            </section>
+
+            <section id="examples">
+                <h2>Examples</h2>
+                
+                <div id="gev-fitting" class="example">
+    <h3>GEV Model Fitting</h3>
+    <p>
+        View the full example on GitHub: 
+        <a href="https://github.com/Nischalcs50/nsEVDx/blob/master/examples/example_GEV.ipynb" target="_blank">
+            GEV Model Fitting Notebook
+        </a>
+    </p>
+</div>
+
+                <div id="gpd-fitting" class="example">
+    <h3>GPD Threshold Exceedances</h3>
+    <p>
+        View the full example on GitHub: 
+        <a href="https://github.com/Nischalcs50/nsEVDx/blob/master/examples/example_GPD_frequentist.ipynb" target="_blank">
+            GPD Frequentist Example Notebook
+        </a>
+    </p>
+</div>
+
+                For more examples on Jupyternotebook visit <a href="https://github.com/Nischalcs50/nsEVDx/tree/master/examples">Examples</a>
+            </section>
+
+    <section id="citations"></section>
+            <h2>Citation</h2>
+    <p>
+        If you use <strong>nsEVDx</strong> in your research, please cite:
+    </p>
+    <ol>
+        <li>
+            Kafle, N., &amp; Meier, C. I. (2025). 
+            <em>nsEVDx: A Python library for modeling Non-Stationary Extreme Value Distributions</em>. 
+            arXiv preprint <a href="https://arxiv.org/abs/2509.07261" target="_blank">arXiv:2509.07261</a>.
+        </li>
+        <li>
+            Kafle, N., &amp; Meier, C. (2025). 
+            <em>nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions (v0.1.0)</em>. 
+            Zenodo. <a href="https://doi.org/10.5281/zenodo.15850043" target="_blank">https://doi.org/10.5281/zenodo.15850043</a>
+        </li>
+    </ol> </section>
+
+<section id="ref">
+    <h2>References</h2>
+    <ol>
+        <li>
+            Betancourt, M. (2017). 
+            <em>A Conceptual Introduction to Hamiltonian Monte Carlo</em>. 
+            arXiv: Methodology.
+        </li>
+        <li>
+            Coles, S. (2007). 
+            <em>An Introduction to Statistical Modeling of Extreme Values</em> (4th printing). 
+            Springer. <a href="https://doi.org/10.1007/978-1-4471-3675-0" target="_blank">https://doi.org/10.1007/978-1-4471-3675-0</a>
+        </li>
+        <li>
+            Gilleland, E. (2025). 
+            <em>extRemes: Extreme Value Analysis</em>. 
+            <a href="https://doi.org/10.32614/CRAN.package.extRemes" target="_blank">https://doi.org/10.32614/CRAN.package.extRemes</a>
+        </li>
+        <li>
+            Heffernan, J. E., Stephenson, A. G., &amp; Gilleland, E. (2003). 
+            <em>Ismev: An Introduction to Statistical Modeling of Extreme Values</em>. 
+            <a href="https://CRAN.R-project.org/package=ismev" target="_blank">https://CRAN.R-project.org/package=ismev</a>
+        </li>
+        <li>
+            Hosking, J. R. M., &amp; Wallis, J. R. (1997). 
+            <em>Regional Frequency Analysis: An Approach Based on L-Moments</em> (Vol. 93). 
+            Cambridge University Press. 
+            <a href="https://doi.org/10.1017/cbo9780511529443" target="_blank">https://doi.org/10.1017/cbo9780511529443</a>
+        </li>
+        <li>
+            IRSN. (2024). 
+            <em>NSGEV: Non-Stationary GEV Time Series</em>. 
+            <a href="https://github.com/IRSN/NSGEV/" target="_blank">https://github.com/IRSN/NSGEV/</a>
+        </li>
+        <li>
+            Kafle, N., &amp; Meier, C. (n.d.). 
+            <em>Detecting trends in short duration extreme precipitation over SEUS using neighborhood based method</em>. 
+            Manuscript in Preparation.
+        </li>
+        <li>
+            Kafle, N., &amp; Meier, C. (2025). 
+            <em>Evaluating Methodologies for Detecting Trends in Short-Duration Extreme Rainfall in the Southeastern United States</em>. 
+            Extreme Hydrological or Critical Event Analysis-III, EWRI Congress 2025, Anchorage, AK, U.S. 
+            <a href="https://alaska2025.eventscribe.net" target="_blank">https://alaska2025.eventscribe.net</a>
+        </li>
+        <li>
+            Oriol Abril-Pla, V. Andreani, C. Carroll, L. Y. Dong, C. Fonnesbeck, M. Kochurov, R. Kumar, J. Lao, C. C. Luhmann, O. A. Martin, M. Osthege, R. Vieira, T. V. Wiecki, &amp; R. Zinkov. (2023). 
+            <em>PyMC: A modern, and comprehensive probabilistic programming framework in Python</em>. 
+            PeerJ Computer Science, 9, e1516. 
+            <a href="https://doi.org/10.7717/peerj-cs.1516" target="_blank">https://doi.org/10.7717/peerj-cs.1516</a>
+        </li>
+        <li>
+            Paciorek, C. (2016). 
+            <em>climextRemes: Tools for Analyzing Climate Extremes</em>. 
+            <a href="https://CRAN.R-project.org/package=climextRemes" target="_blank">https://CRAN.R-project.org/package=climextRemes</a>
+        </li>
+        <li>
+            Robert, C. P., &amp; Casella, G. (2009). 
+            <em>Introducing Monte Carlo Methods with R</em>. 
+            <a href="https://doi.org/10.1007/978-1-4419-1576-4" target="_blank">https://doi.org/10.1007/978-1-4419-1576-4</a>
+        </li>
+        <li>
+            Roberts, G. O., &amp; Tweedie, R. L. (1996). 
+            <em>Exponential Convergence of Langevin Distributions and Their Discrete Approximations</em>. 
+            Bernoulli, 2(4), 341. 
+            <a href="https://doi.org/10.2307/3318418" target="_blank">https://doi.org/10.2307/3318418</a>
+        </li>
+        <li>
+            Stan Development Team. (2023a). 
+            <em>CmdStan: The command-line interface to Stan</em>. 
+            <a href="https://mc-stan.org/users/interfaces/cmdstan" target="_blank">https://mc-stan.org/users/interfaces/cmdstan</a>
+        </li>
+        <li>
+            Stan Development Team. (2023b). 
+            <em>PyStan: The Python interface to Stan</em>. 
+            <a href="https://pystan.readthedocs.io/" target="_blank">https://pystan.readthedocs.io/</a>
+        </li>
+    </ol>
+</section>
+
+
+        </main>
+    </div>
+
+    <!--<script src="script.js"></script>-->
+</body>
+</html>
