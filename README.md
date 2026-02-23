@@ -82,7 +82,7 @@ posterior, acc_rate = sampler.MH_RandWalk(...)
 ## Documentation
 -   Webpage manual is here [user manual](https://Nischalcs50.github.io/nsEVDx/)
 -   See [Documentation](API_docs/) for full [API](API_docs/API.md).
--   See examples such as, [bayesian inference of non-stationary GEV parameters](examples/example_GEV.ipynb), [bayesian metrics example](../examples/example_bayesian_metrics.ipynb), [frequentist estimation of non-stationary GPD parameter and likelihood ratio test](../examples/example_GPD_frequentist.ipynb), and [generation of random variates from non-stationary GEV](../examples/example_generating_rv_from_nsEVD.ipynb) . These examples highlight the library's key capabilities, including parameter estimation and simulation under non-stationary conditions.
+-   See examples such as, [bayesian inference of non-stationary GEV parameters](examples/example_GEV.ipynb), [bayesian metrics example](examples/example_bayesian_metrics.ipynb), [frequentist estimation of non-stationary GPD parameter and likelihood ratio test](examples/example_GPD_frequentist.ipynb), and [generation of random variates from non-stationary GEV](examples/example_generating_rv_from_nsEVD.ipynb) . These examples highlight the library's key capabilities, including parameter estimation and simulation under non-stationary conditions.
 
 ## Usage
 
