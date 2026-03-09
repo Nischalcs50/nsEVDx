@@ -2,7 +2,7 @@ name: Build and Deploy Docs
 
 on:
   push:
-    branches: [main]
+    branches: ["master"]
 
 permissions:
   contents: read
@@ -25,9 +25,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install sphinx sphinx-rtd-theme sphinx-design
-        pip install -e .
-
+        pip install .
+        pip install sphinx sphinx-rtd-theme sphinx-design sphinx-autodoc-typehints sphinx-copybutton
+        
     - name: Build Sphinx docs
       run: |
         cd docs
