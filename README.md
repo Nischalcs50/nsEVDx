@@ -4,7 +4,7 @@
 |------|--------|-------------|
 | ![Python](https://img.shields.io/badge/python-3.9%2B-blue) | [![PyPI version](https://img.shields.io/pypi/v/nsEVDx)](https://pypi.org/project/nsEVDx/) | ![CI](https://github.com/nischalcs50/nsEVDx/actions/workflows/test.yml/badge.svg) |
 | ![License](https://img.shields.io/badge/license-MIT-green) | [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.15850043-blue)](https://doi.org/10.5281/zenodo.15850043) | [![codecov](https://codecov.io/gh/nischalcs50/nsEVDx/branch/main/graph/badge.svg)](https://codecov.io/gh/nischalcs50/nsEVDx) |
-| [![PyPI downloads](https://pepy.tech/badge/nsEVDx)](https://pepy.tech/project/nsEVDx) |  | [![GitHub issues](https://img.shields.io/github/issues/nischalcs50/nsEVDx)](https://github.com/nischalcs50/nsEVDx/issues) |
+| [![PyPI downloads](https://pepy.tech/badge/nsEVDx)](https://pepy.tech/project/nsEVDx) | [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://Nischalcs50.github.io/nsEVDx/) | [![GitHub issues](https://img.shields.io/github/issues/nischalcs50/nsEVDx)](https://github.com/nischalcs50/nsEVDx/issues) |
 | [![GitHub stars](https://img.shields.io/github/stars/nischalcs50/nsEVDx?style=social)](https://github.com/nischalcs50/nsEVDx) |  |  |
 
 
