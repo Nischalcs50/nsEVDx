@@ -7,10 +7,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Check out repository
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
 
@@ -19,9 +20,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .[dev]
-        pip install pytest
+        pip install pytest pytest-cov
 
-    - name: Test with pytest
+    - name: Run Tests with coverage using pytest and codecov
       run: |
-        pytest
+        pytest --cov=nsEVDx --cov-report=xml
 
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5 
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
