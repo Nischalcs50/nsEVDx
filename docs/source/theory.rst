@@ -4,7 +4,9 @@ Theoretical Background
 Generalized Extreme Value Distribution
 --------------------------------------
 
-The GEV distribution unifies the three types of extreme value distributions. The cumulative distribution function (CDF) of a GEV random variable $X$ with location $\{mu}$, scale $\{sigma} > 0$, and shape $\{xi}$ is:
+The GEV distribution unifies the three types of extreme value distributions. 
+The cumulative distribution function (CDF) of a GEV random variable :math:`X` 
+with location :math:`\mu`, scale :math:`\sigma > 0`, and shape :math:`\xi` is:
 
 **CDF:**
 
@@ -20,7 +22,7 @@ The GEV distribution unifies the three types of extreme value distributions. The
 Generalized Pareto Distribution
 -------------------------------
 
-The CDF of exceedances $Y = X - \mu > 0$ over threshold $\mu$ following a GPD, with scale $\sigma > 0$ and shape $\xi$:
+The CDF of exceedances :math:`Y = X - \mu > 0` over threshold :math:`\mu` following a GPD, with scale :math:`\sigma > 0` and shape :math:`\xi`:
 
 **CDF:**
 
@@ -56,7 +58,7 @@ In a non-stationary framework, parameters are modeled as functions of covariates
 
    \xi(t) = \kappa_0 + \kappa_1 Z_1(t) + \kappa_2 Z_2(t) + \dots
 
-Where $Z(t)$ is a dynamic covariate that changes with time and affects the extreme value distributions.
+Where :math:`Z(t)` is a dynamic covariate that changes with time and affects the extreme value distributions.
 
 
 Non-Stationarity Configuration
@@ -68,7 +70,7 @@ In ``nsEVDx``, non-stationarity is controlled via a configuration vector:
 
    \text{config} = [a, b, c]
 
-Each element in the configuration specifies the number of covariates for the **location** ($\mu$), **scale** ($\sigma$), and **shape** ($\xi$) parameters:
+Each element in the configuration specifies the number of covariates for the **location** (:math:`\mu`), **scale** (:math:`\sigma`), and **shape** (:math:`\xi`) parameters:
 
 * A value of **0** indicates stationarity.
 * Values **> 0** indicate non-stationary modeling using the corresponding number of covariates.
