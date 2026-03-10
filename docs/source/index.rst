@@ -16,4 +16,5 @@ nsEVDx documentation
    quickstart
    modules
    Examples1
+   citations_and_refs
      
