@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import chi2
+# from scipy.stats import chi2
 from scipy.stats import kstest
 from scipy.optimize import minimize
 from scipy import stats
@@ -97,7 +97,7 @@ class NonStationaryEVD:
     def get_param_description(config: List[int], n_cov: int) -> List[str]:
         """
         Returns a list of strings describing each parameter's role in the 
-        parameter vector, based on the provided configuration.
+        parameter vector, based on the provided configuration (config. vector).
     
         Parameters
         ----------
@@ -199,8 +199,8 @@ class NonStationaryEVD:
 
     def suggest_bounds(self, buffer: float = 0.5) -> List[Tuple[float, float]]:
         """
-        Suggests bounds for MLE optimization based on config and distribution
-        type.
+        Suggests bounds for MLE optimization based on config. vector 
+        and distribution.
     
         Parameters
         ----------
@@ -414,8 +414,9 @@ class NonStationaryEVD:
                         # (no scaling)
     ) -> tuple[np.ndarray, float]:
         """
-        Perform MALA sampling to generate samples from the posterior 
-        distribution.
+        Samples from the posterior distribution of the parameters by
+        implementing MCMC simulation based on Metropolis-Adjusted Langevin 
+        algorithm.
         
         Parameters
         ----------
@@ -500,8 +501,8 @@ class NonStationaryEVD:
         T: float
     ) -> tuple[np.ndarray, float]:
         """
-        Perform Metropolis-Hastings sampling to generate samples from the 
-        posterior distribution.
+        Perform Metropolis-Hastings sampling by implementing the random walk 
+        approach to generate samples from the posterior distribution.
     
         Parameters
         ----------
@@ -573,14 +574,17 @@ class NonStationaryEVD:
     def hamiltonian(self, params, momentum,T):
         """
         Compute the Hamiltonian (total energy) of the system for HMC sampling.
-    
-        The Hamiltonian is the sum of the potential energy and kinetic energy. 
+
+        The Hamiltonian is the sum of the potential energy and kinetic energy.
+
         In this context:
-        - Potential energy is defined as the negative log-posterior (scaled by
-           T),which encourages high-probability regions of parameter space.
+
+        - Potential energy is defined as the negative log-posterior
+          (scaled by T), which encourages high-probability regions of 
+          parameter space.
         - Kinetic energy is computed as 0.5 * sum(momentum^2), assuming a 
           standard Gaussian momentum distribution.
-    
+
         Parameters
         ----------
         params : array-like
@@ -614,8 +618,8 @@ class NonStationaryEVD:
         T: float = 1.0  # Optional temperature scaling
     ) -> tuple[np.ndarray, float]:
         """
-        Perform HMC sampling to generate samples from the posterior 
-        distribution.
+        Perform Hamiltonian-MonteCarlo sampling to generate samples from the 
+        posterior distributions of the parameters.
     
         Parameters
         ----------
@@ -744,8 +748,8 @@ class NonStationaryEVD:
                            ".")
     
         
-        
-         
+      
+       
     @staticmethod      
     def ns_EVDrvs(
         dist: rv_continuous,
