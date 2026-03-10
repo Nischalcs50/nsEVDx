@@ -328,7 +328,7 @@ def l_moments(data ):
 def GPD_parsViaLM(arr):
     """
     Estimate Generalized Pareto Distribution (GPD) parameters using L-moments.
-    baseed on Hosking and Wallis (1987)
+    based on Hosking and Wallis (1987)
     
     Parameters
     ----------
