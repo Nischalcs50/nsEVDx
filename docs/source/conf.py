@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../'))  # add your package root
+sys.path.insert(0, os.path.abspath('../../'))  # apackage root
 
 # Configuration file for the Sphinx documentation builder.
 #
