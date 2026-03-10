@@ -4,7 +4,7 @@ Theoretical Background
 Generalized Extreme Value Distribution
 --------------------------------------
 
-The GEV distribution unifies the three types of extreme value distributions. The cumulative distribution function (CDF) of a GEV random variable $X$ with location $\mu$, scale $\sigma > 0$, and shape $\xi$ is:
+The GEV distribution unifies the three types of extreme value distributions. The cumulative distribution function (CDF) of a GEV random variable $X$ with location $\{mu}$, scale $\{sigma} > 0$, and shape $\{xi}$ is:
 
 **CDF:**
 
