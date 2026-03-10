@@ -61,8 +61,8 @@ In a non-stationary framework, parameters are modeled as functions of covariates
 Where :math:`Z(t)` is a dynamic covariate that changes with time and affects the extreme value distributions.
 
 
-Non-Stationarity Configuration
-------------------------------
+Non-Stationarity Configuration via Config vector
+-------------------------------------------------
 
 In ``nsEVDx``, non-stationarity is controlled via a configuration vector:
 
