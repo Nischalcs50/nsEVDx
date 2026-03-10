@@ -1,7 +1,7 @@
 Examples
 ========
 
-You can view our example notebooks directly on GitHub:
+Please view our example notebooks directly on GitHub:
 
 * `Bayesian inference of Non-stationary GEV parameters <https://github.com/Nischalcs50/nsEVDx/tree/master/examples/example_GEV.ipynb>`_
 * `Frequentist estimation of non-stationary GPD parameter and likelihood ratio test <https://github.com/Nischalcs50/nsEVDx/tree/master/examples/example_GPD_frequentist.ipynb>`_
