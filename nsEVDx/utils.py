@@ -30,20 +30,23 @@ def neg_log_likelihood(params, data, dist):
         evaluation fails.
     """
     loc, scale, shape = params
-
+    Safe_INF = 10e25
     # Ensure parameters are within valid bounds
     if scale <= 0:  # Scale parameter must be positive
-        return np.inf
+        return Safe_INF
 
     # Calculate the log-likelihood safely
     try:
         pdf_values = dist.pdf(data, c=shape, loc=loc, scale=scale)
+        if np.any(pdf_values <= 0):
+            return Safe_INF
         # Avoid log(0) by replacing zeros with a very small value
-        pdf_values = np.clip(pdf_values, a_min=1e-10, a_max=None)
+        # catches float underflow
+        pdf_values = np.clip(pdf_values, a_min=1e-300, a_max=None)
         log_likelihood = np.sum(np.log(pdf_values))
         return -log_likelihood
     except Exception:
-        return np.inf  # Return a large value to avoid invalid parameter sets
+        return Safe_INF  # Return a large value to avoid invalid parameter sets
 
 
 def neg_log_likelihood_ns(
@@ -79,6 +82,7 @@ def neg_log_likelihood_ns(
         Negative log-likelihood value. Returns np.inf if invalid
         parameters.
     """
+    Safe_INF = 10e25
     cov = np.asarray(cov)
     cov = np.atleast_2d(cov)
     idx = 0
@@ -109,15 +113,18 @@ def neg_log_likelihood_ns(
         xi = np.full_like(data, fill_value=params[idx])
     # Ensure parameters are valid
     if np.any(sigma <= 0):
-        return np.inf
+        return Safe_INF
     try:
         # Evaluate PDF and compute log-likelihood
         pdf_values = dist.pdf(data, c=xi, loc=mu, scale=sigma)
-        pdf_values = np.clip(pdf_values, a_min=1e-10, a_max=None)
+        if np.any(pdf_values <= 0):   # hard rejection
+            return Safe_INF
+        # float underflow only
+        pdf_values = np.clip(pdf_values, a_min=1e-300, a_max=None)
         log_likelihood = np.sum(np.log(pdf_values))
         return -log_likelihood
     except Exception:
-        return np.inf
+        return Safe_INF
 
 
 def EVD_parsViaMLE(data, dist, verbose=False):
@@ -319,6 +326,28 @@ def GEV_parsViaLM(arr):
     return np.array([pr[8], pr[6], pr[7]])
 
 
+def _build_param_names(config, override=None):
+    if override is not None:
+        return override
+    names = []
+    if config[0] == 0:
+        names.append("loc")
+    else:
+        names.append("B0")
+        names.extend([f"B{i+1}" for i in range(config[0])])
+    if config[1] == 0:
+        names.append("scale")
+    else:
+        names.append("a0")
+        names.extend([f"a{i+1}" for i in range(config[1])])
+    if config[2] == 0:
+        names.append("shape")
+    else:
+        names.append("k0")
+        names.extend([f"k{i+1}" for i in range(config[2])])
+    return names
+
+
 def plot_trace(samples, config, fig_size=None, param_names_override=None):
     """
     Plot MCMC trace plots for each parameter based on config. vector
@@ -335,26 +364,7 @@ def plot_trace(samples, config, fig_size=None, param_names_override=None):
         Optional custom names for parameters.
     """
     # Generate default names based on config
-    if param_names_override is None:
-        param_names = []
-        if config[0] == 0:
-            param_names.append("loc")
-        else:
-            param_names.append("B0")
-            param_names.extend([f"B{i + 1}" for i in range(config[0])])
-        if config[1] == 0:
-            param_names.append("scale")
-        else:
-            param_names.append("a0")
-            param_names.extend([f"a{i + 1}" for i in range(config[1])])
-        if config[2] == 0:
-            param_names.append("shape")
-        else:
-            param_names.append("k0")
-            param_names.extend([f"k{i + 1}" for i in range(config[2])])
-    else:
-        param_names = param_names_override
-
+    param_names = _build_param_names(config, param_names_override)
     n_params = len(param_names)
     if fig_size is None:
         fig_size = (10, n_params * 2)
@@ -362,9 +372,9 @@ def plot_trace(samples, config, fig_size=None, param_names_override=None):
     plt.figure(figsize=fig_size)
     for i in range(n_params):
         plt.subplot(n_params, 1, i + 1)
-        plt.plot(samples[:, i], label=param_names[i])
-        plt.ylabel(param_names[i], fontsize=14)
-        plt.xlabel("Iteration", fontsize=14)
+        plt.plot(samples[:, i], label=param_names[i], linewidth=0.5)
+        plt.ylabel(param_names[i], fontsize=12)
+        plt.xlabel("Iteration", fontsize=12)
         plt.xticks(fontsize=12)
         plt.yticks(fontsize=12)
         plt.legend()
@@ -391,26 +401,7 @@ def plot_posterior(samples, config, fig_size=None, param_names_override=None):
         Custom parameter names to override default naming from config.
     """
     # Generate parameter names based on config if no override provided
-    if param_names_override is None:
-        param_names = []
-        if config[0] == 0:
-            param_names.append("loc")
-        else:
-            param_names.append("B0")
-            param_names.extend([f"B{i + 1}" for i in range(config[0])])
-        if config[1] == 0:
-            param_names.append("scale")
-        else:
-            param_names.append("a0")
-            param_names.extend([f"a{i + 1}" for i in range(config[1])])
-        if config[2] == 0:
-            param_names.append("shape")
-        else:
-            param_names.append("k0")
-            param_names.extend([f"k{i + 1}" for i in range(config[2])])
-    else:
-        param_names = param_names_override
-
+    param_names = _build_param_names(config, param_names_override)
     n_params = len(param_names)
     if fig_size is None:
         fig_size = (10, n_params * 2)
@@ -418,10 +409,11 @@ def plot_posterior(samples, config, fig_size=None, param_names_override=None):
     plt.figure(figsize=fig_size)
     for i in range(n_params):
         plt.subplot(n_params, 1, i + 1)
-        sns.histplot(samples[:, i], kde=True, color="skyblue", bins=20, stat="density")
+        sns.histplot(samples[:, i], kde=True, color="skyblue",
+                     bins=20, stat="density")
         plt.title(f"Distribution of {param_names[i]}", fontsize=14)
-        plt.xlabel(param_names[i], fontsize=14)
-        plt.ylabel("Density", fontsize=14)
+        plt.xlabel(param_names[i], fontsize=12)
+        plt.ylabel("Density", fontsize=12)
         plt.xticks(fontsize=12)
         plt.yticks(fontsize=12)
         plt.grid(True)

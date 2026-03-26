@@ -1,9 +1,8 @@
+import logging
 from typing import List, Tuple, Union
 
 import numpy as np
 from scipy.optimize import minimize
-
-# from scipy.stats import chi2
 from scipy.stats import (
     halfnorm,
     norm,
@@ -17,7 +16,27 @@ from .utils import (
     neg_log_likelihood_ns,
 )
 
+logging.basicConfig(
+    filename='nsEVDx_run.log',
+    filemode='w', # 'w' overwrites each time, 'a' appends to the end
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("nsEVDx")
 
+
+# Supported distributions
+'''
+SUPPORTED_DISTRIBUTIONS: Dict[str, rv_continuous] = {
+    # --- GEV family ---
+    "gev":      genextreme,    # Generalised Extreme Value  (xi free)
+    "gumbel":   gumbel_r,      # Gumbel  (GEV  xi = 0, Type I)
+    "frechet":  frechet,       # Fréchet (GEV  xi > 0, Type II)
+    "weibull":  weibull_max,   # Weibull (GEV  xi < 0, Type III)
+    # --- GPD family ---
+    "gpd":      genpareto,     # Generalised Pareto Distribution
+    }
+'''
 # nsEVDx main model code
 class NonStationaryEVD:
     def __init__(self, config, data, cov, dist, prior_specs=None, bounds=None):
@@ -298,9 +317,10 @@ class NonStationaryEVD:
                     raise ValueError(f"Unsupported prior type: {ptype}")
 
                 if not np.isfinite(prior_val):
-                    print(
-                        f"[WARNING] Prior {ptype} returned invalid logpdf for"
-                        f" param {param_idx}: val={val}, kwargs={kwargs}"
+                    logger.debug(
+                                "Prior %s returned invalid logpdf for param"
+                                    "%d: val=%s, kwargs=%s",
+                                ptype, param_idx, val, kwargs
                     )
                     return -np.inf
 
@@ -693,20 +713,23 @@ class NonStationaryEVD:
                 self.neg_log_likelihood, params, method="L-BFGS-B", bounds=self.bounds
             )
             if res.success:
-                print(f"Optimization succeeded after {retry + 1} attempt(s)")
+                logger.info("Optimization succeeded after %d attempt(s)", 
+                            retry + 1)
                 return res.x
             else:
-                print(f"Optimization failed at attempt {retry + 1}: {res.message}")
+                logger.warning("Optimization failed at attempt %d: %s",
+                               retry + 1, res.message)
                 params += np.random.normal(0, 0.01, size=len(params))
 
                 retry += 1
 
             # Fallback to Nelder-Mead
-        print("Optimization failed after max retries, trying fallback (Nelder-Mead)...")
+        logger.warning("Optimization failed after max retries,"
+                       " trying fallback (Nelder-Mead)...")
         for _ in range(max_retries):
             res = minimize(self.neg_log_likelihood, params, method="Nelder-Mead")
             if res.success:
-                print("Fallback optimization (Nelder-Mead) succeeded.")
+                logger.info("Fallback optimization (Nelder-Mead) succeeded.")
                 return res.x
             params += np.random.normal(0, 0.01, size=len(params))
 
