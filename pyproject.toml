@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -15,11 +15,22 @@ dependencies = [
   "scipy",
   "matplotlib",
   "seaborn"
-]
+  ]
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
 keywords = ["Bayesian inference", "Frequentist", "Generalised extreme value", "Generalised pareto", "Frequency analyses","Hydroclimatology"]
+
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Hydrology"
+]
 
 [project.urls]
 Homepage = "https://nischalcs50.github.io/nsEVDx/"
@@ -28,5 +39,18 @@ Documentation = "https://github.com/Nischalcs50/nsEVDx/API_docs"
 
 [project.optional-dependencies]
 dev = [
-  "pytest"
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "black"
 ]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"] # Error, Flake8, Warnings, Isort
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=nsEVDx --cov-report=term-missing"
