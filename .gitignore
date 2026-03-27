@@ -23,6 +23,19 @@ venv/
 Thumbs.db
 *.coverage
 
+# other files
+test_file.py
+examples/nsEVDx_run.log
+
+# Python coverage artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
 # Secrets
 .env
 *.key

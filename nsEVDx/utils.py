@@ -126,6 +126,15 @@ def neg_log_likelihood_ns(
     except Exception:
         return Safe_INF
 
+def _check_acceptance(rate: float, sampler_name: str) -> None:
+    lo, hi = 0.20, 0.70
+    if not (lo <= rate <= hi):
+        warnings.warn(
+            f"[{sampler_name}] Acceptance rate {rate:.1%} is outside the "
+            f"recommended range [{lo:.0%}, {hi:.0%}]. "
+            "Consider tuning step_size / proposal_widths.",
+            stacklevel=3,
+        )
 
 def EVD_parsViaMLE(data, dist, verbose=False):
     """
@@ -348,13 +357,13 @@ def _build_param_names(config, override=None):
     return names
 
 
-def plot_trace(samples, config, fig_size=None, param_names_override=None):
+def plot_trace(chains, config, fig_size=None, param_names_override=None):
     """
     Plot MCMC trace plots for each parameter based on config. vector
 
     Parameters
     ----------
-    samples : np.ndarray
+    chains : np.ndarray
         MCMC samples of shape (n_iterations, n_parameters)
     config : list of int
         Non-stationarity config [loc, scale, shape]
@@ -363,27 +372,54 @@ def plot_trace(samples, config, fig_size=None, param_names_override=None):
     param_names_override : list of str
         Optional custom names for parameters.
     """
+    # 1. Ensure chains is a list of arrays (even if only 1 chain was run)
+    if isinstance(chains, np.ndarray):
+        chains = [chains]
+
     # Generate default names based on config
     param_names = _build_param_names(config, param_names_override)
     n_params = len(param_names)
+    n_chains = len(chains)
+
     if fig_size is None:
         fig_size = (10, n_params * 2)
 
-    plt.figure(figsize=fig_size)
+    colors = plt.cm.tab10.colors
+    fig, axes = plt.subplots(n_params, 1, figsize=fig_size,
+                             sharex=True)
     for i in range(n_params):
-        plt.subplot(n_params, 1, i + 1)
-        plt.plot(samples[:, i], label=param_names[i], linewidth=0.5)
-        plt.ylabel(param_names[i], fontsize=12)
-        plt.xlabel("Iteration", fontsize=12)
-        plt.xticks(fontsize=12)
-        plt.yticks(fontsize=12)
-        plt.legend()
-        plt.grid(True)
+        # Plot each chain separately
+        for c in range(n_chains):
+            axes[i].plot(chains[c][:, i],
+                         label=f"{c+1}",
+                         color=colors[c % len(colors)],
+                         linewidth=0.7,
+                         alpha=0.8)
+        axes[i].set_ylabel(param_names[i], fontsize=12)
+        axes[i].tick_params(labelsize=12)
+        axes[i].spines['top'].set_visible(False)
+        axes[i].spines['right'].set_visible(False)
+        axes[i].grid(True)
+        axes[-1].set_xlabel("Iteration", fontsize=12)
+
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles,labels,
+               loc='center left',
+               title ="Chain",
+                    fontsize=12,
+                    ncol=1,
+                    bbox_to_anchor=(0.96, 0.5),
+                    frameon=True,
+                    framealpha=0.9,
+                    edgecolor='black'
+                )
+
+
     plt.tight_layout()
     plt.show()
 
 
-def plot_posterior(samples, config, fig_size=None, param_names_override=None):
+def plot_posterior(chains, config, fig_size=None, param_names_override=None):
     """
     Plot histograms with density curves for each parameter based on config.
     vector
@@ -400,22 +436,31 @@ def plot_posterior(samples, config, fig_size=None, param_names_override=None):
     param_names_override : list of str, optional
         Custom parameter names to override default naming from config.
     """
+    if isinstance(chains, list):
+        samples = np.vstack(chains)
+    else:
+        samples = chains
+
     # Generate parameter names based on config if no override provided
     param_names = _build_param_names(config, param_names_override)
     n_params = len(param_names)
+
+    cols = 2 if n_params > 4 else 1
+    rows = int(np.ceil(n_params / cols))
+
     if fig_size is None:
-        fig_size = (10, n_params * 2)
+        fig_size = (5 * cols, 3 * rows)
 
     plt.figure(figsize=fig_size)
     for i in range(n_params):
-        plt.subplot(n_params, 1, i + 1)
-        sns.histplot(samples[:, i], kde=True, color="skyblue",
-                     bins=20, stat="density")
-        plt.title(f"Distribution of {param_names[i]}", fontsize=14)
-        plt.xlabel(param_names[i], fontsize=12)
-        plt.ylabel("Density", fontsize=12)
-        plt.xticks(fontsize=12)
-        plt.yticks(fontsize=12)
+        plt.subplot(rows, cols, i + 1)
+        sns.histplot(samples[:, i], kde=True, color="#5DADE2",
+                     bins=30, stat="density", alpha=0.6)
+        plt.title(f"Posterior: {param_names[i]}", fontsize=13, fontweight='bold')
+        plt.ylabel("Density", fontsize=10)
+        plt.grid(True, linestyle='--', alpha=0.5)
+        plt.xticks(fontsize=10, rotation=25)
+        plt.yticks(fontsize=10)
         plt.grid(True)
     plt.tight_layout()
     plt.show()

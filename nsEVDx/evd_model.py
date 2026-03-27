@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+import warnings
 from typing import List, Tuple, Union
 
 import numpy as np
@@ -9,11 +12,19 @@ from scipy.stats import (
     rv_continuous,
     uniform,
 )
+from tqdm import tqdm
+
+try:
+    from joblib import Parallel, delayed
+    _JOBLIB_AVAILABLE = True
+except ImportError:
+    _JOBLIB_AVAILABLE = False
 
 from .utils import (
     GEV_parsViaLM,
     GPD_parsViaLM,
     neg_log_likelihood_ns,
+    gelman_rubin
 )
 
 logging.basicConfig(
@@ -23,7 +34,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("nsEVDx")
-
 
 # Supported distributions
 '''
@@ -37,6 +47,18 @@ SUPPORTED_DISTRIBUTIONS: Dict[str, rv_continuous] = {
     "gpd":      genpareto,     # Generalised Pareto Distribution
     }
 '''
+
+# Helper: acceptance rate warning
+def _check_acceptance(rate: float, sampler_name: str) -> None:
+    lo, hi = 0.20, 0.70
+    if not (lo <= rate <= hi):
+        warnings.warn(
+            f"[{sampler_name}] Acceptance rate {rate:.1%} is outside the "
+            f"recommended range [{lo:.0%}, {hi:.0%}]. "
+            "Consider tuning step_size / proposal_widths.",
+            stacklevel=3,
+        )
+
 # nsEVDx main model code
 class NonStationaryEVD:
     def __init__(self, config, data, cov, dist, prior_specs=None, bounds=None):
@@ -259,7 +281,7 @@ class NonStationaryEVD:
 
         return bounds
 
-    def log_prior(self, params):
+    def _log_prior(self, params):
         """
         Compute the log prior probability of the parameter vector.
 
@@ -329,7 +351,7 @@ class NonStationaryEVD:
 
         return logp
 
-    def neg_log_likelihood(self, params):
+    def _neg_log_likelihood(self, params):
         """
         Compute the negative log-likelihood for the given parameter vector.
 
@@ -352,7 +374,7 @@ class NonStationaryEVD:
             params, self.data, self.cov, self.config, self.dist
         )
 
-    def posterior_log_prob(self, params):
+    def _posterior_log_prob(self, params):
         """
         Compute the log posterior probability for the given parameter vector.
 
@@ -371,9 +393,9 @@ class NonStationaryEVD:
             The log posterior probability. If the prior is improper or
             evaluates to -inf, the result will reflect that.
         """
-        return -1 * self.neg_log_likelihood(params) + self.log_prior(params)
+        return -1 * self._neg_log_likelihood(params) + self._log_prior(params)
 
-    def numerical_grad_log_posterior(self, params, h=1e-2):
+    def _numerical_grad_log_posterior(self, params, h=1e-2):
         """
         Compute the numerical gradient of the log-posterior with respect to
         parameters.
@@ -404,19 +426,21 @@ class NonStationaryEVD:
         for i in range(len(params)):
             step = np.zeros_like(params)
             step[i] = h_vec[i]
-            f_plus = self.posterior_log_prob(params + step)
-            f_minus = self.posterior_log_prob(params - step)
+            f_plus = self._posterior_log_prob(params + step)
+            f_minus = self._posterior_log_prob(params - step)
             grad[i] = (f_plus - f_minus) / (2 * h_vec[i])
 
         return grad
 
-    def MH_Mala(
+    def _Mala_1chain(
         self,
         num_samples: int,
         initial_params: Union[list[float], np.ndarray],
         step_sizes: list[float],
-        T: float = 1.0,  # Optional temperature scaling factor, default 1
-        # (no scaling)
+        T: float,  # Optional temperature scaling factor, default 1
+        burn_in: int,
+        chain_id: int,
+        show_progress: bool,
     ) -> tuple[np.ndarray, float]:
         """
         Samples from the posterior distribution of the parameters by
@@ -444,20 +468,41 @@ class NonStationaryEVD:
         acceptance_rate : float
             Fraction of proposals accepted.
         """
+        total_params = sum(self.config) + 3
+        if len(step_sizes) != total_params:
+            raise ValueError(
+                "Length of step sizes must match number of parameters"
+            )
+
+        if self.prior_specs is None:
+            self.prior_specs = self.suggest_priors()
+            
         step_sizes = np.array(step_sizes)  # Convert list to NumPy array
-        samples = []
+        total_samples = num_samples + burn_in
+        samples = np.empty((total_samples, total_params))
         current_params = np.array(initial_params)
-        current_log_post = self.posterior_log_prob(current_params)
+        current_log_post = self._posterior_log_prob(current_params)
         total_params = len(current_params)
 
         if self.prior_specs is None:
             self.prior_specs = self.suggest_priors()
 
         accept_count = 0
+        
+        pbar = tqdm(
+            range(total_samples),
+            desc="MALA Chain :{chain_id+1}",
+            disable=not show_progress,
+            position=0,
+            leave=True,
+            ascii=True,
+            unit="sample",
+            dynamic_ncols=True
+        )
 
-        for _ in range(num_samples):
+        for i in pbar:
             # Compute gradient at current position
-            grad = self.numerical_grad_log_posterior(current_params)
+            grad = self._numerical_grad_log_posterior(current_params)
 
             # Proposal mean for MALA
             proposal_mean = current_params + (step_sizes**2 / 2) * grad
@@ -466,7 +511,7 @@ class NonStationaryEVD:
             proposal = proposal_mean + step_sizes * np.random.normal(size=total_params)
 
             # Compute gradient at proposal for asymmetric correction
-            grad_proposal = self.numerical_grad_log_posterior(proposal)
+            grad_proposal = self._numerical_grad_log_posterior(proposal)
 
             # Compute log proposal densities q(proposal | current) and
             # q(current | proposal)
@@ -480,7 +525,7 @@ class NonStationaryEVD:
                 / (2 * step_sizes**2)
             )
 
-            proposed_log_post = self.posterior_log_prob(proposal)
+            proposed_log_post = self._posterior_log_prob(proposal)
 
             # Log acceptance ratio
             log_alpha = (proposed_log_post + log_q_backward) - (
@@ -493,18 +538,104 @@ class NonStationaryEVD:
                 current_log_post = proposed_log_post
                 accept_count += 1
 
-            samples.append(current_params.copy())
+            samples[i] = current_params.copy()
+            
+        pbar.close()
 
         acceptance_rate = accept_count / num_samples
+        _check_acceptance(acceptance_rate, "MH_MALA")
 
-        return np.array(samples), acceptance_rate
+        return samples[burn_in:,:], acceptance_rate
+    
+    def MH_Mala(
+        self,
+        num_samples: int,
+        initial_params: Union[List[float], np.ndarray],
+        step_sizes: Union[List[float], np.ndarray],
+        T: float = 1.0,
+        burn_in: int = 0,
+        num_chains: int = 1,
+        show_progress: bool = True,
+        n_jobs: int = 1,
+    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray], 
+                                               List[float], np.ndarray]]:
+        """
+        Metropolis-Adjusted Langevin Algorithm (MALA) sampler.
 
-    def MH_RandWalk(
+        Parameters
+        ----------
+        num_samples : int
+            Total iterations per chain (including burnin).
+        initial_params : array-like
+            Starting parameter vector.
+        step_sizes : array-like
+            Per-parameter step sizes (epsilon).
+        T : float
+            Temperature scaling factor.
+        burnin : int
+            Number of initial samples to discard per chain.
+        num_chains : int
+            Number of independent chains.
+        show_progress : bool
+            Display tqdm progress bars.
+        n_jobs : int
+            Parallel jobs via joblib.
+
+        Returns
+        -------
+        Same convention as MH_RandWalk.
+        """
+        initial_params = np.asarray(initial_params, dtype=float)
+        step_sizes = np.asarray(step_sizes, dtype=float)
+
+        def _run(cid):
+            jitter = np.random.normal(0, step_sizes * 0.05) if cid > 0 else 0
+            return self._Mala_1chain(
+                num_samples, initial_params + jitter,
+                step_sizes, T, burn_in, cid,
+                show_progress=(show_progress and (n_jobs == 1 or cid == 0)),
+            )
+
+        if num_chains == 1:
+            return _run(0)
+
+        if _JOBLIB_AVAILABLE and n_jobs != 1:
+            results = Parallel(n_jobs=n_jobs)(
+                delayed(_run)(cid) for cid in range(num_chains)
+            )
+        else:
+            results = [_run(cid) for cid in range(num_chains)]
+
+        chains, rates = zip(*results)
+        chains_list = list(chains)
+        rates_list = list(rates)
+        
+        if num_chains >= 2:
+            r_hat = gelman_rubin(chains)
+            if show_progress:
+                max_r = np.max(r_hat)
+                print("\n" + "="*40)
+                print("MCMC CONVERGENCE REPORT")
+                print("-" * 40)
+                print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
+                if np.any(r_hat > 1.1):
+                    print("WARNING: Some chains may not have converged (R-hat > 1.1).")
+                else:
+                    print("Convergence Check: PASSED (r_hat < 1.1)")
+                    print("="*40 + "\n")
+            return chains_list, rates_list, r_hat
+        
+        return list(chains), list(rates)
+
+    def _RandWalk_1chain(
         self,
         num_samples: int,
         initial_params: Union[list[float], np.ndarray],
         proposal_widths: Union[list[float], np.ndarray],
         T: float,
+        burn_in: int,
+        chain_id: int,
+        show_progress: bool,
     ) -> tuple[np.ndarray, float]:
         """
         Perform Metropolis-Hastings sampling by implementing the random walk
@@ -537,9 +668,6 @@ class NonStationaryEVD:
             Array of shape `(num_samples, n_parameters)` containing the sampled
             parameter vectors.
         """
-        samples = []
-        current_params = np.array(initial_params)
-        current_log_post = self.posterior_log_prob(current_params)
         total_params = sum(self.config) + 3
         if len(proposal_widths) != total_params:
             raise ValueError(
@@ -549,13 +677,29 @@ class NonStationaryEVD:
         if self.prior_specs is None:
             self.prior_specs = self.suggest_priors()
 
+        total_samples = num_samples + burn_in
+        samples = np.empty((total_samples, total_params))
+        current_params = np.array(initial_params)
+        current_log_post = self._posterior_log_prob(current_params)
         accept_count = 0
-        for _ in range(num_samples):
+
+        pbar = tqdm(
+            range(total_samples),
+            desc="RandWalk Chain :{chain_id+1}",
+            disable=not show_progress,
+            position=0,
+            leave=True,
+            ascii=True,
+            unit="sample",
+            dynamic_ncols=True
+        )
+
+        for i in pbar:
             proposal = current_params + np.random.normal(
                 0, proposal_widths, size=total_params
             )
 
-            proposed_log_post = self.posterior_log_prob(proposal)
+            proposed_log_post = self._posterior_log_prob(proposal)
 
             log_alpha = proposed_log_post - current_log_post
             log_alpha = log_alpha / T
@@ -570,13 +714,102 @@ class NonStationaryEVD:
                 current_log_post = proposed_log_post
                 accept_count += 1
 
-            samples.append(current_params)
+            samples[i] = current_params
+
+        pbar.close()
 
         acceptance_rate = accept_count / num_samples
+        _check_acceptance(acceptance_rate, "MH_RandWalk")
 
-        return np.array(samples), acceptance_rate
+        return samples[burn_in:,:], acceptance_rate
 
-    def hamiltonian(self, params, momentum, T):
+    def MH_RandWalk(
+        self,
+        num_samples: int,
+        initial_params: Union[List[float], np.ndarray],
+        proposal_widths: Union[List[float], np.ndarray],
+        T: float = 1.0,
+        burn_in: int = 0,
+        num_chains: int = 1,
+        show_progress: bool = True,
+        n_jobs: int = 1,
+    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray], 
+                                               List[float], np.ndarray]]:
+        """
+        Metropolis-Hastings Random-Walk sampler.
+
+        Parameters
+        ----------
+        num_samples : int
+            Total iterations per chain (including burnin).
+        initial_params : array-like
+            Starting parameter vector (same start used for all chains +
+            small jitter for chains > 1).
+        proposal_widths : array-like
+            Per-parameter proposal standard deviations.
+        T : float
+            Temperature (default 1.0 = no tempering).
+        burnin : int
+            Number of initial samples to discard per chain.
+        num_chains : int
+            Number of independent chains.  R-hat is automatically computed
+            when num_chains >= 2.
+        show_progress : bool
+            Display tqdm progress bars (default True).
+        n_jobs : int
+            Parallel jobs via joblib (-1 = all cores).  Requires joblib.
+
+        Returns
+        -------
+        If num_chains == 1:
+            (samples [n_post, n_params], acceptance_rate)
+        If num_chains  > 1:
+            (list_of_chains, list_of_acceptance_rates)
+            Use run_chains() for automatic R-hat reporting.
+        """
+        initial_params = np.asarray(initial_params, dtype=float)
+        proposal_widths = np.asarray(proposal_widths, dtype=float)
+
+        def _run(cid):
+            jitter = np.random.normal(0, proposal_widths * 0.05) if cid > 0 else 0
+            return self._RandWalk_1chain(
+                num_samples, initial_params + jitter,
+                proposal_widths, T, burn_in, cid,
+                show_progress=(show_progress and (n_jobs == 1 or cid == 0)),
+            )
+
+        if num_chains == 1:
+            return _run(0)
+
+        if _JOBLIB_AVAILABLE and n_jobs != 1:
+            results = Parallel(n_jobs=n_jobs)(
+                delayed(_run)(cid) for cid in range(num_chains)
+            )
+        else:
+            results = [_run(cid) for cid in range(num_chains)]
+
+        chains, rates = zip(*results)
+        chains_list = list(chains)
+        rates_list = list(rates)
+        
+        if num_chains >= 2:
+            r_hat = gelman_rubin(chains)
+            if show_progress:
+                max_r = np.max(r_hat)
+                print("\n" + "="*40)
+                print("MCMC CONVERGENCE REPORT")
+                print("-" * 40)
+                print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
+                if np.any(r_hat > 1.1):
+                    print("WARNING: Some chains may not have converged (R-hat > 1.1).")
+                else:
+                    print("Convergence Check: PASSED (r_hat < 1.1)")
+                    print("="*40 + "\n")
+            return chains_list, rates_list, r_hat
+        
+        return chains_list, rates_list
+
+    def _hamiltonian(self, params, momentum, T):
         """
         Compute the Hamiltonian (total energy) of the system for HMC sampling.
 
@@ -613,7 +846,7 @@ class NonStationaryEVD:
         kinetic_energy = 0.5 * np.sum(momentum**2)
         return T * potential_energy + kinetic_energy
 
-    def MH_Hmc(
+    def _Hmc_1chain(
         self,
         num_samples: int,
         initial_params: Union[list[float], np.ndarray],
@@ -658,21 +891,21 @@ class NonStationaryEVD:
             proposed_momentum = current_momentum.copy()
 
             # Leapfrog integration
-            grad = self.numerical_grad_log_posterior(proposed_params)
+            grad = self._numerical_grad_log_posterior(proposed_params)
             proposed_momentum += 0.5 * step_size * grad
 
             for _ in range(num_leapfrog_steps):
                 proposed_params += step_size * proposed_momentum
                 if _ != num_leapfrog_steps - 1:
-                    grad = self.numerical_grad_log_posterior(proposed_params)
+                    grad = self._numerical_grad_log_posterior(proposed_params)
                     proposed_momentum += step_size * grad
 
-            grad = self.numerical_grad_log_posterior(proposed_params)
+            grad = self._numerical_grad_log_posterior(proposed_params)
             proposed_momentum += 0.5 * step_size * grad
             proposed_momentum *= -1  # Negate momentum for symmetry
 
-            current_H = self.hamiltonian(current_params, current_momentum, T)
-            proposed_H = self.hamiltonian(proposed_params, proposed_momentum, T)
+            current_H = self._hamiltonian(current_params, current_momentum, T)
+            proposed_H = self._hamiltonian(proposed_params, proposed_momentum, T)
 
             log_alpha = -(proposed_H - current_H)
             if np.log(np.random.rand()) < log_alpha:
@@ -682,6 +915,8 @@ class NonStationaryEVD:
             samples[i, :] = current_params
 
         acceptance_rate = accepted / num_samples
+        _check_acceptance(acceptance_rate, "MH_Hmc")
+
         return samples, acceptance_rate
 
     def frequentist_nsEVD(
@@ -710,7 +945,8 @@ class NonStationaryEVD:
 
         while retry < max_retries:
             res = minimize(
-                self.neg_log_likelihood, params, method="L-BFGS-B", bounds=self.bounds
+                self._neg_log_likelihood, params,
+                method="L-BFGS-B", bounds=self.bounds
             )
             if res.success:
                 logger.info("Optimization succeeded after %d attempt(s)",retry + 1)
@@ -726,7 +962,7 @@ class NonStationaryEVD:
         logger.warning("Optimization failed after max retries,"
                        " trying fallback (Nelder-Mead)...")
         for _ in range(max_retries):
-            res = minimize(self.neg_log_likelihood, params, method="Nelder-Mead")
+            res = minimize(self._neg_log_likelihood, params, method="Nelder-Mead")
             if res.success:
                 logger.info("Fallback optimization (Nelder-Mead) succeeded.")
                 return res.x
