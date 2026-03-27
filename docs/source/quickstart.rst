@@ -1,5 +1,5 @@
 Quickstart Guide
-======
+================
 .. code-block:: python
 
    import nsEVDx as ns
