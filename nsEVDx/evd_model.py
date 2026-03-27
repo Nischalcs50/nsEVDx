@@ -713,8 +713,7 @@ class NonStationaryEVD:
                 self.neg_log_likelihood, params, method="L-BFGS-B", bounds=self.bounds
             )
             if res.success:
-                logger.info("Optimization succeeded after %d attempt(s)", 
-                            retry + 1)
+                logger.info("Optimization succeeded after %d attempt(s)",retry + 1)
                 return res.x
             else:
                 logger.warning("Optimization failed at attempt %d: %s",
