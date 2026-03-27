@@ -26,31 +26,33 @@ Quickstart Guide
    ## SETTING PRIORS
    # Prior: normal for regression coefficients of location parameter, half-normal for scale, normal for shape
    prior_specs = [
-      ('normal', {'loc': 30, 'scale':10 }),  
-      ('normal', {'loc': 0, 'scale': 0.5}),  
-      ('halfnormal', {'loc': 5, 'scale': 5 }),   
-      ('normal', {'loc': 0, 'scale': 0.4})  
+    ("normal", {"loc": 30, "scale": 15}),
+    ("normal", {"loc": 0, "scale": 0.25}),
+    ("halfnormal", {"loc": 5, "scale": 5}),
+    ("normal", {"loc": 0, "scale": 0.4}),
    ]
-   sampler = ns.NonStationaryEVD(config, data, cov,dist=genextreme,
-                                    prior_specs=prior_specs)
+   sampler = ns.NonStationaryEVD(
+    config, data, cov, dist=genextreme, prior_specs=prior_specs
+   )
    print(sampler.descriptions)
 
    ## RUNNING BATESIAN ALGORITHM
-   # fitting a non-stationary GEV model to the data using Hamiltonian Monte Carlo (HMC) sampler
-   initial_params = [30,0,7,0]
-   samples, a_rate = sampler.MH_Hmc(
-      num_samples=2000,
-      initial_params=initial_params,
-      step_size = 0.03,
-      T = 5
+   # fitting a non-stationary GEV model to the data using MALA algorithm
+   initial_params = [30, 0, 7, 0.1]
+   samples, a_rate, r_hat = sampler.MH_Mala(
+      num_samples=3000, initial_params=initial_params,
+      step_sizes=[1,0.075,0.75,5e-2], T=5,
+      burn_in=500, num_chains=3, n_jobs=3
    )
 
    ## PRINT RESULTS
    print(f"acceptance_rate : {a_rate}")
+   print(f"r_hat : {r_hat}")
    np.set_printoptions(suppress=True, precision=6)
-   burn_in = 500
-   print(f"Sample mean : {samples[:burn_in,:].mean(axis=0)}")
+   sample_all_chains = np.vstack(samples)  # shape (num_chains*num_samples, num_params)
+   sample_mean = sample_all_chains.mean(axis=0)
+   print(f"Sample mean : {sample_mean}")
 
    ## PLOT CONVERGENCE & POSTERIORS
-   ns.plot_trace(samples, config, fig_size=(8,8))
-   ns.plot_posterior(samples, config, fig_size=(8,8))
+   ns.plot_trace(samples, config, fig_size=(7, 10))
+   ns.plot_posterior(samples, config, fig_size=(7, 8))
