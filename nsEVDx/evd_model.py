@@ -20,12 +20,7 @@ try:
 except ImportError:
     _JOBLIB_AVAILABLE = False
 
-from .utils import (
-    GEV_parsViaLM,
-    GPD_parsViaLM,
-    neg_log_likelihood_ns,
-    gelman_rubin
-)
+from .utils import GEV_parsViaLM, GPD_parsViaLM, gelman_rubin, neg_log_likelihood_ns
 
 logging.basicConfig(
     filename='nsEVDx_run.log',
@@ -53,7 +48,7 @@ def _check_acceptance(rate: float, sampler_name: str) -> None:
     lo, hi = 0.20, 0.70
     if not (lo <= rate <= hi):
         warnings.warn(
-            f"[{sampler_name}] Acceptance rate {rate:.1%} is outside the "
+            f"[{sampler_name}] Acceptance rate {rate:.1%} is outside the"
             f"recommended range [{lo:.0%}, {hi:.0%}]. "
             "Consider tuning step_size / proposal_widths.",
             stacklevel=3,
@@ -476,7 +471,7 @@ class NonStationaryEVD:
 
         if self.prior_specs is None:
             self.prior_specs = self.suggest_priors()
-            
+
         step_sizes = np.array(step_sizes)  # Convert list to NumPy array
         total_samples = num_samples + burn_in
         samples = np.empty((total_samples, total_params))
@@ -488,7 +483,7 @@ class NonStationaryEVD:
             self.prior_specs = self.suggest_priors()
 
         accept_count = 0
-        
+
         pbar = tqdm(
             range(total_samples),
             desc=f"MALA Chain {chain_id+1}",
@@ -539,14 +534,14 @@ class NonStationaryEVD:
                 accept_count += 1
 
             samples[i] = current_params.copy()
-            
+
         pbar.close()
 
         acceptance_rate = accept_count / num_samples
         _check_acceptance(acceptance_rate, "MH_MALA")
 
         return samples[burn_in:,:], acceptance_rate
-    
+
     def MH_Mala(
         self,
         num_samples: int,
@@ -557,7 +552,7 @@ class NonStationaryEVD:
         num_chains: int = 1,
         show_progress: bool = True,
         n_jobs: int = 1,
-    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray], 
+    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray],
                                                List[float], np.ndarray]]:
         """
         Metropolis-Adjusted Langevin Algorithm (MALA) sampler.
@@ -609,7 +604,7 @@ class NonStationaryEVD:
         chains, rates = zip(*results)
         chains_list = list(chains)
         rates_list = list(rates)
-        
+
         if num_chains >= 2:
             r_hat = gelman_rubin(chains)
             if show_progress:
@@ -619,12 +614,13 @@ class NonStationaryEVD:
                 print("-" * 40)
                 print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
                 if np.any(r_hat > 1.1):
-                    print("WARNING: Some chains may not have converged (R-hat > 1.1).")
+                    print(f"WARNING: Some chains may not have converged"
+                          f" (R-hat, {max_r:.3f} > 1.1).")
                 else:
                     print("Convergence Check: PASSED (r_hat < 1.1)")
                     print("="*40 + "\n")
             return chains_list, rates_list, r_hat
-        
+
         return list(chains), list(rates)
 
     def _RandWalk_1chain(
@@ -733,7 +729,7 @@ class NonStationaryEVD:
         num_chains: int = 1,
         show_progress: bool = True,
         n_jobs: int = 1,
-    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray], 
+    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray],
                                                List[float], np.ndarray]]:
         """
         Metropolis-Hastings Random-Walk sampler.
@@ -791,7 +787,7 @@ class NonStationaryEVD:
         chains, rates = zip(*results)
         chains_list = list(chains)
         rates_list = list(rates)
-        
+
         if num_chains >= 2:
             r_hat = gelman_rubin(chains)
             if show_progress:
@@ -801,12 +797,13 @@ class NonStationaryEVD:
                 print("-" * 40)
                 print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
                 if np.any(r_hat > 1.1):
-                    print("WARNING: Some chains may not have converged (R-hat > 1.1).")
+                    print(f"WARNING: Some chains may not have converged"
+                          f" (R-hat, {max_r:.3f} > 1.1).")
                 else:
                     print("Convergence Check: PASSED (r_hat < 1.1)")
                     print("="*40 + "\n")
             return chains_list, rates_list, r_hat
-        
+
         return chains_list, rates_list
 
     def _hamiltonian(self, params, momentum, T):
@@ -887,7 +884,7 @@ class NonStationaryEVD:
         samples = np.zeros((total_samples, total_params))
         accepted = 0
         current_params = np.array(initial_params, dtype=float)
-        
+
         pbar = tqdm(
             range(total_samples),
             desc=f"HMC Chain {chain_id+1}",
@@ -898,7 +895,7 @@ class NonStationaryEVD:
             unit="sample",
             dynamic_ncols=True
         )
-        
+
         for i in pbar:
             # Draw momentum
             current_momentum = np.random.normal(0, 1, total_params)
@@ -933,7 +930,7 @@ class NonStationaryEVD:
         _check_acceptance(acceptance_rate, "MH_Hmc")
 
         return samples[burn_in:,:], acceptance_rate
-    
+
     def MH_Hmc(
         self,
         num_samples: int,
@@ -945,7 +942,7 @@ class NonStationaryEVD:
         num_chains: int = 1,
         show_progress: bool = True,
         n_jobs: int = 1,
-    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray], 
+    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray],
                                                List[float], np.ndarray]]:
         """
         Hamiltonian Monte Carlo (HMC) sampler.
@@ -999,7 +996,7 @@ class NonStationaryEVD:
         chains, rates = zip(*results)
         chains_list = list(chains)
         rates_list = list(rates)
-        
+
         if num_chains >= 2:
             r_hat = gelman_rubin(chains)
             if show_progress:
@@ -1009,12 +1006,13 @@ class NonStationaryEVD:
                 print("-" * 40)
                 print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
                 if np.any(r_hat > 1.1):
-                    print("WARNING: Some chains may not have converged (R-hat > 1.1).")
+                    print(f"WARNING: Some chains may not have converged"
+                          f" (R-hat, {max_r:.3f} > 1.1).")
                 else:
                     print("Convergence Check: PASSED (r_hat < 1.1)")
                     print("="*40 + "\n")
             return chains_list, rates_list, r_hat
-        
+
         return list(chains), list(rates)
 
     def frequentist_nsEVD(
