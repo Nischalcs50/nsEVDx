@@ -491,7 +491,7 @@ class NonStationaryEVD:
         
         pbar = tqdm(
             range(total_samples),
-            desc="MALA Chain :{chain_id+1}",
+            desc=f"MALA Chain {chain_id+1}",
             disable=not show_progress,
             position=0,
             leave=True,
@@ -685,7 +685,7 @@ class NonStationaryEVD:
 
         pbar = tqdm(
             range(total_samples),
-            desc="RandWalk Chain :{chain_id+1}",
+            desc=f"RandWalk Chain {chain_id+1}",
             disable=not show_progress,
             position=0,
             leave=True,
@@ -741,7 +741,7 @@ class NonStationaryEVD:
         Parameters
         ----------
         num_samples : int
-            Total iterations per chain (including burnin).
+            Total iterations per chain (excluding burnin).
         initial_params : array-like
             Starting parameter vector (same start used for all chains +
             small jitter for chains > 1).
@@ -841,7 +841,7 @@ class NonStationaryEVD:
         float
             The total Hamiltonian energy (scaled potential + kinetic energy).
         """
-        potential_energy = -self.posterior_log_prob(params)
+        potential_energy = -self._posterior_log_prob(params)
         # assuming negative log posterior = potential energy
         kinetic_energy = 0.5 * np.sum(momentum**2)
         return T * potential_energy + kinetic_energy
@@ -850,9 +850,12 @@ class NonStationaryEVD:
         self,
         num_samples: int,
         initial_params: Union[list[float], np.ndarray],
-        step_size: float = 0.1,
-        num_leapfrog_steps: int = 10,
-        T: float = 1.0,  # Optional temperature scaling
+        step_size: float,
+        num_leapfrog_steps: int ,
+        T: float,
+        burn_in: int,
+        chain_id: int,
+        show_progress: bool,  # Optional temperature scaling
     ) -> tuple[np.ndarray, float]:
         """
         Perform Hamiltonian-MonteCarlo sampling to generate samples from the
@@ -879,14 +882,26 @@ class NonStationaryEVD:
         acceptance_rate : float
             Fraction of proposals accepted.
         """
-        dim = len(initial_params)
-        samples = np.zeros((num_samples, dim))
+        total_params = sum(self.config) + 3
+        total_samples = num_samples + burn_in
+        samples = np.zeros((total_samples, total_params))
         accepted = 0
-
-        current_params = initial_params.copy()
-        for i in range(num_samples):
+        current_params = np.array(initial_params, dtype=float)
+        
+        pbar = tqdm(
+            range(total_samples),
+            desc=f"HMC Chain {chain_id+1}",
+            disable=not show_progress,
+            position=0,
+            leave=True,
+            ascii=True,
+            unit="sample",
+            dynamic_ncols=True
+        )
+        
+        for i in pbar:
             # Draw momentum
-            current_momentum = np.random.normal(0, 1, dim)
+            current_momentum = np.random.normal(0, 1, total_params)
             proposed_params = current_params.copy()
             proposed_momentum = current_momentum.copy()
 
@@ -913,11 +928,94 @@ class NonStationaryEVD:
                 accepted += 1
 
             samples[i, :] = current_params
-
+        pbar.close()
         acceptance_rate = accepted / num_samples
         _check_acceptance(acceptance_rate, "MH_Hmc")
 
-        return samples, acceptance_rate
+        return samples[burn_in:,:], acceptance_rate
+    
+    def MH_Hmc(
+        self,
+        num_samples: int,
+        initial_params: Union[List[float], np.ndarray],
+        step_size: float = 0.1,
+        num_leapfrog_steps: int = 10,
+        T: float = 1.0,
+        burn_in: int = 0,
+        num_chains: int = 1,
+        show_progress: bool = True,
+        n_jobs: int = 1,
+    ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray], 
+                                               List[float], np.ndarray]]:
+        """
+        Hamiltonian Monte Carlo (HMC) sampler.
+
+        Parameters
+        ----------
+        num_samples : int
+            Total iterations per chain (excluding burnin).
+        initial_params : array-like
+            Starting parameter vector.
+        step_size : float
+            Leapfrog step size epsilon.
+        num_leapfrog_steps : int
+            Number of leapfrog steps per proposal.
+        T : float
+            Temperature scaling factor.
+        burnin : int
+            Number of initial samples to discard per chain.
+        num_chains : int
+            Number of independent chains.
+        show_progress : bool
+            Display tqdm progress bars.
+        n_jobs : int
+            Parallel jobs via joblib.
+
+        Returns
+        -------
+        Same convention as MH_RandWalk.
+        """
+        initial_params = np.asarray(initial_params, dtype=float)
+
+        def _run(cid):
+            jitter = np.random.normal(0, step_size * 0.005) if cid > 0 else 0
+            return self._Hmc_1chain(
+                num_samples, initial_params + jitter,
+                step_size, num_leapfrog_steps,
+                T, burn_in, cid,
+                show_progress=(show_progress and (n_jobs == 1 or cid == 0)),
+            )
+
+        if num_chains == 1:
+            return _run(0)
+
+        if _JOBLIB_AVAILABLE and n_jobs != 1:
+            results = Parallel(n_jobs=n_jobs)(
+                delayed(_run)(cid) for cid in range(num_chains)
+            )
+        else:
+            results = [_run(cid) for cid in range(num_chains)]
+
+        chains, rates = zip(*results)
+        chains_list = list(chains)
+        rates_list = list(rates)
+        
+        if num_chains >= 2:
+            r_hat = gelman_rubin(chains)
+            if show_progress:
+                max_r = np.max(r_hat)
+                print("\n" + "="*40)
+                print("MCMC CONVERGENCE REPORT")
+                print("-" * 40)
+                print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
+                if np.any(r_hat > 1.1):
+                    print("WARNING: Some chains may not have converged (R-hat > 1.1).")
+                else:
+                    print("Convergence Check: PASSED (r_hat < 1.1)")
+                    print("="*40 + "\n")
+            return chains_list, rates_list, r_hat
+        
+        return list(chains), list(rates)
 
     def frequentist_nsEVD(
         self, initial_params: Union[List[float], np.ndarray], max_retries: int = 10

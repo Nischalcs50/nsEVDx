@@ -445,7 +445,7 @@ def plot_posterior(chains, config, fig_size=None, param_names_override=None):
     param_names = _build_param_names(config, param_names_override)
     n_params = len(param_names)
 
-    cols = 2 if n_params > 4 else 1
+    cols = 2 if n_params >= 4 else 1
     rows = int(np.ceil(n_params / cols))
 
     if fig_size is None:

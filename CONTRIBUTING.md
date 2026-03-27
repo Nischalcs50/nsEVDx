@@ -1,16 +1,16 @@
-# Contributing Guidelines
-
-Thank you wholeheartedly for considering contributing to `nsEVDx`! 👍 It's people like you that make it rewarding for us to work on `nsEVDx`. 😊
-
-`nsEVDx` is an open source project released under the [MIT] lisense, maintained by people who care. We are not directly funded to do so.
-
 [repo]: https://github.com/Nischalcs50/nsEVDx
 [issues]: https://github.com/Nischalcs50/nsEVDx/issues
 [new_issue]: https://github.com/Nischalcs50/nsEVDx/issues/new
 [code_of_conduct]: https://github.com/Nischalcs50/nsEVDx/CODE_OF_CONDUCT.md
-
+[documentation]:https://Nischalcs50.github.io/nsEVDx/
 [citation]: https://doi.org/xx.xxxxx/joss.xxxx
 [demo_notebook]: https://github.com/Nischalcs50/nsEVDx/examples/example_GEV.ipynb
+[MIT]:https://github.com/Nischalcs50/nsEVDx/blob/master/LICENSE
+# Contributing Guidelines
+
+Thank you wholeheartedly for considering contributing to `nsEVDx`! 👍 It's people like you that make it rewarding for us to work on `nsEVDx`. 😊
+
+`nsEVDx` is an open source project released under the [MIT license][MIT], maintained by people who care. We are not directly funded to do so.
 
 
 ## Code of conduct
@@ -28,7 +28,7 @@ Think `nsEVDx` is useful? Let others discover it, by telling them in person, via
 Using `nsEVDx` for a paper you are writing? Please [cite it][citation]. 
 
 ### Ask a question ⁉️
-Using `nsEVDx` and got stuck? Browse the  [readme ][repo] and the [demo notebook][demo_notebook]  to see if you can find a solution.
+Using `nsEVDx` and got stuck? Browse the  [readme ][repo], [documentation][documentation], and the [examples][demo_notebook]  to see if you can find a solution.
 
 Still stuck? Post your question as an [issue on GitHub][new_issue].
 
