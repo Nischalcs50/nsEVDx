@@ -7,7 +7,8 @@ import numpy as np
 from tqdm.auto import tqdm
 
 from .utils import _total_log_prior, _grad_total_log_prior, gelman_rubin, neg_log_likelihood_ns
-from .utils import _total_log_prior, _grad_nll_gev, _grad_nll_gpd, _grad_total_log_prior
+from .utils import _grad_nll_gev, _grad_nll_gpd, _grad_total_log_prior
+from .evd_model import _check_acceptance
 
 try:
     from joblib import Parallel, delayed
@@ -328,6 +329,7 @@ class HMCEngine:
 
         pbar.close()
         a_rate = accepted/num_samples
+        _check_acceptance(acceptance_rate, "MH_RandWalk")
         return samples, a_rate,step_size, divergences 
 
 

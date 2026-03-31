@@ -52,7 +52,7 @@ def _check_acceptance(rate: float, sampler_name: str) -> None:
             f"[{sampler_name}] Acceptance rate {rate:.1%} is outside the"
             f"recommended range [{lo:.0%}, {hi:.0%}]. "
             "Consider tuning step_size / proposal_widths.",
-            stacklevel=3,
+            stacklevel=2,
         )
 
 # nsEVDx main model code

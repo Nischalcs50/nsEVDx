@@ -119,7 +119,8 @@ def neg_log_likelihood_ns(
     # Standardized variates
     z = (data - mu) / sigma
     
-    if dist.lower() in ["gev", "genextreme"]:
+    dist_name = dist.name.lower() if hasattr(dist, 'name') else str(dist).lower()
+    if dist_name in ["gev", "genextreme"]:
         v = 1.0 - xi * z
         if np.any(v <= 0): return Safe_INF
         
@@ -132,7 +133,7 @@ def neg_log_likelihood_ns(
             -np.log(sigma) + (1.0/xi - 1.0) * log_v - v**(1.0/xi)
         )
         
-    elif dist.lower() in ["gpd", "genpareto"]:
+    elif dist_name in ["gpd", "genpareto"]:
         w = 1.0 + xi * z
         if np.any(w <= 0): return Safe_INF
         
@@ -579,7 +580,7 @@ def l_moments(data):
         coef = 1 / (n * _comb(n - 1, r))
         summ = 0
         for j in range(r + 1, n + 1):
-            aux = data[j - 1] * comb(j - 1, r)  # here data[j-1] because index for
+            aux = data[j - 1] * _comb(j - 1, r)  # here data[j-1] because index for
             # data starts from 0
             summ += aux
         b[r] = coef * summ
