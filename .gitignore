@@ -26,6 +26,10 @@ Thumbs.db
 # other files
 test_file.py
 examples/nsEVDx_run.log
+hmc.py
+hmc2.py
+nsEVDx_run-HCOE-12HQ9R3.log
+nsEVDx.log
 
 # Python coverage artifacts
 .coverage

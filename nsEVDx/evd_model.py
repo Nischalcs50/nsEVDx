@@ -21,6 +21,7 @@ except ImportError:
     _JOBLIB_AVAILABLE = False
 
 from .utils import GEV_parsViaLM, GPD_parsViaLM, gelman_rubin, neg_log_likelihood_ns
+from .utils import _total_log_prior, _grad_nll_gev, _grad_nll_gpd, _grad_total_log_prior
 
 logging.basicConfig(
     filename='nsEVDx_run.log',
@@ -105,6 +106,8 @@ class NonStationaryEVD:
         self.n_cov = cov.shape[0] if cov.ndim > 1 else 1
         self.prior_specs = prior_specs
         self.bounds = bounds
+        self._is_gev = dist in ("genextreme", "gev")
+        self._is_gpd = dist in ("genpareto",  "gpd")
         assert self.data.shape[0] == self.cov.shape[1], (
             "Mismatch between number of samples in data and covariates"
         )
@@ -214,7 +217,7 @@ class NonStationaryEVD:
 
         # Shape
         if self.config[2] == 0:
-            prior_specs.append(("normal", {"loc": 0, "scale": 0.1}))
+            prior_specs.append(("normal", {"loc": 0, "scale": 0.3}))
         else:
             # intercept
             prior_specs.append(("normal", {"loc": 0, "scale": 0.2}))
@@ -311,41 +314,24 @@ class NonStationaryEVD:
         if self.prior_specs is None:
             return 0.0
 
-        logp = 0.0
-        param_idx = 0
-        cov_counts = self.config  # [n_loc_cov, n_scale_cov, n_shape_cov]
-
-        for group in range(3):  # location, scale, shape
-            count = cov_counts[group]
-            n_params = count + 1 if count > 0 else 1  # intercept + covariates
-            # OR just stationary param
-            for _ in range(n_params):
-                ptype, kwargs = self.prior_specs[param_idx]
-                val = params[param_idx]
-
-                # Compute log-prior value
-                if ptype == "normal":
-                    prior_val = norm.logpdf(val, **kwargs)
-                elif ptype == "uniform":
-                    prior_val = uniform.logpdf(val, **kwargs)
-                elif ptype == "halfnormal":
-                    prior_val = halfnorm.logpdf(val, **kwargs)
-                else:
-                    raise ValueError(f"Unsupported prior type: {ptype}")
-
-                if not np.isfinite(prior_val):
-                    logger.debug(
-                                "Prior %s returned invalid logpdf for param"
-                                    "%d: val=%s, kwargs=%s",
-                                ptype, param_idx, val, kwargs
-                    )
-                    return -np.inf
-
-                logp += prior_val
-                param_idx += 1
-
-        return logp
-
+        return _total_log_prior(params, self.prior_specs)
+    
+    
+    def _grad_log_prior(self, params: np.ndarray) -> np.ndarray:
+        """
+        Compute gradient of log prior probability: 
+        ∂log π(θ)/∂θ 
+        
+        Parameters:
+            params : 1D array of current parameter values.
+            
+        Returns:
+            1D array of gradients for each prior.
+        """
+        # Pass the current parameters and the model's specific prior specs
+        return _grad_total_log_prior(params, self.prior_specs)
+    
+    
     def _neg_log_likelihood(self, params):
         """
         Compute the negative log-likelihood for the given parameter vector.
@@ -388,9 +374,52 @@ class NonStationaryEVD:
             The log posterior probability. If the prior is improper or
             evaluates to -inf, the result will reflect that.
         """
-        return -1 * self._neg_log_likelihood(params) + self._log_prior(params)
+        with np.errstate(over='ignore', invalid='ignore'):
+            x = -1 * self._neg_log_likelihood(params) + self._log_prior(params)
+        return x
+    
+    
+    def _grad_log_posterior(self, params: np.ndarray) -> np.ndarray:
+        """
+        Compute the full gradient of the log-posterior: ∂LL/∂θ + ∂logπ/∂θ.
+        
+        Compute the full gradient of the log-posterior:
+            ∂log p(θ|x)/∂θ = −∂NLL/∂θ + ∂log π(θ)/∂θ.
+            
+        Likelihood gradient: analytical (GEV/GPD) or numerical fallback.
+        Prior gradient: always numerical.
+    
+        Returns zeros array if outside support (NaN-safe).
+        """
+        # 1. Likelihood Gradient (∂LL/∂θ)
+        if self._is_gev:
+            with np.errstate(over='ignore', invalid='ignore'):
+                grad_nll = _grad_nll_gev(
+                    params, self.data, self.cov, self.config
+                )
+                grad_ll = -grad_nll
+        elif self._is_gpd:
+            with np.errstate(over='ignore', invalid='ignore'):
+                grad_nll = _grad_nll_gpd(
+                    params, self.data, self.cov, self.config
+                )
+                grad_ll = -grad_nll
+        else:
+            # Fallback if the distribution isn't GEV or GPD
+            grad_ll = self._numerical_grad_log_posterior(params)
+            grad_nll = -grad_ll
+            
+        # Nan-check (If we hit an impossible v <= 0 region, return 0)
+        if np.any(np.isnan(grad_nll)):
+            return np.zeros_like(params)
+        
+        # Prior Gradient (∂logπ/∂θ)
+        grad_prior = self._grad_log_prior(params)
+        
+        # 3. Total Gradient
+        return grad_ll + grad_prior
 
-    def _numerical_grad_log_posterior(self, params, h=1e-2):
+    def _numerical_grad_log_posterior(self, params, h=1e-3):
         """
         Compute the numerical gradient of the log-posterior with respect to
         parameters.
@@ -421,12 +450,15 @@ class NonStationaryEVD:
         for i in range(len(params)):
             step = np.zeros_like(params)
             step[i] = h_vec[i]
-            f_plus = self._posterior_log_prob(params + step)
-            f_minus = self._posterior_log_prob(params - step)
-            grad[i] = (f_plus - f_minus) / (2 * h_vec[i])
-
+            f_plus = -1* self._neg_log_likelihood(params + step)
+            f_minus = -1* self._neg_log_likelihood(params - step)
+            if np.isfinite(f_plus) and np.isfinite(f_minus):
+                grad[i] = (f_plus - f_minus) / (2 * h_vec[i])
+            else:
+                grad[i] = 0.0
         return grad
-
+    
+       
     def _Mala_1chain(
         self,
         num_samples: int,
@@ -497,7 +529,7 @@ class NonStationaryEVD:
 
         for i in pbar:
             # Compute gradient at current position
-            grad = self._numerical_grad_log_posterior(current_params)
+            grad = self._grad_log_posterior(current_params)
 
             # Proposal mean for MALA
             proposal_mean = current_params + (step_sizes**2 / 2) * grad
@@ -506,7 +538,7 @@ class NonStationaryEVD:
             proposal = proposal_mean + step_sizes * np.random.normal(size=total_params)
 
             # Compute gradient at proposal for asymmetric correction
-            grad_proposal = self._numerical_grad_log_posterior(proposal)
+            grad_proposal = self._grad_log_posterior(proposal)
 
             # Compute log proposal densities q(proposal | current) and
             # q(current | proposal)
@@ -609,16 +641,19 @@ class NonStationaryEVD:
             r_hat = gelman_rubin(chains)
             if show_progress:
                 max_r = np.max(r_hat)
-                print("\n" + "="*40)
+                print("\n" + "="*55)
                 print("MCMC CONVERGENCE REPORT")
-                print("-" * 40)
+                print("-" * 55)
                 print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
                 if np.any(r_hat > 1.1):
                     print(f"WARNING: Some chains may not have converged"
                           f" (R-hat, {max_r:.3f} > 1.1).")
                 else:
                     print("Convergence Check: PASSED (r_hat < 1.1)")
-                    print("="*40 + "\n")
+                    print("-"*55 + "\n")
+                for name, r in zip(self.descriptions, r_hat):
+                    print(f"{name:<30} R-hat: {r:.4f}")
+                print("=" * 55)
             return chains_list, rates_list, r_hat
 
         return list(chains), list(rates)
@@ -792,156 +827,243 @@ class NonStationaryEVD:
             r_hat = gelman_rubin(chains)
             if show_progress:
                 max_r = np.max(r_hat)
-                print("\n" + "="*40)
+                print("\n" + "="*55)
                 print("MCMC CONVERGENCE REPORT")
-                print("-" * 40)
+                print("-" * 55)
                 print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
                 if np.any(r_hat > 1.1):
                     print(f"WARNING: Some chains may not have converged"
                           f" (R-hat, {max_r:.3f} > 1.1).")
                 else:
                     print("Convergence Check: PASSED (r_hat < 1.1)")
-                    print("="*40 + "\n")
+                    print("-"*55 + "\n")
+                for name, r in zip(self.descriptions, r_hat):
+                    print(f"{name:<30} R-hat: {r:.4f}")
+                print("=" * 55)
             return chains_list, rates_list, r_hat
 
         return chains_list, rates_list
 
-    def _hamiltonian(self, params, momentum, T):
-        """
-        Compute the Hamiltonian (total energy) of the system for HMC sampling.
+    # def _hamiltonian(self, params, momentum, T):
+    #     """
+    #     Compute the Hamiltonian (total energy) of the system for HMC sampling.
 
-        The Hamiltonian is the sum of the potential energy and kinetic energy.
+    #     The Hamiltonian is the sum of the potential energy and kinetic energy.
 
-        In this context:
+    #     In this context:
 
-        - Potential energy is defined as the negative log-posterior
-          (scaled by T), which encourages high-probability regions of
-          parameter space.
-        - Kinetic energy is computed as 0.5 * sum(momentum^2), assuming a
-          standard Gaussian momentum distribution.
+    #     - Potential energy is defined as the negative log-posterior
+    #       (scaled by T), which encourages high-probability regions of
+    #       parameter space.
+    #     - Kinetic energy is computed as 0.5 * sum(momentum^2), assuming a
+    #       standard Gaussian momentum distribution.
 
-        Parameters
-        ----------
-        params : array-like
-            Current position in parameter space (model parameters).
+    #     Parameters
+    #     ----------
+    #     params : array-like
+    #         Current position in parameter space (model parameters).
 
-        momentum : array-like
-            Auxiliary momentum variables, typically sampled from a standard
-            normal distribution.
+    #     momentum : array-like
+    #         Auxiliary momentum variables, typically sampled from a standard
+    #         normal distribution.
 
-        T : float
-            Temperature scaling factor. T=1 corresponds to standard HMC;
-            higher values flatten the posterior (tempering).
+    #     T : float
+    #         Temperature scaling factor. T=1 corresponds to standard HMC;
+    #         higher values flatten the posterior (tempering).
 
-        Returns
-        -------
-        float
-            The total Hamiltonian energy (scaled potential + kinetic energy).
-        """
-        potential_energy = -self._posterior_log_prob(params)
-        # assuming negative log posterior = potential energy
-        kinetic_energy = 0.5 * np.sum(momentum**2)
-        return T * potential_energy + kinetic_energy
+    #     Returns
+    #     -------
+    #     float
+    #         The total Hamiltonian energy (scaled potential + kinetic energy).
+    #     """
+    #     potential_energy = -self._posterior_log_prob(params)
+    #     # assuming negative log posterior = potential energy
+    #     kinetic_energy = 0.5 * np.sum(momentum**2)
+    #     return T * potential_energy + kinetic_energy
 
-    def _Hmc_1chain(
-        self,
-        num_samples: int,
-        initial_params: Union[list[float], np.ndarray],
-        step_size: float,
-        num_leapfrog_steps: int ,
-        T: float,
-        burn_in: int,
-        chain_id: int,
-        show_progress: bool,  # Optional temperature scaling
-    ) -> tuple[np.ndarray, float]:
-        """
-        Perform Hamiltonian-MonteCarlo sampling to generate samples from the
-        posterior distributions of the parameters.
+    # def _Hmc_1chain(
+    #     self,
+    #     num_samples: int,
+    #     initial_params: Union[list[float], np.ndarray],
+    #     step_size: float,
+    #     num_leapfrog_steps: int ,
+    #     T: float,
+    #     burn_in: int,
+    #     chain_id: int,
+    #     show_progress: bool,  # Optional temperature scaling
+    # ) -> tuple[np.ndarray, float]:
+    #     """
+    #     Perform Hamiltonian-MonteCarlo sampling to generate samples from the
+    #     posterior distributions of the parameters.
 
-        Parameters
-        ----------
-        num_samples : int
-            Number of samples to generate.
-        initial_params : Union[list[float], np.ndarray]
-            Initial parameter vector to start the Markov chain.
-        step_size : float
-            Step size (epsilon) for the leapfrog integrator.
-        num_leapfrog_steps : int
-            Number of leapfrog steps per iteration.
-        T : float, optional
-            Temperature scaling factor for log-acceptance ratio.
+    #     Parameters
+    #     ----------
+    #     num_samples : int
+    #         Number of samples to generate.
+    #     initial_params : Union[list[float], np.ndarray]
+    #         Initial parameter vector to start the Markov chain.
+    #     step_size : float
+    #         Step size (epsilon) for the leapfrog integrator.
+    #     num_leapfrog_steps : int
+    #         Number of leapfrog steps per iteration.
+    #     T : float, optional
+    #         Temperature scaling factor for log-acceptance ratio.
 
-        Returns
-        -------
-        samples : np.ndarray
-            Array of shape (num_samples, n_parameters) containing parameter
-            vectors.
-        acceptance_rate : float
-            Fraction of proposals accepted.
-        """
-        total_params = sum(self.config) + 3
-        total_samples = num_samples + burn_in
-        samples = np.zeros((total_samples, total_params))
-        accepted = 0
-        current_params = np.array(initial_params, dtype=float)
+    #     Returns
+    #     -------
+    #     samples : np.ndarray
+    #         Array of shape (num_samples, n_parameters) containing parameter
+    #         vectors.
+    #     acceptance_rate : float
+    #         Fraction of proposals accepted.
+    #     """
+    #     total_params = sum(self.config) + 3
+    #     total_samples = num_samples + burn_in
+    #     samples = np.zeros((total_samples, total_params))
+    #     accepted = 0
+    #     current_params = np.array(initial_params, dtype=float)
 
-        pbar = tqdm(
-            range(total_samples),
-            desc=f"HMC Chain {chain_id+1}",
-            disable=not show_progress,
-            position=0,
-            leave=True,
-            ascii=True,
-            unit="sample",
-            dynamic_ncols=True
-        )
+    #     pbar = tqdm(
+    #         range(total_samples),
+    #         desc=f"HMC Chain {chain_id+1}",
+    #         disable=not show_progress,
+    #         position=0,
+    #         leave=True,
+    #         ascii=True,
+    #         unit="sample",
+    #         dynamic_ncols=True
+    #     )
 
-        for i in pbar:
-            # Draw momentum
-            current_momentum = np.random.normal(0, 1, total_params)
-            proposed_params = current_params.copy()
-            proposed_momentum = current_momentum.copy()
+    #     for i in pbar:
+    #         # Draw momentum
+    #         current_momentum = np.random.normal(0, 1, total_params)
+    #         proposed_params = current_params.copy()
+    #         proposed_momentum = current_momentum.copy()
 
-            # Leapfrog integration
-            grad = self._numerical_grad_log_posterior(proposed_params)
-            proposed_momentum += 0.5 * step_size * grad
+    #         # Leapfrog integration
+    #         grad = self._grad_log_posterior(proposed_params)
+    #         proposed_momentum += 0.5 * step_size * grad
 
-            for _ in range(num_leapfrog_steps):
-                proposed_params += step_size * proposed_momentum
-                if _ != num_leapfrog_steps - 1:
-                    grad = self._numerical_grad_log_posterior(proposed_params)
-                    proposed_momentum += step_size * grad
+    #         for _ in range(num_leapfrog_steps):
+    #             proposed_params += step_size * proposed_momentum
+    #             if _ != num_leapfrog_steps - 1:
+    #                 grad = self._grad_log_posterior(proposed_params)
+    #                 proposed_momentum += step_size * grad
 
-            grad = self._numerical_grad_log_posterior(proposed_params)
-            proposed_momentum += 0.5 * step_size * grad
-            proposed_momentum *= -1  # Negate momentum for symmetry
+    #         grad = self._grad_log_posterior(proposed_params)
+    #         proposed_momentum += 0.5 * step_size * grad
+    #         proposed_momentum *= -1  # Negate momentum for symmetry
 
-            current_H = self._hamiltonian(current_params, current_momentum, T)
-            proposed_H = self._hamiltonian(proposed_params, proposed_momentum, T)
+    #         current_H = self._hamiltonian(current_params, current_momentum, T)
+    #         proposed_H = self._hamiltonian(proposed_params, proposed_momentum, T)
 
-            log_alpha = -(proposed_H - current_H)
-            if np.log(np.random.rand()) < log_alpha:
-                current_params = proposed_params
-                accepted += 1
+    #         log_alpha = -(proposed_H - current_H)
+    #         if np.log(np.random.rand()) < log_alpha:
+    #             current_params = proposed_params
+    #             accepted += 1
 
-            samples[i, :] = current_params
-        pbar.close()
-        acceptance_rate = accepted / num_samples
-        _check_acceptance(acceptance_rate, "MH_Hmc")
+    #         samples[i, :] = current_params
+    #     pbar.close()
+    #     acceptance_rate = accepted / num_samples
+    #     _check_acceptance(acceptance_rate, "MH_Hmc")
 
-        return samples[burn_in:,:], acceptance_rate
+    #     return samples[burn_in:,:], acceptance_rate
+
+    # def MH_Hmc(
+    #     self,
+    #     num_samples: int,
+    #     initial_params: Union[List[float], np.ndarray],
+    #     step_size: float = 0.1,
+    #     num_leapfrog_steps: int = 10,
+    #     T: float = 1.0,
+    #     burn_in: int = 0,
+    #     num_chains: int = 1,
+    #     show_progress: bool = True,
+    #     n_jobs: int = 1,
+    # ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray],
+    #                                            List[float], np.ndarray]]:
+    #     """
+    #     Hamiltonian Monte Carlo (HMC) sampler.
+
+    #     Parameters
+    #     ----------
+    #     num_samples : int
+    #         Total iterations per chain (excluding burnin).
+    #     initial_params : array-like
+    #         Starting parameter vector.
+    #     step_size : float
+    #         Leapfrog step size epsilon.
+    #     num_leapfrog_steps : int
+    #         Number of leapfrog steps per proposal.
+    #     T : float
+    #         Temperature scaling factor.
+    #     burnin : int
+    #         Number of initial samples to discard per chain.
+    #     num_chains : int
+    #         Number of independent chains.
+    #     show_progress : bool
+    #         Display tqdm progress bars.
+    #     n_jobs : int
+    #         Parallel jobs via joblib.
+
+    #     Returns
+    #     -------
+    #     Same convention as MH_RandWalk.
+    #     """
+    #     initial_params = np.asarray(initial_params, dtype=float)
+
+    #     def _run(cid):
+    #         jitter = np.random.normal(0, step_size * 0.005) if cid > 0 else 0
+    #         return self._Hmc_1chain(
+    #             num_samples, initial_params + jitter,
+    #             step_size, num_leapfrog_steps,
+    #             T, burn_in, cid,
+    #             show_progress=(show_progress and (n_jobs == 1 or cid == 0)),
+    #         )
+
+    #     if num_chains == 1:
+    #         return _run(0)
+
+    #     if _JOBLIB_AVAILABLE and n_jobs != 1:
+    #         results = Parallel(n_jobs=n_jobs)(
+    #             delayed(_run)(cid) for cid in range(num_chains)
+    #         )
+    #     else:
+    #         results = [_run(cid) for cid in range(num_chains)]
+
+    #     chains, rates = zip(*results)
+    #     chains_list = list(chains)
+    #     rates_list = list(rates)
+
+    #     if num_chains >= 2:
+    #         r_hat = gelman_rubin(chains)
+    #         if show_progress:
+    #             max_r = np.max(r_hat)
+    #             print("\n" + "="*40)
+    #             print("MCMC CONVERGENCE REPORT")
+    #             print("-" * 40)
+    #             print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
+    #             if np.any(r_hat > 1.1):
+    #                 print(f"WARNING: Some chains may not have converged"
+    #                       f" (R-hat, {max_r:.3f} > 1.1).")
+    #             else:
+    #                 print("Convergence Check: PASSED (r_hat < 1.1)")
+    #                 print("="*40 + "\n")
+    #         return chains_list, rates_list, r_hat
+
+    #     return list(chains), list(rates)
 
     def MH_Hmc(
         self,
         num_samples: int,
         initial_params: Union[List[float], np.ndarray],
-        step_size: float = 0.1,
-        num_leapfrog_steps: int = 10,
-        T: float = 1.0,
-        burn_in: int = 0,
+        step_size: float = 0.01,
+        num_leapfrog_steps: int = 10,        
+        burn_in: int = 1000,
         num_chains: int = 1,
         show_progress: bool = True,
         n_jobs: int = 1,
+        T: float = 1.0,
     ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray],
                                                List[float], np.ndarray]]:
         """
@@ -972,48 +1094,24 @@ class NonStationaryEVD:
         -------
         Same convention as MH_RandWalk.
         """
-        initial_params = np.asarray(initial_params, dtype=float)
-
-        def _run(cid):
-            jitter = np.random.normal(0, step_size * 0.005) if cid > 0 else 0
-            return self._Hmc_1chain(
-                num_samples, initial_params + jitter,
-                step_size, num_leapfrog_steps,
-                T, burn_in, cid,
-                show_progress=(show_progress and (n_jobs == 1 or cid == 0)),
-            )
-
-        if num_chains == 1:
-            return _run(0)
-
-        if _JOBLIB_AVAILABLE and n_jobs != 1:
-            results = Parallel(n_jobs=n_jobs)(
-                delayed(_run)(cid) for cid in range(num_chains)
-            )
-        else:
-            results = [_run(cid) for cid in range(num_chains)]
-
-        chains, rates = zip(*results)
-        chains_list = list(chains)
-        rates_list = list(rates)
-
-        if num_chains >= 2:
-            r_hat = gelman_rubin(chains)
-            if show_progress:
-                max_r = np.max(r_hat)
-                print("\n" + "="*40)
-                print("MCMC CONVERGENCE REPORT")
-                print("-" * 40)
-                print(f"Average Acceptance: {np.mean(rates_list)*100:.2f}%")
-                if np.any(r_hat > 1.1):
-                    print(f"WARNING: Some chains may not have converged"
-                          f" (R-hat, {max_r:.3f} > 1.1).")
-                else:
-                    print("Convergence Check: PASSED (r_hat < 1.1)")
-                    print("="*40 + "\n")
-            return chains_list, rates_list, r_hat
-
-        return list(chains), list(rates)
+        # Import locally to avoid circular dependency issues
+        from .hmc_engine import HMCEngine
+        # Initialize the engine with this model instance
+        engine = HMCEngine(model=self, 
+                           grad_method="analytical")
+        # Delegate execution to the engine's multi-chain runner
+        return engine._run_chains(
+            sampler="hmc",
+            num_samples=num_samples,
+            initial_params=initial_params,
+            step_size=step_size,
+            n_leapfrog=num_leapfrog_steps,
+            burn_in=burn_in,
+            num_chains=num_chains,
+            n_jobs=n_jobs,
+            show_progress=show_progress,
+            T=T
+        )
 
     def frequentist_nsEVD(
         self, initial_params: Union[List[float], np.ndarray], max_retries: int = 10

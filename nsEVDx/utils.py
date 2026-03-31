@@ -55,7 +55,7 @@ def neg_log_likelihood_ns(
     data: Union[List[float], np.ndarray],
     cov: Union[List[List[float]], np.ndarray],
     config: List[int],
-    dist: rv_continuous,  # type hint for scipy cont. distribution objects
+    dist: str,  # type hint for scipy cont. distribution objects
     # like genpareto/genextreme
 ) -> float:
     """
@@ -115,27 +115,360 @@ def neg_log_likelihood_ns(
     # Ensure parameters are valid
     if np.any(sigma <= 0):
         return Safe_INF
-    try:
-        # Evaluate PDF and compute log-likelihood
-        pdf_values = dist.pdf(data, c=xi, loc=mu, scale=sigma)
-        if np.any(pdf_values <= 0):   # hard rejection
-            return Safe_INF
-        # float underflow only
-        pdf_values = np.clip(pdf_values, a_min=1e-300, a_max=None)
-        log_likelihood = np.sum(np.log(pdf_values))
-        return -log_likelihood
-    except Exception:
-        return Safe_INF
-
-def _check_acceptance(rate: float, sampler_name: str) -> None:
-    lo, hi = 0.20, 0.70
-    if not (lo <= rate <= hi):
-        warnings.warn(
-            f"[{sampler_name}] Acceptance rate {rate:.1%} is outside the "
-            f"recommended range [{lo:.0%}, {hi:.0%}]. "
-            "Consider tuning step_size / proposal_widths.",
-            stacklevel=3,
+    
+    # Standardized variates
+    z = (data - mu) / sigma
+    
+    if dist.lower() in ["gev", "genextreme"]:
+        v = 1.0 - xi * z
+        if np.any(v <= 0): return Safe_INF
+        
+        # Gumbel Limit Handling (xi -> 0)
+        eps = 1e-6
+        log_v = np.log(v)
+        log_lik = np.where(
+            np.abs(xi) < eps,
+            -np.log(sigma) - z - np.exp(-z),  # Gumbel/Extreme Type I
+            -np.log(sigma) + (1.0/xi - 1.0) * log_v - v**(1.0/xi)
         )
+        
+    elif dist.lower() in ["gpd", "genpareto"]:
+        w = 1.0 + xi * z
+        if np.any(w <= 0): return Safe_INF
+        
+        eps = 1e-6
+        log_w = np.log(w)
+        log_lik = np.where(
+            np.abs(xi) < eps,
+            -np.log(sigma) - z,  # Exponential Distribution limit
+            -np.log(sigma) - (1.0 + 1.0/xi) * log_w
+        )
+    else:
+        raise ValueError(f"Unsupported dist_name: {dist}")
+
+    nll = -np.sum(log_lik)
+    return nll if np.isfinite(nll) else Safe_INF
+
+
+def _grad_nll_gev(
+    params: np.ndarray,
+    data:   np.ndarray,
+    cov:    np.ndarray,
+    config: List[int],
+) -> np.ndarray:
+    """
+    Analytical gradient of the GEV negative log-likelihood  ∂NLL/∂θ.
+
+    We use these expressions to compute:
+        v_t = 1 − xi·z_t,   z_t = (x_t − μ_t) / σ_t
+        log p_t = −log σ_t + (1/xi − 1)·log v_t − v_t^(1/xi)
+
+    Scale link: log σ_t = a_0 + Σ_k a_k·cov_{k,t}   when config[1] ≥ 1.
+
+    Returns ∂NLL/∂θ.  Returns NaN array if any v_t ≤ 0 (outside support).
+    """
+    cov = np.atleast_2d(cov)
+    n   = len(data)
+    grad = np.zeros_like(params)
+    idx = 0
+
+    # location
+    if config[0] >= 1:
+        nc = int(config[0])
+        B  = params[idx: idx + nc + 1]
+        idx_mu = idx
+        idx += nc + 1
+        mu = B[0] + B[1:] @ cov[:nc, :]
+    else:
+        mu  = np.full(n, params[idx]); idx_mu = idx; idx += 1
+
+    # scale
+    if config[1] >= 1:
+        nc    = int(config[1])
+        A     = params[idx: idx + nc + 1]
+        idx_sig = idx
+        idx += nc + 1
+        sigma = np.exp(A[0] + A[1:] @ cov[:nc, :])
+    else:
+        sigma = np.full(n, params[idx]); idx_sig = idx; idx += 1
+
+    # shape 
+    if config[2] >= 1:
+        nc = int(config[2])
+        K  = params[idx: idx + nc + 1]
+        idx_xi = idx
+        xi = K[0] + K[1:] @ cov[:nc, :]
+    else:
+        xi = np.full(n, params[idx]); idx_xi = idx
+
+    z = (data - mu) / sigma
+    v = 1.0 - xi * z                  
+    if np.any(v <= 0):
+        return np.full(len(params), np.nan)
+
+    # Gumbel limit: |xi| < eps, approximating to avoid 1/xi singularity
+    eps      = 1e-6
+    xi_safe  = np.where(np.abs(xi) < eps, np.sign(xi + 1e-30) * eps, xi)
+    small_xi = np.abs(xi) < eps
+    inv_v = 1.0 / v
+    
+    # Partial derivatives of LL
+    # ---dlogL/dv--------------
+    dL_dv = np.where(
+        small_xi,
+        -inv_v - 1.0,                                    # Gumbel limit
+        (1.0/xi_safe - 1.0)*inv_v - (1.0/xi_safe)*v**(1.0/xi_safe - 1.0)
+    )
+
+    #---- Location gradient (dv/dmu = xi/sigma) 
+    dL_dmu = dL_dv * (xi / sigma)
+    
+    #---- Scale gradient (dv/dsigma = xi*z/sigma)
+    # dL_dsig_base = -1.0/sigma + dL_dv * (xi * z / sigma)
+    # because of exponential regression for the scale
+    # chain rule: d(log σ) = dsigma/sigma
+    dL_da = -1.0 + dL_dv * (xi * z)  
+    
+    #---- Shape gradient (dv/dxi = -z)
+    log_v  = np.log(v)
+    dL_dxi = np.where(
+        small_xi,
+        0.5*z**2 - z,                           # Gumbel limit (approx)
+        -log_v/xi_safe**2
+        + (1.0/xi_safe - 1.0)*(-z)/v
+        + v**(1.0/xi_safe)*log_v/xi_safe**2
+        - v**(1.0/xi_safe - 1.0)*(-z)/xi_safe
+    )
+    
+    #----Vectorized assembling
+    # (Negative Log-Likelihood Gradient -> Multiply by -1)
+    # Location components
+    grad[idx_mu] = -np.sum(dL_dmu)
+    if config[0] >= 1:
+        nc = int(config[0])
+        grad[idx_mu + 1 : idx_mu + 1 + nc] = -(dL_dmu @ cov[:nc, :].T)
+
+    # Scale components
+    grad[idx_sig] = -np.sum(dL_da)
+    if config[1] >= 1:
+        nc = int(config[1])
+        grad[idx_sig + 1 : idx_sig + 1 + nc] = -(dL_da @ cov[:nc, :].T)
+
+    # Shape components
+    grad[idx_xi] = -np.sum(dL_dxi)
+    if config[2] >= 1:
+        nc = int(config[2])
+        grad[idx_xi + 1 : idx_xi + 1 + nc] = -(dL_dxi @ cov[:nc, :].T)
+
+    return grad
+
+    
+def _grad_nll_gpd(
+    params: np.ndarray,
+    data:   np.ndarray,
+    cov:    np.ndarray,
+    config: List[int],
+) -> np.ndarray:
+    """
+    Analytical gradient of the GPD negative log-likelihood  ∂NLL/∂θ.
+
+    We use theseexpressions to compute:
+        w_t = 1 + xi·z_t,   z_t = (x_t − μ_t) / σ_t   (PLUS sign)
+        log p_t = −log σ_t − (1 + 1/xi)·log w_t
+
+    Returns ∂NLL/∂θ.  Returns NaN array if any w_t ≤ 0.
+    """
+    cov = np.atleast_2d(cov)
+    n   = len(data)
+    idx = 0
+    grad = np.zeros_like(params)
+    
+    # Location
+    if config[0] >= 1:
+        nc = int(config[0])
+        B = params[idx : idx + nc + 1]; idx_mu = idx; idx += nc + 1
+        mu = B[0] + B[1:] @ cov[:nc, :]
+    else:
+        mu = np.full(n, params[idx]); idx_mu = idx; idx += 1
+
+    # Scale (with Log-Link)
+    if config[1] >= 1:
+        nc = int(config[1])
+        A = params[idx : idx + nc + 1]; idx_sig = idx; idx += nc + 1
+        sigma = np.exp(A[0] + A[1:] @ cov[:nc, :])
+    else:
+        sigma = np.full(n, params[idx]); idx_sig = idx; idx += 1
+
+    # Shape
+    if config[2] >= 1:
+        nc = int(config[2])
+        K = params[idx : idx + nc + 1]; idx_xi = idx
+        xi = K[0] + K[1:] @ cov[:nc, :]
+    else:
+        xi = np.full(n, params[idx]); idx_xi = idx
+
+    z = (data - mu) / sigma
+    w = 1.0 + xi * z                    # GPD
+    if np.any(w <= 0):
+        return np.full(len(params), np.nan)
+
+    eps      = 1e-6
+    xi_safe  = np.where(np.abs(xi) < eps, np.sign(xi + 1e-30) * eps, xi)
+    small_xi = np.abs(xi) < eps
+    inv_w = 1.0 / w
+    
+    # Partial derivatives of LL
+    #----dlogL/dw = -(1 + 1/xi) / w
+    dL_dw = np.where(small_xi, -inv_w, -(1.0 + 1.0/xi_safe)* inv_w)
+    
+    #----Location gradient dw/dmu = -xi/sigma
+    dL_dmu = dL_dw * (-xi / sigma)
+    
+    #----Scale gradient dw/dsigma = -xi*z/sigma
+    # dL_dsig_base = -1.0/sigma + dL_dw * (-xi * z / sigma)
+    # dL/dsigma: includes log-link chain rule (dL/d_sigma * sigma)
+    # dL_dsig_base * sigma = 
+    #  = (-1/sig + dL/dw * dw/dsig) * sig = -1 + dL/dw * (-xi * z)
+    dL_da = -1.0 + dL_dw * (-xi * z)
+    
+    #----Shape gradient dL/dxi
+    log_w = np.log(w)
+    dL_dxi = np.where(
+        small_xi,
+        -0.5 * z**2,
+        (1.0 / xi_safe**2) * log_w - (1.0 + 1.0/xi_safe) * z * inv_w
+    )
+    
+    #----Vectorized assembling
+    # (Negative Log-Likelihood Gradient -> Multiply by -1)
+    # Location Components
+    grad[idx_mu] = -np.sum(dL_dmu)
+    if config[0] >= 1:
+        nc = int(config[0])
+        grad[idx_mu+1 : idx_mu+1+nc] = -(dL_dmu @ cov[:nc, :].T)
+
+    # Scale Components
+    grad[idx_sig] = -np.sum(dL_da)
+    if config[1] >= 1:
+        nc = int(config[1])
+        grad[idx_sig+1 : idx_sig+1+nc] = -(dL_da @ cov[:nc, :].T)
+
+    # Shape Components
+    grad[idx_xi] = -np.sum(dL_dxi)
+    if config[2] >= 1:
+        nc = int(config[2])
+        grad[idx_xi+1 : idx_xi+1+nc] = -(dL_dxi @ cov[:nc, :].T)
+
+    return grad
+    
+            
+def _total_log_prior(params: np.ndarray, prior_specs: list) -> float:
+    """
+    Compute the total log-prior probability of the parameter vector.
+
+    This method calculates the sum of log-prior probabilities for each
+    parameter based on the specified prior distributions in
+    prior_specs.
+    
+    Parameters
+    ----------
+    params : array-like
+        A 1D array of parameter values corresponding to the linear or
+        exponential models for location, scale, and shape parameters.
+        The number and order of parameters must match the configuration.
+    prior_specs : list of tuples
+        A list where each entry is a tuple: (prior_type, hyperparameter_dict).
+        Example: [('normal', {'loc': 50, 'scale': 10}), ('uniform', {'loc': -0.5, 'scale': 1.0})].
+        If None, the function returns 0.0 (equivalent to an improper flat prior).
+
+    Returns
+    -------
+    float
+        The total log-prior probability of the parameter vector.
+        Returns -np.inf if any prior evaluates to a non-finite value.
+
+    Notes
+    -----
+    - Supports 'normal', 'uniform', and 'halfnormal' priors.
+    - If no `prior_specs` are provided (i.e., None), returns 0.0 (flat
+                                                                  prior).
+    - Prior specification format:
+        prior_specs = [('normal', {'loc': 0, 'scale': 10}), ...]
+    """
+    if prior_specs is None:
+        return 0.0
+
+    logp = 0.0
+    _LOG_SQRT_2PI = 0.9189385332046727
+    with np.errstate(over='ignore', invalid='ignore'):
+        for i, (ptype, kw) in enumerate(prior_specs):
+            val = params[i]
+            if ptype == "normal":
+                loc = kw["loc"]
+                scale = kw["scale"]
+                logp += -0.5 * ((val - loc) / scale) ** 2 - np.log(scale)- _LOG_SQRT_2PI
+            
+            elif ptype == "uniform":
+                lo = kw["loc"]
+                hi = lo + kw["scale"]
+                if not (lo <= val <= hi):
+                    return -np.inf
+                logp -= np.log(kw['scale'])
+                
+            elif ptype == "halfnormal":
+                scale = kw["scale"]
+                if v < 0:
+                    return -np.inf
+                logp += (-0.5 * (val / scale) ** 2 - np.log(scale)
+                         - _LOG_SQRT_2PI + 0.69314718056)
+            else:
+                return -np.inf   # unknown type — safe fallback
+            
+            # Sanity Check
+            if not np.isfinite(logp):
+                return -np.inf
+    return logp
+    
+
+def _grad_total_log_prior(params: np.ndarray,
+                    prior_specs: list,
+                    h: float = 1e-4
+                    ) -> np.ndarray :
+    """
+    Compute gradient of log-prior (∂log π(θ)/∂θ) via central difference (h=1e-4).
+    
+    Parameters:
+    -----------
+        params      : 1D array of parameter values.
+        prior_specs : List of tuples matching params order.
+        h           : Step size for finite difference.
+
+    Returns:
+    --------
+        1D array of gradients for each parameter.
+    
+    """
+    grad = np.zeros(len(params))
+    # Initial check: If we are already in an impossible spot, gradient is zero
+    lp0 = _total_log_prior(params,prior_specs) 
+    if not np.isfinite(lp0):
+        return grad
+
+    # Loop through each parameter
+    for i in range(len(params)):
+        step = np.zeros(len(params))
+        step[i] = h
+        lp_plus  = _total_log_prior(params + step, prior_specs)
+        lp_minus = _total_log_prior(params - step, prior_specs)
+        
+        #  Updating the gradient if only, lp at both sides are valid
+        if np.isfinite(lp_plus) and np.isfinite(lp_minus):
+            grad[i] = (lp_plus - lp_minus) / (2.0 * h)
+        else:
+            grad[i] = 0.0
+            
+    return grad
+
 
 def EVD_parsViaMLE(data, dist, verbose=False):
     """
@@ -187,7 +520,7 @@ def EVD_parsViaMLE(data, dist, verbose=False):
         raise ValueError(f"Optimization failed: {result.message}")
 
 
-def comb(n, k):
+def _comb(n, k):
     """
     Compute the binomial coefficient "n choose k".
 
@@ -243,7 +576,7 @@ def l_moments(data):
     data = data / mu
 
     for r in range(0, n_moments):
-        coef = 1 / (n * comb(n - 1, r))
+        coef = 1 / (n * _comb(n - 1, r))
         summ = 0
         for j in range(r + 1, n + 1):
             aux = data[j - 1] * comb(j - 1, r)  # here data[j-1] because index for

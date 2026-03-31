@@ -12,7 +12,7 @@ with location :math:`\mu`, scale :math:`\sigma > 0`, and shape :math:`\xi` is:
 
 .. math::
 
-   F(x; \mu, \sigma, \xi) = \exp\left\{-\left[1 + \xi\left(\frac{x - \mu}{\sigma}\right)\right]^{-1/\xi}\right\} \quad \text{for } \xi \neq 0
+   F(x; \mu, \sigma, \xi) = \exp\left\{-\left[1 - \xi\left(\frac{x - \mu}{\sigma}\right)\right]^{1/\xi}\right\} \quad \text{for } \xi \neq 0
 
 .. math::
 
