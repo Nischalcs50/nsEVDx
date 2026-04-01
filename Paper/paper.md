@@ -1,5 +1,5 @@
 ---
-title: 'nsEVDx: A Python library for modeling non-Stationary extreme value distributions'
+title: 'nsEVDx: A Python library for modeling non-stationary extreme value distributions'
 authors:
 - name: Nischal Kafle
   orcid: 0009-0004-3187-4920
@@ -77,24 +77,49 @@ pip install .
 # Example usage
 
 ``` python
+import numpy as np
 from nsEVDx import NonStationaryEVD
 from scipy.stats import genextreme
 
-sampler = NonStationaryEVD(data, 
-                          covariate, config=[1,0,0], 
-                          dist=genextreme)
+# 1. Generate Dummy Data
+np.random.seed(42)
+n = 30
+t = np.linspace(0, 1, n)
+data = np.random.gumbel(loc=20 + 5 * t, scale=5, size=n)
+
+# 2. Setup Model
+cov = t.reshape(1, -1)
+config = [1, 0, 0] 
+model = NonStationaryEVD(config, data, cov, "gev")
 # config = [1,0,0] means, location parameter is modeled linearly
 # with covariate, while scale and shape are treated as stationary
 # Priors are inferred from the data if not provided while 
 # declaring the sampler
 Print(sampler.descriptions) # provides the parameter descriptions 
-samples, acceptance_rate = sampler.MH_RandWalk(
-    num_samples=10000,
-    initial_params=[10, 0.02 , 5, 0.1], 
+
+# 3. Run
+# B0, B1, sigma, xi
+initial_params = np.array([20.0, 0.1, 5, 0])
+samples, acceptance_rate, r_hat = sampler.MH_RandWalk(
+    num_samples=2500,
+    initial_params=[10, 0.02 , 5, 0], 
     # B0(location intercept), B1 (location slope), scale, shape
-    proposal_widths=[0.01, 0.001, 0.01, 0.001],
-    T=1.0
-)
+    proposal_widths=[2, 0.08, 0.75, 0.1],
+    T=1.5, burn_in = 2000,
+    num_chains = 4, n_jobs=4,
+    )
+
+# 4. PRINT RESULTS
+print(f"acceptance_rate : {a_rate}")
+print(f"r_hat : {r_hat}")
+np.set_printoptions(suppress=True, precision=6)
+sample_all_chains = np.vstack(samples) 
+sample_mean = sample_all_chains.mean(axis=0)
+print(f"Sample mean : {sample_mean}")
+
+# 5. PLOT CONVERGENCE & POSTERIORS
+ns.plot_trace(samples, config, fig_size=(7, 10))
+ns.plot_posterior(samples, config, fig_size=(7, 8))
 ```
 
 See full documentation at: <https://github.com/Nischalcs50/nsEVDx>/docs/API.md

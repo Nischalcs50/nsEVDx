@@ -13,16 +13,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Pandoc and dependencies
-        run: sudo apt-get update && sudo apt-get install -y pandoc texlive texlive-fonts-recommended texlive-latex-extra
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          # Automatically installs a tiny, efficient LaTeX engine
+          tinytex: true
 
-      - name: Build PDF with Pandoc and citations
+      - name: Render PDF with Quarto
         run: |
           cd Paper
-          pandoc paper.md -o paper.pdf \
-            --citeproc \
-            --bibliography=paper.bib \
-            --csl=apa.csl
+          # Quarto automatically uses the metadata in your paper.md
+          quarto render paper.md --to pdf
 
       - name: Upload PDF as artifact
         uses: actions/upload-artifact@v4
