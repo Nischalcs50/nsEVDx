@@ -120,7 +120,8 @@ def neg_log_likelihood_ns(
     dist_name = dist.name.lower() if hasattr(dist, 'name') else str(dist).lower()
     if dist_name in ["gev", "genextreme"]:
         v = 1.0 - xi * z
-        if np.any(v <= 0): return Safe_INF
+        if np.any(v <= 0):
+            return Safe_INF
 
         # Gumbel Limit Handling (xi -> 0)
         eps = 1e-7
@@ -134,7 +135,8 @@ def neg_log_likelihood_ns(
 
     elif dist_name in ["gpd", "genpareto"]:
         w = 1.0 + xi * z
-        if np.any(w <= 0): return Safe_INF
+        if np.any(w <= 0):
+            return Safe_INF
 
         eps = 1e-7
         log_w = np.log(w)
@@ -181,7 +183,9 @@ def _grad_nll_gev(
         idx += nc + 1
         mu = B[0] + B[1:] @ cov[:nc, :]
     else:
-        mu  = np.full(n, params[idx]); idx_mu = idx; idx += 1
+        mu  = np.full(n, params[idx])
+        idx_mu = idx
+        idx += 1
 
     # scale
     if config[1] >= 1:
@@ -191,7 +195,9 @@ def _grad_nll_gev(
         idx += nc + 1
         sigma = np.exp(A[0] + A[1:] @ cov[:nc, :])
     else:
-        sigma = np.full(n, params[idx]); idx_sig = idx; idx += 1
+        sigma = np.full(n, params[idx])
+        idx_sig = idx
+        idx += 1
 
     # shape
     if config[2] >= 1:
@@ -200,7 +206,8 @@ def _grad_nll_gev(
         idx_xi = idx
         xi = K[0] + K[1:] @ cov[:nc, :]
     else:
-        xi = np.full(n, params[idx]); idx_xi = idx
+        xi = np.full(n, params[idx])
+        idx_xi = idx
 
     z = (data - mu) / sigma
     v = 1.0 - xi * z
@@ -287,26 +294,36 @@ def _grad_nll_gpd(
     # Location
     if config[0] >= 1:
         nc = int(config[0])
-        B = params[idx : idx + nc + 1]; idx_mu = idx; idx += nc + 1
+        B = params[idx : idx + nc + 1]
+        idx_mu = idx
+        idx += nc + 1
         mu = B[0] + B[1:] @ cov[:nc, :]
     else:
-        mu = np.full(n, params[idx]); idx_mu = idx; idx += 1
+        mu = np.full(n, params[idx])
+        idx_mu = idx
+        idx += 1
 
     # Scale (with Log-Link)
     if config[1] >= 1:
         nc = int(config[1])
-        A = params[idx : idx + nc + 1]; idx_sig = idx; idx += nc + 1
+        A = params[idx : idx + nc + 1]
+        idx_sig = idx
+        idx += nc + 1
         sigma = np.exp(A[0] + A[1:] @ cov[:nc, :])
     else:
-        sigma = np.full(n, params[idx]); idx_sig = idx; idx += 1
+        sigma = np.full(n, params[idx])
+        idx_sig = idx
+        idx += 1
 
     # Shape
     if config[2] >= 1:
         nc = int(config[2])
-        K = params[idx : idx + nc + 1]; idx_xi = idx
+        K = params[idx : idx + nc + 1]
+        idx_xi = idx
         xi = K[0] + K[1:] @ cov[:nc, :]
     else:
-        xi = np.full(n, params[idx]); idx_xi = idx
+        xi = np.full(n, params[idx])
+        idx_xi = idx
 
     z = (data - mu) / sigma
     w = 1.0 + xi * z                    # GPD
@@ -370,7 +387,6 @@ def _total_log_prior(params: np.ndarray, prior_specs: list) -> float:
     This method calculates the sum of log-prior probabilities for each
     parameter based on the specified prior distributions in
     prior_specs.
-    
     Parameters
     ----------
     params : array-like
@@ -379,9 +395,9 @@ def _total_log_prior(params: np.ndarray, prior_specs: list) -> float:
         The number and order of parameters must match the configuration.
     prior_specs : list of tuples
         A list where each entry is a tuple: (prior_type, hyperparameter_dict).
-        Example: [('normal', {'loc': 50, 'scale': 10}), ('uniform', {'loc': -0.5, 'scale': 1.0})].
+        Example: [('normal', {'loc': 50, 'scale': 10}),
+                  ('uniform', {'loc': -0.5, 'scale': 1.0})].
         If None, the function returns 0.0 (equivalent to an improper flat prior).
-
     Returns
     -------
     float
@@ -437,7 +453,6 @@ def _grad_total_log_prior(params: np.ndarray,
                     ) -> np.ndarray :
     """
     Compute gradient of log-prior (∂log π(θ)/∂θ) via central difference (h=1e-4).
-    
     Parameters:
     -----------
         params      : 1D array of parameter values.
@@ -447,7 +462,6 @@ def _grad_total_log_prior(params: np.ndarray,
     Returns:
     --------
         1D array of gradients for each parameter.
-    
     """
     grad = np.zeros(len(params))
     # Initial check: If we are already in an impossible spot, gradient is zero

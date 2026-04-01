@@ -34,8 +34,16 @@ def test_setup_hmc2():
     cov = np.vstack([np.ones_like(data), np.linspace(0, 1, len(data))])
     config = [1, 0, 0] # B0, B1, scale, shape
     with pytest.raises(ValueError, match="Analytical gradients not"):
-        engine = HMCEngine(NonStationaryEVD(config, data, cov, chi2))
-    assert engine._is_gev is False
+        HMCEngine(NonStationaryEVD(config, data, cov, chi2))
+
+def test_setup_hmc3():
+    """"Verify flags are correct when a
+    valid distribution is used"""
+    data = np.random.gumbel(loc=20, scale=5, size=50)
+    cov = np.vstack([np.ones_like(data), np.linspace(0, 1, len(data))])
+    config = [1, 0, 0] # B0, B1, scale, shape
+    engine = HMCEngine(NonStationaryEVD(config, data, cov, 'gev'))
+    assert engine._is_gev is True
     assert engine._is_gpd is False
 
 def test_hamiltonian_consistency():
@@ -59,7 +67,10 @@ def test_leapfrog_conservation():
     H_start = engine._hamiltonian(params, momentum, M_diag)
 
     # Take 10 tiny steps
-    q_new, p_new = engine._leapfrog(params, momentum, step_size=0.001, n_steps=10, M_diag=M_diag)
+    q_new, p_new = engine._leapfrog(params,
+                                    momentum,
+                                    step_size=0.001,
+                                    n_steps=10, M_diag=M_diag)
     H_end = engine._hamiltonian(q_new, p_new, M_diag)
 
     # Energy should be conserved within a reasonable tolerance

@@ -4,11 +4,6 @@ from .utils import (
     EVD_parsViaMLE,
     GEV_parsViaLM,
     GPD_parsViaLM,
-    _comb,
-    _grad_nll_gev,
-    _grad_nll_gpd,
-    _grad_total_log_prior,
-    _total_log_prior,
     bayesian_metrics,
     gelman_rubin,
     l_moments,
@@ -24,7 +19,11 @@ __all__ = [
     "neg_log_likelihood",
     "neg_log_likelihood_ns",
     "EVD_parsViaMLE",
-    "comb",
+    "_comb",
+    "_grad_nll_gev",
+    "_grad_nll_gpd",
+    "_grad_total_log_prior",
+    "_total_log_prior",
     "l_moments",
     "GPD_parsViaLM",
     "GEV_parsViaLM",
@@ -32,6 +31,7 @@ __all__ = [
     "plot_posterior",
     "bayesian_metrics",
     "gelman_rubin",
+    "_build_param_names"
 ]
 
 

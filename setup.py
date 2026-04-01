@@ -11,6 +11,7 @@ setup(
         "scipy",
         "matplotlib",
         "seaborn",
+        "tqdm"
     ],
     python_requires=">=3.9",
     classifiers=[

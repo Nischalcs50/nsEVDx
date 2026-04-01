@@ -59,7 +59,7 @@ def test_EVD_parsViaMLE2():
 def test_EVD_parsViaMLE3():
     data = genpareto.rvs(-0.1, loc=22, scale=8, size=25, random_state=0)
     with pytest.raises(ValueError, match="Unsupported distribution"):
-        params = EVD_parsViaMLE(data, chi2)
+        EVD_parsViaMLE(data, chi2)
 
 
 def test_neg_log_likelihood():

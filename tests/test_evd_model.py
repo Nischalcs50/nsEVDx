@@ -11,7 +11,7 @@ from nsEVDx import NonStationaryEVD
 from nsEVDx.evd_model import _check_acceptance
 
 try:
-    from joblib import Parallel, delayed
+    from joblib import Parallel, delayed  # noqa: F401
     _JOBLIB_AVAILABLE = True
 except ImportError:
     _JOBLIB_AVAILABLE = False
@@ -361,7 +361,7 @@ class TestNegLogLikelihood:
 class TestGradients:
     def test_gradient_nan_fallback_to_zero(self):
         """
-        Ensure gradient returns zeros if parameters 
+        Ensure gradient returns zeros if parameters
         are outside support (v <= 0).
         """
         m = _model([1, 0, 0])
@@ -370,7 +370,7 @@ class TestGradients:
         assert np.all(grad == 0)
 
     def test_gev_analytical_path(self):
-        """Tests the GEV analytical gradient 
+        """Tests the GEV analytical gradient
         branch in _grad_log_posterior."""
         data = np.random.gumbel(loc=20, scale=5, size=30)
         cov = np.atleast_2d(np.linspace(0, 1, 30))
@@ -382,7 +382,7 @@ class TestGradients:
         assert np.all(np.isfinite(grad))
 
     def test_gpd_analytical_path(self):
-        """Tests the GPD analytical gradient branch 
+        """Tests the GPD analytical gradient branch
         in _grad_log_posterior."""
         data = np.random.exponential(scale=10, size=30)
         cov = np.atleast_2d(np.linspace(0, 1, 30))
@@ -428,7 +428,7 @@ class Test_mcmc_methods:
             initial_params=[20,0,1.6,0,-0.1],
             proposal_widths=[0.5, 0.1, 0.1, 0.1, 0.1],
             T=1.5, burn_in=500, num_chains=3,
-            n_jobs=1
+            n_jobs=3
         )
         np.vstack(samples).mean(axis=0)
         assert np.vstack(samples).shape == (3000, sum(config) + 3)
@@ -525,24 +525,13 @@ class Test_miscellaneous:
         assert samples.shape == (50,)
         assert np.isfinite(samples).all()
 
-    def test_static_ns_EVDrvs2(self):
-        config = [0, 0, 0]
-        m = _modelgpd(config)
-        params=[20,2,-0.15]
-        cov = _make_cov_1d(50)
-        samples = m.ns_EVDrvs(genpareto,
-                            params,
-                            cov, config, size=50)
-        assert samples.shape == (50,)
-        assert np.isfinite(samples).all()
-
     def test_static_ns_EVDrvs3(self):
         config = [0, 0, 0]
         m = _modelgpd(config)
         params=[20,2,-0.15]
         cov = _make_cov_1d(51)
         with pytest.raises(ValueError, match="Provided 'size' "):
-            samples = m.ns_EVDrvs(genpareto,
+            m.ns_EVDrvs(genpareto,
                                 params,
                                 cov, config, size=50)
 
@@ -553,7 +542,8 @@ class Test_miscellaneous:
 
         # Mock minimize to return a successful result immediately
         with patch('nsEVDx.evd_model.minimize') as mock_min:
-            mock_min.return_value = OptimizeResult(success=True, x=np.array([1, 2, 3, 4, 5, 6]))
+            mock_min.return_value = OptimizeResult(success=True,
+                                               x=np.array([1, 2, 3, 4, 5, 6]))
 
             res = m.frequentist_nsEVD(initial_params)
 
@@ -604,8 +594,10 @@ class Test_miscellaneous:
 
         # Force every single minimize call to fail
         with patch('nsEVDx.evd_model.minimize') as mock_min:
-            mock_min.return_value = OptimizeResult(success=False, message="Permanent Failure")
+            mock_min.return_value = OptimizeResult(success=False,
+                                                   message="Permanent Failure")
 
-            with pytest.raises(RuntimeError, match="Optimization failed after max retries"):
+            with pytest.raises(RuntimeError,
+                               match="Optimization failed after max retries"):
                 m.frequentist_nsEVD(np.zeros(6), max_retries=2)
 

@@ -14,7 +14,8 @@ dependencies = [
   "numpy",
   "scipy",
   "matplotlib",
-  "seaborn"
+  "seaborn",
+  "tqdm"
   ]
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -47,6 +48,7 @@ dev = [
 
 [tool.ruff]
 line-length = 88
+exclude = ["test_file.py","test_nsevdx_full.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"] # Error, Flake8, Warnings, Isort

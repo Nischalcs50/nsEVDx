@@ -25,11 +25,11 @@ class HMCEngine:
     Parameters
     ----------
     model : NonStationaryEVD
-        A fitted (or partially set-up) NonStationaryEVD model instance. 
+        A fitted (or partially set-up) NonStationaryEVD model instance.
         Must have ``data``, ``cov``, ``config``, ``dist``,
         and ``prior_specs`` set. Call ``model.prior_specs = model.suggest_priors()``
         first if you have not already done so.
-    grad_method : str
+        grad_method : str
         ``'analytical'`` (default) or fall back to ``'numerical'``.
         Analytical is ~20-50x faster per leapfrog step.
         Numerical is used automatically as fallback for unsupported dists.
@@ -64,7 +64,6 @@ class HMCEngine:
     def _kinetic(self, momentum: np.ndarray, M_diag: np.ndarray) -> float:
         """
         Compute the kinetic energy K(p) using a diagonal mass matrix.
-        
         Formula: K(p) = 0.5 * p^T * M^-1 * p
         Since M is diagonal, this simplifies to 0.5 * sum(p_i^2 / M_ii).
 
@@ -93,18 +92,17 @@ class HMCEngine:
         """
         Compute the Hamiltonian (total energy) for the current state.
         Total Energy: H(q, p) = U(q) + K(p)
-        where U(q) is the potential energy (negative log-posterior) 
+        where U(q) is the potential energy (negative log-posterior)
         and K(p) is the kinetic energy.
-        
         Parameters
         ----------
         params : np.ndarray
             Current position of model parameters in the parameter space.
         momentum : np.ndarray
-            Auxiliary momentum variables, typically sampled from a normal 
+            Auxiliary momentum variables, typically sampled from a normal
             distribution scaled by the mass matrix.
         M_diag : np.ndarray
-            The diagonal elements of the mass matrix used for kinetic 
+            The diagonal elements of the mass matrix used for kinetic
             energy calculation.
         T : float, optional
         Temperature scaling factor; default is 1.0 (no scaling).
@@ -113,7 +111,7 @@ class HMCEngine:
         Returns
         -------
         float
-            The total Hamiltonian energy (potential + kinetic energy). 
+            The total Hamiltonian energy (potential + kinetic energy).
             Returns np.inf if the position is outside the model support.
         """
         with np.errstate(all='ignore'):
@@ -131,9 +129,9 @@ class HMCEngine:
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Perform Störmer-Verlet leapfrog integration to simulate Hamiltonian dynamics.
-        This integrator moves the system along the joint parameter-momentum 
-        space (q, p) while conserving the total Hamiltonian energy. It uses 
-        a gradient-clipping mechanism to prevent numerical instability near 
+        This integrator moves the system along the joint parameter-momentum
+        space (q, p) while conserving the total Hamiltonian energy. It uses
+        a gradient-clipping mechanism to prevent numerical instability near
         distribution boundaries.
 
         Parameters
@@ -158,9 +156,9 @@ class HMCEngine:
 
         Notes
         -----
-        The implementation follows a 'Half-step Momentum' -> 'Full-step Position' 
-        -> 'Half-step Momentum' structure. Gradients are clipped to [-5000, 5000] 
-        to ensure the integrator does not 'explode' when the GEV/GPD parameters 
+        The implementation follows a 'Half-step Momentum' -> 'Full-step Position'
+        -> 'Half-step Momentum' structure. Gradients are clipped to [-5000, 5000]
+        to ensure the integrator does not 'explode' when the GEV/GPD parameters
         approach the support boundary (v -> 0).
         """
         def _get_clipped_grad(pos):
@@ -186,12 +184,12 @@ class HMCEngine:
             p += 0.5 * step_size * _get_clipped_grad(q)
         return q, p
 
-    def _dual_average_init(self, 
-                           step_size_init: float, 
+    def _dual_average_init(self,
+                           step_size_init: float,
                            target_accept: float) -> dict:
         """
         Initialize the state for Nerman & Hoffman's dual averaging algorithm.
-        This setup tracks the running statistics needed to adapt the HMC step 
+        This setup tracks the running statistics needed to adapt the HMC step
         size (epsilon) during the burn-in period.
 
         Parameters
@@ -223,8 +221,7 @@ class HMCEngine:
                              ) -> Tuple[float, float]:
         """
         Update the dual averaging state based on the latest acceptance probability.
-        
-        Adjusts the step size to minimize the difference between the actual 
+        Adjusts the step size to minimize the difference between the actual
         Metropolis acceptance rate and the target rate.
 
         Parameters
@@ -264,9 +261,8 @@ class HMCEngine:
                   ) -> Tuple[np.ndarray, float]:
         """
         Perform a single HMC transition (Proposal + Metropolis Accept/Reject).
-        
-        This method executes the auxiliary momentum sampling, Hamiltonian 
-        dynamics simulation via leapfrog integration, and the final 
+        This method executes the auxiliary momentum sampling, Hamiltonian
+        dynamics simulation via leapfrog integration, and the final
         energy-based acceptance check.
 
         Parameters
@@ -303,22 +299,21 @@ class HMCEngine:
     def _init_mass_matrix(self, params):
         """
         Estimate the diagonal mass matrix (M) using the negative Hessian.
-        
-        This method uses finite differences to compute the second derivative 
-        (curvature) of the log-posterior at the starting position. It follows 
-        the principle that dimensions with higher curvature require 'heavier' 
+        This method uses finite differences to compute the second derivative
+        (curvature) of the log-posterior at the starting position. It follows
+        the principle that dimensions with higher curvature require 'heavier'
         mass to stabilize the leapfrog integrator.
 
         Parameters
         ----------
         params : np.ndarray
-            The parameter vector (typically the MAP estimate) used as the 
+            The parameter vector (typically the MAP estimate) used as the
             center point for the Hessian approximation.
 
         Returns
         -------
         M_diag : np.ndarray
-            Diagonal elements of the mass matrix, clipped to [1e-4, 1e4] 
+            Diagonal elements of the mass matrix, clipped to [1e-4, 1e4]
             to prevent numerical collapse or explosion.
         """
         eps = 1e-4
@@ -326,8 +321,10 @@ class HMCEngine:
         M_diag = np.ones(dim)
         log_p0 = self.model._posterior_log_prob(params)
         for i in range(dim):
-            p_fwd = params.copy(); p_fwd[i] += eps
-            p_bwd = params.copy(); p_bwd[i] -= eps
+            p_fwd = params.copy()
+            p_fwd[i] += eps
+            p_bwd = params.copy()
+            p_bwd[i] -= eps
             d2 = (self.model._posterior_log_prob(p_fwd) -
                   2*log_p0 +
                   self.model._posterior_log_prob(p_bwd)) / eps**2
@@ -346,10 +343,9 @@ class HMCEngine:
                 show_progress):
         """
         Execute a three-phase adaptation schedule for HMC tuning.
-        
         Phase 1 (15%): Initial step-size (epsilon) adaptation.
-        Phase 2 (75%): Windowed mass matrix (M) estimation using sample 
-                       variance, with epsilon reset at each window.
+        Phase 2 (75%): Windowed mass matrix (M) estimation using sample
+                        variance, with epsilon reset at each window.
         Phase 3 (10%): Final step-size refinement with a fixed mass matrix.
 
         Parameters
@@ -380,8 +376,6 @@ class HMCEngine:
         step_size_bar : float
             The smoothed, optimal step size for the sampling phase.
         """
-        dim = len(initial_params)
-        config = self.model.config
         params = initial_params.copy()
         M_diag = self._init_mass_matrix(params)
         # M_diag[0] = 1e-3  # Give the Intercept (B0) much more "mass"
@@ -394,7 +388,6 @@ class HMCEngine:
         phase3 = burn_in - phase1 - phase2
 
         window_size = 25
-        window_start = phase1
         window_samples = []
 
         pbar = tqdm(range(burn_in), desc=f"Warm-up Chain {chain_id+1}",
@@ -446,9 +439,8 @@ class HMCEngine:
                     show_progress=True):
         """
         Perform HMC sampling for a single Markov chain.
-        
-        Coordinates the transition from automated warmup (adaptation) to 
-        the production sampling phase. Includes divergence checking to 
+        Coordinates the transition from automated warmup (adaptation) to
+        the production sampling phase. Includes divergence checking to
         monitor Hamiltonian conservation.
 
         Parameters
@@ -542,10 +534,9 @@ class HMCEngine:
                     T):
         """
         Execute multiple HMC chains in parallel and calculate diagnostics.
-        
-        Implements parameter jittering for different chains to ensure 
-        diverse starting points. Post-processes results to calculate 
-        Gelman-Rubin (R-hat) convergence statistics and prints a 
+        Implements parameter jittering for different chains to ensure
+        diverse starting points. Post-processes results to calculate
+        Gelman-Rubin (R-hat) convergence statistics and prints a
         summary report.
 
         Parameters
@@ -554,7 +545,6 @@ class HMCEngine:
             Number of independent Markov chains to run.
         n_jobs : int
             Number of CPU cores to utilize (uses joblib if > 1).
-        
         Returns
         -------
         results : dict
