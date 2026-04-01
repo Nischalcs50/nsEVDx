@@ -3,4 +3,5 @@ scipy
 matplotlib
 seaborn
 pytest
+tqdm
 
