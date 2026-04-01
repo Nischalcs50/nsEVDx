@@ -38,11 +38,12 @@ Quickstart Guide
 
    ## RUNNING BATESIAN ALGORITHM
    # fitting a non-stationary GEV model to the data using MALA algorithm
+   np.random.seed(42)
    initial_params = [30, 0, 7, 0.1]
    samples, a_rate, r_hat = sampler.MH_Mala(
       num_samples=3000, initial_params=initial_params,
-      step_sizes=[1,0.075,0.75,5e-2], T=5,
-      burn_in=500, num_chains=3, n_jobs=3
+      step_sizes=[1.5,0.075,0.75,5e-2], T=5,
+      burn_in=1000, num_chains=3, n_jobs=3
    )
 
    ## PRINT RESULTS
