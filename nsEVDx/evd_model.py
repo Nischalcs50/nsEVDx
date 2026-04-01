@@ -391,7 +391,7 @@ class NonStationaryEVD:
     
         Returns zeros array if outside support (NaN-safe).
         """
-        # 1. Likelihood Gradient (∂LL/∂θ)
+        # Likelihood Gradient (∂LL/∂θ)
         if self._is_gev:
             with np.errstate(over='ignore', invalid='ignore'):
                 grad_nll = _grad_nll_gev(
@@ -416,7 +416,7 @@ class NonStationaryEVD:
         # Prior Gradient (∂logπ/∂θ)
         grad_prior = self._grad_log_prior(params)
         
-        # 3. Total Gradient
+        # Total Gradient
         return grad_ll + grad_prior
 
     def _numerical_grad_log_posterior(self, params, h=1e-3):

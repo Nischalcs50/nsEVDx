@@ -329,7 +329,7 @@ class HMCEngine:
 
         pbar.close()
         a_rate = accepted/num_samples
-        _check_acceptance(acceptance_rate, "MH_RandWalk")
+        _check_acceptance(a_rate, "HMC")
         return samples, a_rate,step_size, divergences 
 
 

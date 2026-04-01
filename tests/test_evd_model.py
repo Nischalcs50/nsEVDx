@@ -5,6 +5,12 @@ import pytest
 from nsEVDx import NonStationaryEVD
 import warnings
 from nsEVDx.evd_model import _check_acceptance
+from unittest.mock import MagicMock, patch
+try:
+    from joblib import Parallel, delayed
+    _JOBLIB_AVAILABLE = True
+except ImportError:
+    _JOBLIB_AVAILABLE = False
 
 #----_check_acceptance warnings
 def test_manual_warning_capture():
@@ -18,7 +24,10 @@ def test_manual_warning_capture():
         
 #---- Dummy inputs for testing
 RNG = np.random.default_rng(42)
-def _make_data(n=50, loc=20.0, scale=5.0, shape=-0.1, seed=0):
+
+
+def _make_data(dist=genextreme, n=50, 
+               loc=20.0, scale=5.0, shape=-0.1, seed=0):
     """Generate reproducible GEV data."""
     np.random.seed(seed)
     return genextreme.rvs(c=shape, loc=loc, scale=scale, size=n)
@@ -35,6 +44,17 @@ def _make_cov_2d(n=50):
 def _model(config, n=50, dist=genextreme, prior_specs=None, bounds=None):
     """Convenience: return a NonStationaryEVD with sensible data."""
     data = _make_data(n=n)
+    n_cov = max(max(config), 1)
+    if n_cov == 1:
+        cov = _make_cov_1d(n)
+    else:
+        cov = _make_cov_2d(n)
+    return NonStationaryEVD(config, data, cov, dist,
+                            prior_specs=prior_specs, bounds=bounds)
+
+def _modelgpd(config, n=50, dist=genpareto, prior_specs=None, bounds=None):
+    """Convenience: return a NonStationaryEVD with sensible data."""
+    data = _make_data(dist, n=n)
     n_cov = max(max(config), 1)
     if n_cov == 1:
         cov = _make_cov_1d(n)
@@ -150,7 +170,6 @@ class TestGetParamDescription:
 
 #----Testing suggest_priors()
 class TestSuggestPriors:
-
     def test_stationary_returns_3(self):
         m = _model([0, 0, 0])
         ps = m.suggest_priors()
@@ -189,7 +208,6 @@ class TestSuggestPriors:
 
 #----Testing suggest_bounds()
 class TestSuggestBounds:
-
     def test_gev_stationary(self):
         m = _model([0, 0, 0], dist=genextreme)
         bnds = m.suggest_bounds()
@@ -276,9 +294,9 @@ class TestLogPrior:
         val = m._log_prior(np.zeros(6))
         assert np.isfinite(val) 
 
-#---- Testing _neg_log_likelihood()
+#---- Testing _neg_log_likelihood(), _posterior_log_prob
+# _numerical_grad_log_posterior, _grad_log_posterior
 class TestNegLogLikelihood:
-
     def test_finite_for_valid_params(self):
         m = _model([1, 0, 0])
         params = np.array([20.0, 0.5, 5.0, -0.1])
@@ -292,11 +310,18 @@ class TestNegLogLikelihood:
         assert np.isfinite(val)
 
     def test_posterior_without_priors_equals_neg_nll(self):
-        """With flat prior (prior_specs=None), posterior = -NLL."""
         m = _model([0, 0, 0])
         params = np.array([20.0, 5.0, -0.1])
         assert m._posterior_log_prob(params) == pytest.approx(
             -m._neg_log_likelihood(params))
+        
+    def test_analytical_grad(self):
+        m = _model([1, 0, 0])
+        m.prior_specs = m.suggest_priors()
+        params = np.array([20.0, 0.5, 5.0, -0.1])
+        grad = m._grad_log_posterior(params)
+        assert grad.shape == params.shape
+        assert np.all(np.isfinite(grad))
         
     def test_scalar_h(self):
         m = _model([1, 0, 0])
@@ -313,75 +338,98 @@ class TestNegLogLikelihood:
         h_vec = np.array([1e-2, 1e-3, 1e-2, 1e-3])
         grad = m._numerical_grad_log_posterior(params, h=h_vec)
         assert grad.shape == params.shape
+ 
+    def test_posterior_log_prob(selfs):
+        m = _model([1, 0, 0])
+        initial_params = [20,0.01,5,-0.1]
+        m.prior_specs = m.suggest_priors()
+        logp = m._posterior_log_prob(initial_params)
+        assert np.isfinite(logp)
+        
+    def test_grad_log_posterior(self):
+        m = _model([1, 0, 0])
+        initial_params = [20,0.01,5,-0.1]
+        m.prior_specs = m.suggest_priors()
+        grad = m._grad_log_posterior(initial_params)
+        assert grad.shape[0] == 4  
 
+    def test_gradient_nan_fallback_to_zero(self):
+        """E
+        Ensure gradient returns zeros if parameters 
+        are outside support (v <= 0).
+        """
+        m = _model([1, 0, 0])
+        bad_params = np.array([10.0, 100, 1.0, 5.0]) # mu, sigma, xi
+        grad = m._grad_log_posterior(bad_params)
+        assert np.all(grad == 0)                      
+        
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-       
-def test_neg_log_likelihood():
-    model = NonStationaryEVD(config, data, cov, dist)
-    nll = model._neg_log_likelihood(initial_params)
-    assert np.isfinite(nll)
-
-
-def test_posterior_log_prob():
-    model = NonStationaryEVD(config, data, cov, dist)
-    model.prior_specs = model.suggest_priors()
-    logp = model.posterior_log_prob(initial_params)
-    assert np.isfinite(logp)
-
-
-def test_MH_RandWalk():
-    model = NonStationaryEVD(config, data, cov, dist)
-    samples, _ = model.MH_RandWalk(
-        num_samples=100,
-        initial_params=initial_params,
-        proposal_widths=[0.01, 0.01, 0.01, 0.05],
-        T=50,
-    )
-    assert samples.shape == (100, sum(config) + 3)
-
-
-def test_MH_Mala():
-    model = NonStationaryEVD(config, data, cov, dist)
-    samples, _,_ = model.MH_Mala(
-        num_samples=100,
-        initial_params=initial_params,
-        step_sizes=[0.01, 0.01, 0.01, 0.05],
-        T=50,
-    )
-    assert samples.shape == (100, sum(config) + 3)
-
-
-def test_MH_Hmc():
-    model = NonStationaryEVD(config, data, cov, dist)
-    samples, _ = model.MH_Hmc(
-        num_samples=100, initial_params=initial_params, step_size=0.05, T=50
-    )
-    assert samples.shape == (100, sum(config) + 3)
-
-
-def test_frequentist_nsEVD():
-    model = NonStationaryEVD(config, data, cov, dist)
-    model.bounds = model.suggest_bounds()
-    params = model.frequentist_nsEVD(initial_params)
-    assert len(params) == sum(config) + 3
-    assert np.isfinite(params).all()
-
-
-def test_static_ns_EVDrvs():
-    samples = NonStationaryEVD.ns_EVDrvs(dist, initial_params, cov, config, size=50)
-    assert samples.shape == (50,)
-    assert np.isfinite(samples).all()
+#---- Testing MCMC Methods
+class Test_mcmc_methods:
+    def test_MH_RandWalk(self):
+        config = [1, 1, 1]
+        m = _model(config)
+        samples, _, _ = m.MH_RandWalk(
+            num_samples=500,
+            initial_params=[0,0,0,0,0,0],
+            proposal_widths=[0.01, 0.01, 0.01, 0.05, 0.01, 0.01],
+            T=50, burn_in=500, num_chains=2,
+            n_jobs=1
+        )
+        assert np.vstack(samples).shape == (1000, sum(config) + 3)
+        
+    def test_MH_Mala(self):
+        config = [1, 1, 1]
+        m = _model(config)
+        samples, _, _ = m.MH_Mala(
+            num_samples=100,
+            initial_params=[0,0,0,0,0,0],
+            step_sizes=[0.01, 0.01, 0.01, 0.05, 0.01, 0.1],
+            T=50, burn_in=500, num_chains=2,
+            n_jobs=1
+        )
+        assert np.vstack(samples).shape == (200, sum(config) + 3)
+      
+    def test_MH_Hmc(self):
+        config = [1, 1, 0]
+        m = _model(config)
+        result = m.MH_Hmc(
+            num_samples=200, 
+            initial_params=[0,0,0,0,0], 
+            burn_in=200,
+            num_chains=3, n_jobs=1,
+            T=1)
+        samples = np.vstack(result['chains'])
+        assert samples.shape == (600, sum(config) + 3)
+ 
+#---- Miscellaneous
+class Test_miscellaneous:
+    def test_frequentist_nsEVD(self):
+        config = [1, 1, 0]
+        m = _model(config)
+        m.bounds = m.suggest_bounds()
+        initial_params=[20,0,2,0,0]
+        params = m.frequentist_nsEVD(initial_params)
+        assert len(params) == sum(config) + 3
+        assert np.isfinite(params).all()
+    
+    def test_static_ns_EVDrvs(self):
+        config = [1, 1, 0]
+        m = _model(config)
+        params=[20,0.1,2,0.05,-0.15]
+        samples = m.ns_EVDrvs(genextreme, 
+                            params, 
+                            cov, config, size=50)
+        assert samples.shape == (50,)
+        assert np.isfinite(samples).all()
+        
+    def test_static_ns_EVDrvs2(self):
+        config = [1, 1, 0]
+        m = _modelgpd(config)
+        params=[20,0.1,2,0.05,-0.15]
+        cov = _make_cov_1d(50)
+        samples = m.ns_EVDrvs(genpareto, 
+                            params, 
+                            cov, config, size=50)
+        assert samples.shape == (50,)
+        assert np.isfinite(samples).all()

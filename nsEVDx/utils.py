@@ -418,7 +418,7 @@ def _total_log_prior(params: np.ndarray, prior_specs: list) -> float:
                 
             elif ptype == "halfnormal":
                 scale = kw["scale"]
-                if v < 0:
+                if val < 0:
                     return -np.inf
                 logp += (-0.5 * (val / scale) ** 2 - np.log(scale)
                          - _LOG_SQRT_2PI + 0.69314718056)
