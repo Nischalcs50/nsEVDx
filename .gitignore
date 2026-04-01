@@ -25,6 +25,7 @@ venv/
 .DS_Store
 Thumbs.db
 *.coverage
+*.log
 
 # other files
 test_file.py
