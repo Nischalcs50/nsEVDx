@@ -31,6 +31,7 @@ hmc2.py
 nsEVDx_run-HCOE-12HQ9R3.log
 nsEVDx.log
 test_nsEVDx_full.py
+nsEVDx_run.log
 
 # Python coverage artifacts
 .coverage
