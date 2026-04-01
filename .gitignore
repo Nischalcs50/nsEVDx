@@ -9,6 +9,9 @@ __pycache__/
 build/
 dist/
 .pytest_cache/
+.ruff_cache/
+.vscode/
+.idea/
 
 # Virtual environments
 venv/
