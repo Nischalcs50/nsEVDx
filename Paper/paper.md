@@ -122,7 +122,7 @@ ns.plot_trace(samples, config, fig_size=(7, 10))
 ns.plot_posterior(samples, config, fig_size=(7, 8))
 ```
 
-See full documentation at: <https://github.com/Nischalcs50/nsEVDx>/docs/API.md
+See full documentation at: <https://nischalcs50.github.io/nsEVDx/>
 
 # Acknowledgements
 
