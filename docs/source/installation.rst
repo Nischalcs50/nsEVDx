@@ -1,5 +1,5 @@
 Installation
-======
+============
 .. code-block:: bash
 
    pip install nsEVDx  

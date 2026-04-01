@@ -12,6 +12,14 @@ nsEVDx.evd\_model module
    :show-inheritance:
    :undoc-members:
 
+nsEVDx.hmc\_engine module
+-------------------------
+
+.. automodule:: nsEVDx.hmc_engine
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 nsEVDx.utils module
 -------------------
 

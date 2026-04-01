@@ -20,7 +20,7 @@ _LOG_SQRT_2PI = 0.9189385332046727   # log(sqrt(2π))
 
 class HMCEngine:
     """
-    Analytical-gradient HMC / NUTS engine for NonStationaryEVD.
+    Analytical-gradient HMC engine for NonStationaryEVD.
 
     Parameters
     ----------

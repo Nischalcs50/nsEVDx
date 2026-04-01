@@ -36,19 +36,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("nsEVDx")
 
-# Supported distributions
-'''
-SUPPORTED_DISTRIBUTIONS: Dict[str, rv_continuous] = {
-    # --- GEV family ---
-    "gev":      genextreme,    # Generalised Extreme Value  (xi free)
-    "gumbel":   gumbel_r,      # Gumbel  (GEV  xi = 0, Type I)
-    "frechet":  frechet,       # Fréchet (GEV  xi > 0, Type II)
-    "weibull":  weibull_max,   # Weibull (GEV  xi < 0, Type III)
-    # --- GPD family ---
-    "gpd":      genpareto,     # Generalised Pareto Distribution
-    }
-'''
-
 # Helper: acceptance rate warning
 def _check_acceptance(rate: float, sampler_name: str) -> None:
     lo, hi = 0.20, 0.70
@@ -877,9 +864,11 @@ class NonStationaryEVD:
      ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray],
                                                 List[float], np.ndarray]]:
          """
-         Hamiltonian Monte Carlo (HMC) sampler.
-         Parameters
-         ----------
+         Hamiltonian Monte Carlo (HMC) sampler. Wrapper around the HMC egine class
+         to run multi-chain HMC sampling.
+
+        Parameters
+        ----------
          num_samples : int
              Total iterations per chain (excluding burnin).
          initial_params : array-like
@@ -988,9 +977,8 @@ class NonStationaryEVD:
         Generate non-stationary GEV or GPD random samples.
         Parameters
         ----------
-        dist_name : rv_continuous
-                    SciPy continuous distribution object (e.g., genextreme or
-                                                  genpareto).
+        dist : rv_continuous
+            SciPy continuous distribution object (e.g., genextreme or genpareto).
         params : list
             Flattened parameter list according to config.
         cov : np.ndarray
