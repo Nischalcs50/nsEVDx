@@ -1,0 +1,35 @@
+name: Release to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger workflow only on tags starting with "v", e.g., v1.2.3
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip setuptools wheel build twine
+
+      - name: Build package
+        run: python -m build --sdist --wheel
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__  # Use PyPI API token
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: python -m twine upload dist/*
+
+      - name: Confirm release
+        run: echo "Published tag $GITHUB_REF to PyPI successfully!"
