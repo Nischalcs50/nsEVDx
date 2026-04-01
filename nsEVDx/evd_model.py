@@ -7,10 +7,7 @@ from typing import List, Tuple, Union
 import numpy as np
 from scipy.optimize import minimize
 from scipy.stats import (
-    halfnorm,
-    norm,
     rv_continuous,
-    uniform,
 )
 from tqdm import tqdm
 
@@ -20,8 +17,16 @@ try:
 except ImportError:
     _JOBLIB_AVAILABLE = False
 
-from .utils import GEV_parsViaLM, GPD_parsViaLM, gelman_rubin, neg_log_likelihood_ns
-from .utils import _total_log_prior, _grad_nll_gev, _grad_nll_gpd, _grad_total_log_prior
+from .utils import (
+    GEV_parsViaLM,
+    GPD_parsViaLM,
+    _grad_nll_gev,
+    _grad_nll_gpd,
+    _grad_total_log_prior,
+    _total_log_prior,
+    gelman_rubin,
+    neg_log_likelihood_ns,
+)
 
 logging.basicConfig(
     filename='nsEVDx_run.log',
@@ -315,8 +320,8 @@ class NonStationaryEVD:
             return 0.0
 
         return _total_log_prior(params, self.prior_specs)
-    
-    
+
+
     def _grad_log_prior(self, params: np.ndarray) -> np.ndarray:
         """
         Compute gradient of log prior probability: 
@@ -330,8 +335,8 @@ class NonStationaryEVD:
         """
         # Pass the current parameters and the model's specific prior specs
         return _grad_total_log_prior(params, self.prior_specs)
-    
-    
+
+
     def _neg_log_likelihood(self, params):
         """
         Compute the negative log-likelihood for the given parameter vector.
@@ -377,8 +382,8 @@ class NonStationaryEVD:
         with np.errstate(over='ignore', invalid='ignore'):
             x = -1 * self._neg_log_likelihood(params) + self._log_prior(params)
         return x
-    
-    
+
+
     def _grad_log_posterior(self, params: np.ndarray) -> np.ndarray:
         """
         Compute the full gradient of the log-posterior: ∂LL/∂θ + ∂logπ/∂θ.
@@ -408,14 +413,14 @@ class NonStationaryEVD:
             # Fallback if the distribution isn't GEV or GPD
             grad_ll = self._numerical_grad_log_posterior(params)
             grad_nll = -grad_ll
-            
+
         # Nan-check (If we hit an impossible v <= 0 region, return 0)
         if np.any(np.isnan(grad_nll)):
             return np.zeros_like(params)
-        
+
         # Prior Gradient (∂logπ/∂θ)
         grad_prior = self._grad_log_prior(params)
-        
+
         # Total Gradient
         return grad_ll + grad_prior
 
@@ -457,8 +462,8 @@ class NonStationaryEVD:
             else:
                 grad[i] = 0.0
         return grad
-    
-       
+
+
     def _Mala_1chain(
         self,
         num_samples: int,
@@ -1055,7 +1060,7 @@ class NonStationaryEVD:
         num_samples: int,
         initial_params: Union[List[float], np.ndarray],
         step_size: float = 0.01,
-        num_leapfrog_steps: int = 10,        
+        num_leapfrog_steps: int = 10,
         burn_in: int = 1000,
         num_chains: int = 1,
         show_progress: bool = True,
@@ -1094,7 +1099,7 @@ class NonStationaryEVD:
         # Import locally to avoid circular dependency issues
         from .hmc_engine import HMCEngine
         # Initialize the engine with this model instance
-        engine = HMCEngine(model=self, 
+        engine = HMCEngine(model=self,
                            grad_method="analytical")
         # Delegate execution to the engine's multi-chain runner
         return engine._run_chains(

@@ -1,12 +1,15 @@
 # Tests for evd_model
-import numpy as np
-from scipy.stats import genextreme, genpareto
-import pytest
-from nsEVDx import NonStationaryEVD
 import warnings
-from nsEVDx.evd_model import _check_acceptance
 from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pytest
 from scipy.optimize import OptimizeResult
+from scipy.stats import genextreme, genpareto
+
+from nsEVDx import NonStationaryEVD
+from nsEVDx.evd_model import _check_acceptance
+
 try:
     from joblib import Parallel, delayed
     _JOBLIB_AVAILABLE = True
@@ -22,12 +25,12 @@ def test_manual_warning_capture():
         assert len(w) == 1
         assert issubclass(w[-1].category, UserWarning)
         assert "is outside the" in str(w[-1].message)
-        
+
 #---- Dummy inputs for testing
 RNG = np.random.default_rng(42)
 
 
-def _make_data(dist=genextreme, n=50, 
+def _make_data(dist=genextreme, n=50,
                loc=20.0, scale=5.0, shape=-0.1, seed=0):
     """Generate reproducible GEV data."""
     np.random.seed(seed)
@@ -73,29 +76,29 @@ class TestInit:
         assert m.config == [0, 0, 0]
         assert m.prior_specs is None
         assert m.bounds is None
-    
+
     def test_basic_construction_ns_loc(self):
         m = _model([1, 0, 0])
         assert m.n_cov >= 1
-    
+
     def test_basic_construction_fully_ns(self):
         m = _model([2, 1, 1])
         # 2+1+1+3 = 7 parameters
         assert len(m.descriptions) == 7
-    
+
     def test_1d_cov_n_cov_branch(self):
         """When cov is 1-D, n_cov should be 1."""
         data = _make_data(n=30)
         cov_1d = np.linspace(0, 1, 30)   # shape (30,) — not 2D
         m = NonStationaryEVD([0, 0, 0], data, cov_1d, genextreme)
         assert m.n_cov == 1
-    
+
     def test_data_cov_shape_mismatch_raises(self):
         data = _make_data(n=50)
         cov_wrong = _make_cov_1d(n=40)       # length mismatch
         with pytest.raises(AssertionError, match="Mismatch"):
             NonStationaryEVD([1, 0, 0], data, cov_wrong, genextreme)
-    
+
     def test_prior_specs_length_mismatch_raises(self):
         data = _make_data(n=30)
         cov = _make_cov_1d(30)
@@ -103,7 +106,7 @@ class TestInit:
         with pytest.raises(ValueError, match="Mismatch"):
             NonStationaryEVD([1, 0, 0], data, cov, genextreme,
                              prior_specs=bad_priors)
-    
+
     def test_bounds_length_mismatch_raises(self):
         data = _make_data(n=30)
         cov = _make_cov_1d(30)
@@ -111,7 +114,7 @@ class TestInit:
         with pytest.raises(ValueError, match="Mismatch"):
             NonStationaryEVD([1, 0, 0], data, cov, genextreme,
                              bounds=bad_bounds)
-    
+
     def test_prior_specs_stored(self):
         data = _make_data(n=30)
         cov = _make_cov_1d(30)
@@ -124,19 +127,19 @@ class TestInit:
         ]
         m = NonStationaryEVD([1, 0, 0], data, cov, genextreme, prior_specs=ps)
         assert m.prior_specs is ps
-    
+
     def test_bounds_stored(self):
         data = _make_data(n=30)
         cov = _make_cov_1d(30)
         bnds = [(0, 50), (-1, 1), (0.1, 20), (-0.5, 0.5)]
         m = NonStationaryEVD([1, 0, 0], data, cov, genextreme, bounds=bnds)
         assert m.bounds is bnds
-        
+
     def _initial_params(config):
         """Return a plausible flat parameter vector for a given config."""
         n_params = sum(config) + 3
         return np.zeros(n_params)
-      
+
 #----testing get_param_description()
 class TestGetParamDescription:
     def test_all_stationary(self):
@@ -144,7 +147,7 @@ class TestGetParamDescription:
         assert desc == ["mu (stationary location)",
                         "sigma (scale)",
                         "xi (shape)"]
-    
+
     def test_ns_loc_only(self):
         desc = NonStationaryEVD.get_param_description([2, 0, 0], 2)
         assert "B0 (location intercept)" in desc
@@ -152,22 +155,22 @@ class TestGetParamDescription:
         assert "B2 (location slope for covariate 2)" in desc
         assert "sigma (scale)" in desc
         assert "xi (shape)" in desc
-    
+
     def test_ns_scale_only(self):
         desc = NonStationaryEVD.get_param_description([0, 1, 0], 1)
         assert "mu (stationary location)" in desc
         assert "a0 (scale intercept)" in desc
         assert "a1 (scale slope for covariate 1)" in desc
         assert "xi (shape)" in desc
-    
+
     def test_ns_shape_only(self):
         desc = NonStationaryEVD.get_param_description([0, 0, 1], 1)
         assert "k0 (shape intercept)" in desc
         assert "k1 (shape slope for covariate 1)" in desc
-    
+
     def test_fully_ns(self):
         desc = NonStationaryEVD.get_param_description([1, 1, 1], 1)
-        assert len(desc) == 6   # B0,B1, a0,a1, k0,k1        
+        assert len(desc) == 6   # B0,B1, a0,a1, k0,k1
 
 #----Testing suggest_priors()
 class TestSuggestPriors:
@@ -246,7 +249,7 @@ class TestSuggestBounds:
         range_tight = bnds_tight[0][1] - bnds_tight[0][0]
         range_wide  = bnds_wide[0][1]  - bnds_wide[0][0]
         assert range_wide > range_tight
-        
+
 #---- Testing _log_prior()
 class TestLogPrior:
     def _make_model_with_prior(self, prior_type, config=[0, 0, 0]):
@@ -293,7 +296,7 @@ class TestLogPrior:
         """Ensure _log_prior iterates through all groups for ns config."""
         m = self._make_model_with_prior("normal", config=[1, 1, 1])
         val = m._log_prior(np.zeros(6))
-        assert np.isfinite(val) 
+        assert np.isfinite(val)
 
 #---- Testing _neg_log_likelihood(), _posterior_log_prob
 # _numerical_grad_log_posterior, _grad_log_posterior
@@ -315,7 +318,7 @@ class TestNegLogLikelihood:
         params = np.array([20.0, 5.0, -0.1])
         assert m._posterior_log_prob(params) == pytest.approx(
             -m._neg_log_likelihood(params))
-        
+
     def test_analytical_grad(self):
         m = _model([1, 0, 0])
         m.prior_specs = m.suggest_priors()
@@ -323,7 +326,7 @@ class TestNegLogLikelihood:
         grad = m._grad_log_posterior(params)
         assert grad.shape == params.shape
         assert np.all(np.isfinite(grad))
-        
+
     def test_scalar_h(self):
         m = _model([1, 0, 0])
         m.prior_specs = m.suggest_priors()
@@ -339,21 +342,21 @@ class TestNegLogLikelihood:
         h_vec = np.array([1e-2, 1e-3, 1e-2, 1e-3])
         grad = m._numerical_grad_log_posterior(params, h=h_vec)
         assert grad.shape == params.shape
- 
+
     def test_posterior_log_prob(selfs):
         m = _model([1, 0, 0])
         initial_params = [20,0.01,5,-0.1]
         m.prior_specs = m.suggest_priors()
         logp = m._posterior_log_prob(initial_params)
         assert np.isfinite(logp)
-        
+
     def test_grad_log_posterior(self):
         m = _model([1, 0, 0])
         initial_params = [20,0.01,5,-0.1]
         m.prior_specs = m.suggest_priors()
         grad = m._grad_log_posterior(initial_params)
-        assert grad.shape[0] == 4  
-    
+        assert grad.shape[0] == 4
+
 #----Testing gradients
 class TestGradients:
     def test_gradient_nan_fallback_to_zero(self):
@@ -364,8 +367,8 @@ class TestGradients:
         m = _model([1, 0, 0])
         bad_params = np.array([10.0, 100, 1.0, 5.0]) # mu, sigma, xi
         grad = m._grad_log_posterior(bad_params)
-        assert np.all(grad == 0) 
-        
+        assert np.all(grad == 0)
+
     def test_gev_analytical_path(self):
         """Tests the GEV analytical gradient 
         branch in _grad_log_posterior."""
@@ -399,8 +402,8 @@ class TestGradients:
         bad_params = np.array([10.0, 1.0, 10.0])
         # This should trigger the NaN-check 'if np.any(np.isnan(grad_nll))'
         grad = model._grad_log_posterior(bad_params)
-        assert np.all(grad == 0.0) 
-        
+        assert np.all(grad == 0.0)
+
     def test_numerical_grad_log_posterior(self):
         m = _model([1,0,0])
         params = np.array([0, 100, 1.0, 100])
@@ -412,8 +415,8 @@ class TestGradients:
         expected_grad_0 = (f_plus - f_minus) / (2 * h)
         grad = m._numerical_grad_log_posterior(params, h=h)
         # Assert the returned array matches the expected manual calculation
-        assert np.allclose(grad[0], expected_grad_0)                   
-        
+        assert np.allclose(grad[0], expected_grad_0)
+
 
 #---- Testing MCMC Methods
 class Test_mcmc_methods:
@@ -429,7 +432,7 @@ class Test_mcmc_methods:
         )
         np.vstack(samples).mean(axis=0)
         assert np.vstack(samples).shape == (3000, sum(config) + 3)
-        
+
     def test_MH_RandWalk_rhat_gt_2(self):
         config = [1, 1, 1]
         m = _model(config)
@@ -441,7 +444,7 @@ class Test_mcmc_methods:
             n_jobs=1
         )
         assert np.vstack(samples).shape == (2000, sum(config) + 3)
-        
+
     def test_MH_Mala(self):
         config = [1, 1, 1]
         m = _model(config)
@@ -453,7 +456,7 @@ class Test_mcmc_methods:
             n_jobs=1
         )
         assert np.vstack(samples).shape == (2000, sum(config) + 3)
-        
+
     def test_MH_Mala_length_check(self):
         config = [1, 1, 1]
         m = _model(config)
@@ -464,19 +467,31 @@ class Test_mcmc_methods:
                 step_sizes=[0.01, 0.01, 0.01, 0.01, 0.1],
                 T=50, burn_in=500, num_chains=1,
                 n_jobs=1)
-            
+
     def test_MH_Hmc(self):
         config = [1, 1, 0]
         m = _model(config)
         result = m.MH_Hmc(
-            num_samples=1000, 
-            initial_params=[20,0,1.6,-0.1,0], 
+            num_samples=1000,
+            initial_params=[20,0,1.6,-0.1,0],
             burn_in=1000,
             num_chains=1, n_jobs=1,
             T=1)
         samples = result['chains']
         assert samples.shape == (1000, sum(config) + 3)
- 
+
+    def test_MH_Hmc_multichain(self):
+        config = [1, 1, 0]
+        m = _model(config)
+        result = m.MH_Hmc(
+            num_samples=500,
+            initial_params=[20,0,1.6,-0.1,0],
+            burn_in=1000,
+            num_chains=2, n_jobs=2,
+            T=1)
+        samples = np.vstack(result['chains'])
+        assert samples.shape == (1000, sum(config) + 3)
+
 #---- Miscellaneous
 class Test_miscellaneous:
     def test_frequentist_nsEVD(self):
@@ -487,61 +502,61 @@ class Test_miscellaneous:
         params = m.frequentist_nsEVD(initial_params)
         assert len(params) == sum(config) + 3
         assert np.isfinite(params).all()
-    
+
     def test_static_ns_EVDrvs(self):
         config = [1, 1, 1]
         m = _model(config)
         params=[20,0.1,2,0.05,-0.15,0.001]
         cov = _make_cov_1d(50)
-        samples = m.ns_EVDrvs(genextreme, 
-                            params, 
+        samples = m.ns_EVDrvs(genextreme,
+                            params,
                             cov, config, size=50)
         assert samples.shape == (50,)
         assert np.isfinite(samples).all()
-        
+
     def test_static_ns_EVDrvs2(self):
         config = [1, 1, 1]
         m = _modelgpd(config)
         params=[20,0.1,2,0.05,-0.15,0.001]
         cov = _make_cov_1d(50)
-        samples = m.ns_EVDrvs(genpareto, 
-                            params, 
+        samples = m.ns_EVDrvs(genpareto,
+                            params,
                             cov, config, size=50)
         assert samples.shape == (50,)
         assert np.isfinite(samples).all()
-        
+
     def test_static_ns_EVDrvs2(self):
         config = [0, 0, 0]
         m = _modelgpd(config)
         params=[20,2,-0.15]
         cov = _make_cov_1d(50)
-        samples = m.ns_EVDrvs(genpareto, 
-                            params, 
+        samples = m.ns_EVDrvs(genpareto,
+                            params,
                             cov, config, size=50)
         assert samples.shape == (50,)
         assert np.isfinite(samples).all()
-        
+
     def test_static_ns_EVDrvs3(self):
         config = [0, 0, 0]
         m = _modelgpd(config)
         params=[20,2,-0.15]
         cov = _make_cov_1d(51)
         with pytest.raises(ValueError, match="Provided 'size' "):
-            samples = m.ns_EVDrvs(genpareto, 
-                                params, 
+            samples = m.ns_EVDrvs(genpareto,
+                                params,
                                 cov, config, size=50)
- 
+
     def test_mle_success_first_try(self):
         """Verifies success on the first L-BFGS-B attempt."""
         m = _modelgpd([1, 1, 1])
         initial_params = np.zeros(6)
-        
+
         # Mock minimize to return a successful result immediately
         with patch('nsEVDx.evd_model.minimize') as mock_min:
             mock_min.return_value = OptimizeResult(success=True, x=np.array([1, 2, 3, 4, 5, 6]))
-            
+
             res = m.frequentist_nsEVD(initial_params)
-            
+
             assert np.all(res == [1, 2, 3, 4, 5, 6])
             assert mock_min.call_count == 1
 
@@ -549,17 +564,17 @@ class Test_miscellaneous:
         """Triggers L-BFGS-B failure to verify retries and logger warnings."""
         m = _modelgpd([1, 1, 1])
         initial_params = np.zeros(6)
-        
+
         # First 2 calls fail, 3rd call succeeds
         results = [
             OptimizeResult(success=False, message="Flat region"),
             OptimizeResult(success=False, message="Gradient error"),
             OptimizeResult(success=True, x=np.array([10.0]*6))
         ]
-        
+
         with patch('nsEVDx.evd_model.minimize', side_effect=results):
             res = m.frequentist_nsEVD(initial_params, max_retries=5)
-            
+
             assert res[0] == 10.0
             # Check if warnings were logged for the 2 failures
             assert "Optimization failed at attempt 1" in caplog.text
@@ -569,28 +584,28 @@ class Test_miscellaneous:
         """Verifies fallback to Nelder-Mead when L-BFGS-B fails max_retries."""
         m = _modelgpd([1, 1, 1])
         initial_params = np.zeros(6)
-        
+
         # L-BFGS-B fails twice (max_retries=2), then Nelder-Mead succeeds
         side_effects = [
             OptimizeResult(success=False, message="L-BFGS Fail"),
             OptimizeResult(success=False, message="L-BFGS Fail"),
             OptimizeResult(success=True, x=np.array([99.0]*6)) # Nelder-Mead succeeds
         ]
-        
+
         with patch('nsEVDx.evd_model.minimize', side_effect=side_effects):
             res = m.frequentist_nsEVD(initial_params, max_retries=2)
-            
+
             assert res[0] == 99.0
             assert "trying fallback (Nelder-Mead)" in caplog.text
 
     def test_mle_total_failure_raises_runtime_error(self):
         """Verifies that RuntimeError is raised if all methods fail."""
         m = _modelgpd([1, 1, 1])
-        
+
         # Force every single minimize call to fail
         with patch('nsEVDx.evd_model.minimize') as mock_min:
             mock_min.return_value = OptimizeResult(success=False, message="Permanent Failure")
-            
+
             with pytest.raises(RuntimeError, match="Optimization failed after max retries"):
-                m.frequentist_nsEVD(np.zeros(6), max_retries=2) 
-        
+                m.frequentist_nsEVD(np.zeros(6), max_retries=2)
+

@@ -1,14 +1,15 @@
 from .evd_model import NonStationaryEVD
+from .hmc_engine import HMCEngine
 from .utils import (
     EVD_parsViaMLE,
     GEV_parsViaLM,
     GPD_parsViaLM,
-    bayesian_metrics,
     _comb,
-    _total_log_prior,
     _grad_nll_gev,
-    _grad_nll_gpd, 
+    _grad_nll_gpd,
     _grad_total_log_prior,
+    _total_log_prior,
+    bayesian_metrics,
     gelman_rubin,
     l_moments,
     neg_log_likelihood,
@@ -16,7 +17,6 @@ from .utils import (
     plot_posterior,
     plot_trace,
 )
-from .hmc_engine import HMCEngine
 
 __all__ = [
     "NonStationaryEVD",
