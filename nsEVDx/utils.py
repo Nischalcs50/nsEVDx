@@ -125,24 +125,26 @@ def neg_log_likelihood_ns(
         if np.any(v <= 0): return Safe_INF
         
         # Gumbel Limit Handling (xi -> 0)
-        eps = 1e-6
+        eps = 1e-7
         log_v = np.log(v)
+        xi_safe = np.where(np.abs(xi) < eps, eps, xi)
         log_lik = np.where(
             np.abs(xi) < eps,
             -np.log(sigma) - z - np.exp(-z),  # Gumbel/Extreme Type I
-            -np.log(sigma) + (1.0/xi - 1.0) * log_v - v**(1.0/xi)
+            -np.log(sigma) + (1.0/xi_safe - 1.0) * log_v - v**(1.0/xi_safe)
         )
         
     elif dist_name in ["gpd", "genpareto"]:
         w = 1.0 + xi * z
         if np.any(w <= 0): return Safe_INF
         
-        eps = 1e-6
+        eps = 1e-7
         log_w = np.log(w)
+        xi_safe = np.where(np.abs(xi) < eps, eps, xi)
         log_lik = np.where(
             np.abs(xi) < eps,
             -np.log(sigma) - z,  # Exponential Distribution limit
-            -np.log(sigma) - (1.0 + 1.0/xi) * log_w
+            -np.log(sigma) - (1.0 + 1.0/xi_safe) * log_w
         )
     else:
         raise ValueError(f"Unsupported dist_name: {dist}")
@@ -208,7 +210,7 @@ def _grad_nll_gev(
         return np.full(len(params), np.nan)
 
     # Gumbel limit: |xi| < eps, approximating to avoid 1/xi singularity
-    eps      = 1e-6
+    eps      = 1e-7
     xi_safe  = np.where(np.abs(xi) < eps, np.sign(xi + 1e-30) * eps, xi)
     small_xi = np.abs(xi) < eps
     inv_v = 1.0 / v
@@ -313,7 +315,7 @@ def _grad_nll_gpd(
     if np.any(w <= 0):
         return np.full(len(params), np.nan)
 
-    eps      = 1e-6
+    eps      = 1e-7
     xi_safe  = np.where(np.abs(xi) < eps, np.sign(xi + 1e-30) * eps, xi)
     small_xi = np.abs(xi) < eps
     inv_w = 1.0 / w

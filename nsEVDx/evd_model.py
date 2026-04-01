@@ -452,7 +452,7 @@ class NonStationaryEVD:
             step[i] = h_vec[i]
             f_plus = -1* self._neg_log_likelihood(params + step)
             f_minus = -1* self._neg_log_likelihood(params - step)
-            if np.isfinite(f_plus) and np.isfinite(f_minus):
+            if f_plus > -1e20 and f_minus > -1e20:
                 grad[i] = (f_plus - f_minus) / (2 * h_vec[i])
             else:
                 grad[i] = 0.0
@@ -510,9 +510,6 @@ class NonStationaryEVD:
         current_params = np.array(initial_params)
         current_log_post = self._posterior_log_prob(current_params)
         total_params = len(current_params)
-
-        if self.prior_specs is None:
-            self.prior_specs = self.suggest_priors()
 
         accept_count = 0
 

@@ -330,7 +330,7 @@ class HMCEngine:
         pbar.close()
         a_rate = accepted/num_samples
         _check_acceptance(a_rate, "HMC")
-        return samples, a_rate,step_size, divergences 
+        return samples, a_rate, step_size, divergences 
 
 
     def _run_chains(self, 
@@ -361,7 +361,8 @@ class HMCEngine:
                 show_progress=(show_progress and (n_jobs == 1 or cid == 0)))
              
         if num_chains == 1:
-            return _run(0)
+            keys = ['chains', 'a_rate', 'step_size', 'divergences']
+            return dict(zip(keys, _run(0)))
 
         if _JOBLIB_AVAILABLE and n_jobs != 1:
             results = Parallel(n_jobs=n_jobs)(
