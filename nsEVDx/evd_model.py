@@ -95,7 +95,7 @@ class NonStationaryEVD:
         self.data = np.asarray(data)
         self.cov = np.atleast_2d(np.asarray(cov))
         self.dist = dist
-        self.n_cov = cov.shape[0] if cov.ndim > 1 else 1
+        self.n_cov = self.cov.shape[0] if self.cov.ndim > 1 else 1
         self.prior_specs = prior_specs
         self.bounds = bounds
         self._is_gev = dist in ("genextreme", "gev")
