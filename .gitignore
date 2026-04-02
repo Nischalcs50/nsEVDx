@@ -1,5 +1,6 @@
 # Python junk
 __pycache__/
+tests/__pycache__
 *.pyc
 *.pyo
 *.py[cod]
@@ -28,6 +29,7 @@ Thumbs.db
 *.log
 
 # other files
+tests/nsEVDx_run.log
 test_file.py
 examples/nsEVDx_run.log
 hmc.py
