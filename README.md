@@ -153,7 +153,8 @@ If you use `nsEVDx` in your research, please cite:
 
 Kafle, N., & Meier, C. I. (2025). nsEVDx: A Python library for modeling Non-Stationary Extreme Value Distributions. arXiv preprint [arXiv:2509.07261](https://arxiv.org/abs/2509.07261).
 
-Kafle, N., & Meier, C. (2025). nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions (v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.15850043
+Kafle, N., & Meier, C. (2025). nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions (v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.21200086
+Jul 5, 2026
 
 ## Contributing
 
