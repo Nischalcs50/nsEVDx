@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Fix
+
+- changelog and paper updated
+
 ## v0.2.3 (2026-07-04)
 
 ## v0.2.2 (2026-07-04)
