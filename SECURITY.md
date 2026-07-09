@@ -3,7 +3,7 @@
 ## Supported Versions
 | Version | Supported |
 | ------- | --------- |
-| 0.2.3   | ✅✅✅✅|
+| 0.2.4   | ✅✅✅✅|
 
 ## Reporting a Numerical Instability
 If you find a bug affecting EVD estimates, please open a GitHub Issue 

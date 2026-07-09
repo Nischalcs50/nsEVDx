@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="nsEVDx",
-    version="0.2.3",
+    version="0.2.4",
     author="Nischal Kafle",
     description="Modeling Non-stationary Extreme Value Distributions",
     packages=find_packages(),
