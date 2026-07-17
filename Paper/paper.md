@@ -1,5 +1,5 @@
 ---
-title: 'nsEVDx: A Python library for modeling non-stationary extreme value distributions'
+title: 'nsEVDx: A Python library for stationary and non-stationary extreme value modeling'
 authors:
 - name: Nischal Kafle
   orcid: 0009-0004-3187-4920
@@ -25,6 +25,15 @@ tags:
 bibliography: paper.bib
 csl: apa.csl
 ---
+# Summary
+
+Infrastructure design, insurance pricing, and financial planning all rely  on understanding the probability of rare, extreme events, e.g.,extreme floods, rainfall events, and stock market crashes. Traditionally, researchers calculated the probability of extreme event of a given magnitude by assuming that their chance of occurrence remain stationary over time. However, due to shifting global conditions like climate change, rapid urbanization, and evolving economy, probability of these extreme events are changing, they have become "non-stationary." 
+
+`nsEVDx` is an open-source Python package for fitting stationary and non-stationary Extreme Value Distributions (EVDs) to extreme value data.
+
+`nsEVDx` is an open-source Python tool built to help researchers and engineers accurately calculate these shifting risks. It provides a user-friendly, reliable framework that allows users to link the statistical properties of extreme events to changing real-world factors (such as connecting extreme rainfall patterns directly to rising temperatures or linking stock market losses to shifts in market volatility). 
+
+The software packages advanced statistical modeling techniques into an accessible format, offering both traditional calculations and advanced predictive simulation methods. By handling the complex mathematics behind the scenes, `nsEVDx` allows scientists, engineers, and risk analysts to easily build more accurate safety models, leading to more resilient infrastructure designs and better-informed climate adaptation strategies.
 
 # Summary
 
@@ -32,10 +41,30 @@ csl: apa.csl
 
 # Statement of Need
 
+Traditional extreme value frequency analysis assumes that the statistical properties of extreme events remain stationary over time. However, driven by environmental and socioeconomic shifts such as climate change, rapid urbanization, and structural market volatility, real-world extremes are increasingly non-stationary. Accurately quantifying shifting risks and return periods requires statistical tools that can seamlessly incorporate arbitrary, time-varying covariates into all parameters of extreme value distributions (EVDs).
+
+`nsEVDx` is designed to solve the critical accessibility gap between highly flexible but complex general-purpose probabilistic programming languages (PPLs) and rigid, domain-specific packages that lack native Python execution. Building custom, mathematically sound, non-stationary EVD models with custom prior boundaries and gradient-based Bayesian samplers requires significant programmatic and statistical expertise, which presents a steep barrier to entry for applied researchers. 
+
+The target audience for `nsEVDx` consists of hydrologists, climate scientists, infrastructure engineers, and financial risk analysts who require a transparent, reliable, and mathematically rigorous pipeline for non-stationary extreme value modeling. By lowering the programmatic overhead needed to implement both frequentist optimization and advanced Markov Chain Monte Carlo (MCMC) inference algorithms (e.g., MALA and HMC), the software allows domain experts to focus on interpreting non-stationary trends and making defensible engineering decisions under evolving environmental conditions.
+
+
+# Statement of the Field
+
 Probabilistic modeling of extreme events is essential across disciplines, from resilient infrastructure design and climate adaptation to insurance pricing and financial risk management. In many real-world processes, the statistical properties of the extremes are often non-stationary, driven by long-term changes such as climate change, urbanization, or economic shifts. Accurately estimating return periods and risks under these evolving conditions requires fitting non-stationary extreme value distributions (EVDs) to observations.
 
 Several R packages currently support EVD modeling, including `ismev` [@heffernan_j_e_ismev_2003], `extRemes` [@gilleland_extremes_2025], `climextRemes` [@paciorek_climextremes_2016], and `NSGEV` [@irsn_nsgev_2024]. However, these packages differ in their ability to handle non-stationary models and Bayesian inference. Moreover, extending their functionality and integrating modern inference techniques can be challenging. Probabilistic programming frameworks, such as python-based `PyMC` [@oriol_abril-pla_pymc_2023], and `C++` based Stan with interfaces like `PyStan` [@noauthor_pystan_2023] and `CmdStan` [@noauthor_cmdstan_2023], offer powerful tools for building custom statistical models, including those for extreme value analyses. However, these tools require significant expertise in both statistics and programming to develop, tune, and validate the models effectively. As a result, they may be too complex for domain experts like hydrologists, climate scientists, or risk analysts seeking easy-to-use methods. These limitations motivate the need for a python tool that balances flexibility and ease of use, while supporting arbitrary covariates, parameter constraints, custom priors, and advanced MCMC algorithms such as MALA [@roberts_exponential_1996], HMC [@michael_betancourt_conceptual_2017], for fitting non-stationary Generalized Extreme Value (GEV) and Generalized Pareto (GPD) distributions, the two most prominent EVDs. 
 We advance `nsEVDx`, a flexible, user-friendly python package that streamlines non-stationary EVD modeling without compromising statistical rigor. `nsEVDx` has been applied in hydrology [@kafle_evaluating_2025] and is applicable to fields like climate science, finance, and engineering, where it is critical to understand the frequency and intensity of extremes under non-stationarity conditions. Its application is also reflected in an upcoming technical paper on trends in short-duration extreme rainfall in the Southeastern U.S. [@kafle_detecting_nodate]. Compared with existing packages, nsEVDx provides a Python-native implementation with built-in Bayesian MCMC algorithms and flexible support for user-specified covariates, while avoiding the need to manually construct EVD models as required in `PyMC` or `NumPyro`.
+
+
+# Software Design
+
+
+# Research Impact Statement
+
+
+
+
+
 
 # Features
 
@@ -48,6 +77,9 @@ We advance `nsEVDx`, a flexible, user-friendly python package that streamlines n
 -   Integrated diagnostics: trace plots, convergence checks, and posterior visualization
 -   Modular and extensible API designed for ease of use by domain scientists
 -   Model comparison using the Deviance Information Criterion (DIC), Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), and likelihood ratio tests
+
+
+
 
 # Implementation
 
@@ -116,6 +148,10 @@ ns.plot_posterior(samples, config, fig_size=(7, 8))
 ```
 
 See full documentation at: <https://nischalcs50.github.io/nsEVDx/>
+
+# AI Usage Disclosure
+
+AI tools were used during the programming and development of this library, as well as for drafting, editing, and improving the clarity of the manuscript. All underlying scientific content, core software architecture, analyses, and final interpretations were conceived, verified, and approved entirely by the authors.
 
 # Acknowledgements
 
