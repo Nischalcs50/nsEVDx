@@ -32,7 +32,7 @@ Infrastructure design, insurance pricing, and financial planning all rely on und
 
 # Statement of Need
 
-Traditional extreme value frequency analysis assumes that the statistical properties of extreme events remain stationary over time. However, driven by environmental and socioeconomic shifts such as climate change, rapid urbanization, and structural market volatility, the probability distribution of extremes are increasingly non-stationary [cite_something]. Accurately quantifying shifting risks and return periods requires statistical tools that can seamlessly incorporate arbitrary, time-varying covariates into all parameters of extreme value distributions (EVDs).
+Traditional extreme value frequency analysis assumes that the statistical properties of extreme events remain stationary over time. However, driven by environmental and socioeconomic shifts such as climate change, rapid urbanization, and structural market volatility, the probability distribution of extremes are increasingly observed to exhibit non-stationary behavior in hydroclimatic systems [cite_something]. Accurately quantifying shifting risks and return periods requires statistical tools that can seamlessly incorporate arbitrary, time-varying covariates into all parameters of extreme value distributions (EVDs).
 
 `nsEVDx` is designed to solve the critical accessibility gap between highly flexible but complex general-purpose probabilistic programming languages (PPLs) and rigid, domain-specific packages that lack native Python execution. Building custom, mathematically sound, non-stationary EVD models with custom prior boundaries and gradient-based Bayesian samplers requires significant programmatic and statistical expertise, which presents a steep barrier to entry for applied researchers. 
 
@@ -48,47 +48,23 @@ We advance `nsEVDx`, a flexible, user-friendly python package that streamlines n
 
 
 # Software Design
-`nsEVDx` is designed to provide a transparent and researcher-focused framework for fitting stationary and non-stationary extreme value distributions while minimizing the programming burden typically associated with custom Bayesian implementations. The concepts of non-stationarity and MCMC techniques used in `nsEVDx` are based on the foundational texts by @christian_p_robert_introducing_2009 and @coles_introduction_2007. The core class `NonStationaryEVD` handles parameter parsing and specification, log-likelihood evaluation, prior assignment, optimization, and MCMC sampling. This unified design allows users to switch between frequentist and Bayesian workflows without redefining model structures. Frequentist methods uses `scipy.optimize` to minimize the non-stationary negative log likelihood, while the Bayesian MCMC methods are implemented in numpy, allowing full transparency and customization. The implementation of L-moments in some utility methods follows the approach described by @j_r_m_hosking_regional_1997. Currently, `nsEVDx` supports linear modeling for the location and shape parameters, and exponential (log-linear) modeling for the scale parameter, to ensure positivity.
+`nsEVDx` is designed to provide a transparent and researcher-focused framework for fitting stationary and non-stationary extreme value distributions while minimizing the programming burden typically associated with custom Bayesian implementations. The concepts of non-stationarity and MCMC techniques used in `nsEVDx` are based on the foundational texts by @christian_p_robert_introducing_2009 and @coles_introduction_2007. The core class `NonStationaryEVD` handles parameter parsing and specification, log-likelihood evaluation, prior assignment, optimization, and MCMC sampling. This unified design allows users to switch between frequentist and Bayesian workflows without redefining model structures. Frequentist methods uses `scipy.optimize` to minimize the non-stationary negative log likelihood, while the Bayesian MCMC methods are implemented in numpy, allowing full transparency and customization. In Bayesian estimation, `nsEVDx` can infer prior specifications based on the data and configuration or accept user-defined priors. In the frequentist mode, it can determine suitable parameter bounds automatically. However, user-defined priors or bounds are recommended for better convergence and interpretability. The implementation of L-moments in some utility methods follows the approach described by @j_r_m_hosking_regional_1997. Currently, `nsEVDx` supports linear modeling for the location and shape parameters, and exponential (log-linear) modeling for the scale parameter, to ensure positivity.
 
 `nsEVDx` controls non-stationarity via a configuration vector `config = [a, b, c]`, where each entry specifies the number of covariates used to model the location, scale, and shape parameters of the EVD. Entry with a value of `0` implies stationarity (i.e., no covariate dependence), while integer values `> 0` indicate non-stationary modeling using the corresponding number of covariates for the parameter. This representation provides a compact and scalable mechanism for defining a wide range of stationary and non-stationary models while maintaining a consistent user interface. Currently, location and shape parameters can be modeled using linear relationships, while the scale parameter is modeled using an exponential link function to ensure positivity. Polynomial relationships can be accommodated by transforming covariates before model fitting. Future releases aim to incorporate spline-based and mixed-population formulations.
 
-In Bayesian estimation, `nsEVDx` can infer prior specifications based on the data and configuration or accept user-defined priors. In the frequentist mode, it can determine suitable parameter bounds automatically. However, user-defined priors or bounds are recommended for better convergence and interpretability. Planned extensions include mixed population models with categorical covariates, an emerging area in hydroclimatic extremes, along with computational optimizations to improve performance.
+Another key design decision is the implementation of Bayesian samplers directly in NumPy rather than relying exclusively on external probabilistic programming frameworks. This approach maximizes transparency, enables users to inspect and modify algorithmic details, and reduces dependencies. The package currently provides Random-Walk Metropolis-Hastings, Metropolis-Adjusted Langevin Algorithm (MALA), and Hamiltonian Monte Carlo (HMC) samplers, allowing users to balance computational efficiency and inferential robustness according to their application. 
+
+To support model evaluation and reproducibility, `nsEVDx` includes diagnostic tools for trace plots, posterior summaries, acceptance rates, and Gelman-Rubin ($\hat{R}$) convergence metrics. It also provides model selection options, including DIC, AIC, BIC, and likelihood-ratio tests, enabling complete workflows within a single environment.
+
+The package is intentionally lightweight, relying primarily on NumPy and SciPy for computation and Matplotlib and Seaborn for visualization. This minimal dependency footprint improves portability and simplifies installation while preserving extensibility for future methodological developments.
+
 
 # Research Impact Statement
+`nsEVDx` has been developed to improve accessibility of advanced extreme value modeling methods for researchers working in Python environments. The software lowers the barrier to applying advanced Bayesian methods, including MALA and HMC sampling, which are often inaccessible to domain scientists due to the complexity of general-purpose probabilistic programming frameworks.
 
+The package has already been applied in ongoing hydroclimatic research focused on trend detection and characterization of extreme precipitation[@kafle2026raingauge], and it supports broader applications in climate science, water resources engineering, infrastructure design, and financial risk assessment.
 
-
-
-
-
-# Features
-
--   Supports both the Generalized Extreme Value (GEV) and Generalized Pareto (GPD) distributions
--   Non-stationary modeling via linear and log-linear relationships between parameters and covariates
--   Independent non-stationarity in location, scale, and shape parameters
--   Frequentist and Bayesian inference support
--   MCMC algorithms: Random Walk, Metropolis-adjusted Langevin (MALA), and Hamiltonian Monte Carlo (HMC)
--   Custom priors, parameter bounds, and temperature scaling for tuning MCMC
--   Integrated diagnostics: trace plots, convergence checks, and posterior visualization
--   Modular and extensible API designed for ease of use by domain scientists
--   Model comparison using the Deviance Information Criterion (DIC), Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), and likelihood ratio tests
-
-
-
-
-
-
-# Installations
-
-Install the package via pip: `pip install nsEVDx`
-
-or alternatively, clone the repository and install manually:
-
-```         
-git clone https://github.com/Nischalcs50/nsEVDx.git
-cd nsEVDx
-pip install .
-```
+The software is openly developed, documented, tested, and distributed through both GitHub and PyPI, supporting long-term reuse and community contributions. Its combination of accessible model specification, flexible non-stationary formulations, and built-in Bayesian inference fills an important gap between specialized extreme-value software and general-purpose probabilistic programming environments.
 
 # Example usage
 
