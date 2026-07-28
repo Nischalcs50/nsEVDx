@@ -221,6 +221,46 @@ def test_grad_gpd_nan():
     grad = _grad_nll_gpd(params, data, cov, config)
     assert np.all(np.isnan(grad))
 
+
+#---- Analytical gradient vs finite-difference of the NLL ---
+def _fd_grad_ns(params, data, cov, config, dist, h=1e-6):
+    """Central-difference gradient of neg_log_likelihood_ns wrt each param."""
+    g = np.zeros_like(params, dtype=float)
+    for i in range(len(params)):
+        step = np.zeros_like(params, dtype=float)
+        step[i] = h
+        fp = neg_log_likelihood_ns(params + step, data, cov, config, dist)
+        fm = neg_log_likelihood_ns(params - step, data, cov, config, dist)
+        g[i] = (fp - fm) / (2.0 * h)
+    return g
+
+
+# (dist, gradfn, config, params, rvs_shape, rvs_loc, rvs_scale)
+_GRAD_FD_CASES = [
+    # stationary (identity-link scale) — the branch that was off by a factor sigma
+    (genextreme, _grad_nll_gev, [0, 0, 0], [10.0, 2.0, 0.1], -0.1, 10, 2),
+    (genextreme, _grad_nll_gev, [0, 0, 0], [10.0, 3.0, -0.2], 0.2, 10, 3),
+    (genpareto, _grad_nll_gpd, [0, 0, 0], [0.0, 1.5, 0.2], 0.2, 0, 1.5),
+    (genpareto, _grad_nll_gpd, [0, 0, 0], [0.0, 2.5, 0.1], 0.1, 0, 2.5),
+    # non-stationary log-link scale — the control, must stay correct
+    (genextreme, _grad_nll_gev, [0, 1, 0], [10.0, 0.6, 0.05, 0.1], -0.1, 10, 2),
+    (genpareto, _grad_nll_gpd, [0, 1, 0], [0.0, 0.4, 0.05, 0.1], 0.1, 0, 1.5),
+    (genextreme, _grad_nll_gev, [1, 1, 1],
+     [10.0, 0.3, 0.6, 0.05, 0.1, 0.02], -0.1, 10, 2),
+    (genpareto, _grad_nll_gpd, [1, 1, 1],
+     [0.0, 0.1, 0.4, 0.05, 0.1, 0.01], 0.1, 0, 1.5),
+]
+
+
+@pytest.mark.parametrize("dist,gradfn,config,params,shp,loc,scl", _GRAD_FD_CASES)
+def test_grad_matches_finite_difference(dist, gradfn, config, params, shp, loc, scl):
+    data = dist.rvs(shp, loc=loc, scale=scl, size=30, random_state=1)
+    cov = np.vstack([np.ones_like(data), np.linspace(0, 1, len(data))])
+    params = np.array(params, dtype=float)
+    analytic = gradfn(params, data, cov, config)
+    numeric = _fd_grad_ns(params, data, cov, config, dist)
+    assert np.allclose(analytic, numeric, rtol=1e-4, atol=1e-5)
+
 #---- Priors and gradient of prior---
 def test_total_log_prior():
     params = [5.0, 0.1]
