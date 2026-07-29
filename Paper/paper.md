@@ -6,22 +6,23 @@ authors:
   affiliation: 1
   corresponding: true
 - name: Claudio Meier
+  orcid: 
   affiliation: 1
 affiliations:
 - name: Department of Civil Engineering, University of Memphis, USA
   index: 1
 date: 2026-07-05
 software_repository_url: https://github.com/Nischalcs50/nsEVDx
-archive_url: https://zenodo.org/record/XXXXXXX
+archive_url: https://doi.org/10.5281/zenodo.21286163
 license: MIT
 tags:
-  - Generalized extreme value
-  - Generalized pareto
-  - Partial duration series
-  - Hydroclimatology
+  - Generalized Extreme Value
+  - Generalized Pareto
+  - Partial Duration Series
+  - Hydroclimatic Extremes
   - Bayesian
   - MCMC
-  - Hamiltonian
+  - Hamiltonian Monte Carlo
 bibliography: paper.bib
 csl: apa.csl
 ---
@@ -31,11 +32,11 @@ Infrastructure design, insurance pricing, and financial planning all rely on und
 
 # Statement of Need
 
-Traditional extreme value frequency analysis assumes that the statistical properties of extreme events remain stationary over time. However, driven by environmental and socioeconomic shifts such as climate change, rapid urbanization, and structural market volatility, the probability distribution of extremes are increasingly observed to exhibit non-stationary behavior in hydroclimatic systems [@prosdocimi2015detection;@jayaweera2025evidence;@eccles2025substantial]. Accurately quantifying shifting risks and return periods requires statistical tools that can seamlessly incorporate arbitrary, time-varying covariates into all parameters of extreme value distributions (EVDs).
+Traditional extreme value frequency analysis assumes that the statistical properties of extreme events remain stationary over time. However, non-stationary behavior in extreme events has been documented across hydroclimatic, engineering, and financial applications. In hydroclimatic systems, for example, changes in extreme precipitation have been associated with factors such as urbanization and changing climate conditions [@prosdocimi2015detection;@jayaweera2025evidence;@eccles2025substantial]. Such changes can alter the frequency and magnitude of extreme events over time. Accurately quantifying these evolving risks and return periods requires statistical tools that can incorporate arbitrary, time-varying covariates into all parameters of EVDs.
 
-`nsEVDx` is designed to solve the critical accessibility gap between highly flexible but complex general-purpose probabilistic programming languages (PPLs) and rigid, domain-specific packages that lack native Python execution. Building custom, mathematically sound, non-stationary EVD models with custom prior boundaries and gradient-based Bayesian samplers requires significant programmatic and statistical expertise, which presents a steep barrier to entry for applied researchers. 
+While several software tools support extreme value analysis, implementing and evaluating non-stationary EVD models often requires substantial statistical and programming expertise, particularly when Bayesian inference and advanced sampling algorithms are required. `nsEVDx` was developed to provide a unified framework for fitting stationary and non-stationary Generalized Extreme Value (GEV) and Generalized Pareto (GPD) models using both frequentist and Bayesian approaches.
 
-The target audience for `nsEVDx` consists of hydrologists, climate scientists, infrastructure engineers, and financial risk analysts who require a transparent, reliable, and mathematically rigorous pipeline for non-stationary extreme value modeling. By lowering the programmatic overhead needed to implement both frequentist optimization and advanced Markov Chain Monte Carlo (MCMC) inference algorithms (e.g., MALA and HMC), the software allows domain experts to focus on interpreting non-stationary trends and making defensible engineering decisions under evolving environmental conditions.
+The target audience for `nsEVDx` consists of hydrologists, climate scientists, infrastructure engineers, and financial risk analysts who require a transparent, reliable, and mathematically rigorous pipeline for non-stationary extreme value modeling. By reducing the implementation effort effort needed to implement both frequentist optimization and advanced Markov Chain Monte Carlo (MCMC) sampling algorithms, the software allows practicioners to focus on understanding changing risks and their implications for decision-making.
 
 
 # Statement of the Field
