@@ -257,10 +257,14 @@ def _grad_nll_gev(
         grad[idx_mu + 1 : idx_mu + 1 + nc] = -(dL_dmu @ cov[:nc, :].T)
 
     # Scale components
-    grad[idx_sig] = -np.sum(dL_da)
     if config[1] >= 1:
+        # log-link: parameter is a = log sigma, so dL_da already carries sigma
+        grad[idx_sig] = -np.sum(dL_da)
         nc = int(config[1])
         grad[idx_sig + 1 : idx_sig + 1 + nc] = -(dL_da @ cov[:nc, :].T)
+    else:
+        # identity link: parameter is sigma, drop the log-link sigma factor
+        grad[idx_sig] = -np.sum(dL_da / sigma)
 
     # Shape components
     grad[idx_xi] = -np.sum(dL_dxi)
@@ -366,10 +370,14 @@ def _grad_nll_gpd(
         grad[idx_mu+1 : idx_mu+1+nc] = -(dL_dmu @ cov[:nc, :].T)
 
     # Scale Components
-    grad[idx_sig] = -np.sum(dL_da)
     if config[1] >= 1:
+        # log-link: parameter is a = log sigma, so dL_da already carries sigma
+        grad[idx_sig] = -np.sum(dL_da)
         nc = int(config[1])
         grad[idx_sig+1 : idx_sig+1+nc] = -(dL_da @ cov[:nc, :].T)
+    else:
+        # identity link: parameter is sigma, drop the log-link sigma factor
+        grad[idx_sig] = -np.sum(dL_da / sigma)
 
     # Shape Components
     grad[idx_xi] = -np.sum(dL_dxi)
