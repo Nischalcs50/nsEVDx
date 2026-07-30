@@ -6,7 +6,7 @@
 	abstract = {PyMC is a probabilistic programming library for Python that provides tools for constructing and fitting Bayesian models. It offers an intuitive, readable syntax that is close to the natural syntax statisticians use to describe models. PyMC leverages the symbolic computation library PyTensor, allowing it to be compiled into a variety of computational backends, such as C, JAX, and Numba, which in turn offer access to different computational architectures including CPU, GPU, and TPU. Being a general modeling framework, PyMC supports a variety of models including generalized hierarchical linear regression and classification, time series, ordinary differential equations (ODEs), and non-parametric models such as Gaussian processes (GPs). We demonstrate PyMC's versatility and ease of use with examples spanning a range of common statistical models. Additionally, we discuss the positive role of PyMC in the development of the open-source ecosystem for probabilistic programming.},
 	journal = {PeerJ Computer Science},
 	author = {{Oriol Abril-Pla} and {Virgile Andreani} and {C. Carroll} and {L. Y. Dong} and {Christopher Fonnesbeck} and {Maxim Kochurov} and {Ravin Kumar} and {Junpeng Lao} and {Christian C. Luhmann} and {Osvaldo A. Martin} and {Michael Osthege} and {Ricardo Vieira} and {Thomas V. Wiecki} and {Robert Zinkov}},
-	month = sep,
+	month = {sep},
 	year = {2023},
 	doi = {10.7717/peerj-cs.1516},
 	pmcid = {10495961},
@@ -19,8 +19,9 @@
 	abstract = {Hamiltonian Monte Carlo has proven a remarkable empirical success, but only recently have we begun to develop a rigorous understanding of why it performs so well on difficult problems and how it is best applied in practice. Unfortunately, that understanding is confined within the mathematics of differential geometry which has limited its dissemination, especially to the applied communities for which it is particularly important. In this review I provide a comprehensive conceptual account of these theoretical foundations, focusing on developing a principled intuition behind the method and its optimal implementations rather of any exhaustive rigor. Whether a practitioner or a statistician, the dedicated reader will acquire a solid grasp of how Hamiltonian Monte Carlo works, when it succeeds, and, perhaps most importantly, when it fails.},
 	journal = {arXiv: Methodology},
 	author = {Betancourt, Michael},
-	month = jan,
+	month = {jan},
 	year = {2017},
+	doi = {https://doi.org/10.48550/arXiv.1701.02434}
 	}
 
 @misc{heffernan_j_e_ismev_2003,
@@ -30,10 +31,11 @@
 	abstract = {Functions to support the computations carried out in `An Introduction to Statistical Modeling of Extreme Values' by Stuart Coles. The functions may be divided into the following  groups; maxima/minima, order statistics, peaks over thresholds and point processes.},
 	urldate = {2025-07-01},
 	author = {{Heffernan J. E.} and {Stephenson A.G.} and {Gilleland E.}},
-	month = apr,
+	month = {apr},
 	year = {2003},
 	note = {Institution: Comprehensive R Archive Network
-Pages: 1.42}
+Pages: 1.42},
+	doi = {10.32614/CRAN.package.ismev}
 }
 
 @misc{paciorek_climextremes_2016,
@@ -43,24 +45,27 @@ Pages: 1.42}
 	abstract = {Functions for fitting GEV and POT (via point process fitting) models for extremes in climate data, providing return values, return probabilities, and return periods for stationary and nonstationary models. Also provides differences in return values and differences in log return probabilities for contrasts of covariate values. Functions for estimating risk ratios for event attribution analyses, including uncertainty. Under the hood, many of the functions use functions from 'extRemes', including for fitting the statistical models. Details are given in Paciorek, Stone, and Wehner (2018) {\textless}doi:10.1016/j.wace.2018.01.002{\textgreater}.},
 	urldate = {2025-07-01},
 	author = {Paciorek, Christopher},
-	month = aug,
+	month = {aug},
 	year = {2016},
 	note = {Institution: Comprehensive R Archive Network
-Pages: 0.3.1}
+Pages: 0.3.1},
+	doi = {10.32614/CRAN.package.climextRemes}
 }
 
 @misc{noauthor_pystan_2023,
 	title = {{PyStan}: {The} python interface to {Stan}},
 	url = {https://pystan.readthedocs.io/},
-	author = {Stan development Team,},
-	year = {2023}
+	author = {Stan Development Team,},
+	year = {2023},
+	doi = {10.5281/zenodo.1456206}
 }
 
 @misc{noauthor_cmdstan_2023,
 	title = {{CmdStan}: {The} command-line interface to {Stan}},
 	url = {https://mc-stan.org/users/interfaces/cmdstan},
-	author = {Stan development Team,},
+	author = {Stan Development Team,},
 	year = {2023},
+	doi = {10.5281/zenodo.1117248}
 }
 
 @book{j_r_m_hosking_regional_1997,
@@ -68,17 +73,18 @@ Pages: 0.3.1}
 	volume = {93},
 	abstract = {Preface 1. Regional frequency analysis 2. L-moments 3. Screening the data 4. Identification of homogeneous regions 5. Choice of a frequency distribution 6. Estimation of the frequency distribution 7. Performance of the regional L-moment algorithm 8. Other topics 9. Examples Appendix References Index of notation.},
 	author = {Hosking, Jonathan R. M. and Wallis, James R.},
-	month = apr,
+	month = {apr},
 	year = {1997},
 	url = {https://ui.adsabs.harvard.edu/abs/1997rfa..book.....H},
-	publisher = {Cambridge University Press}
+	publisher = {Cambridge University Press},
+	doi = {https://doi.org/10.1017/CBO9780511529443}
 }
 
 @book{christian_p_robert_introducing_2009,
 	title = {Introducing {Monte} {Carlo} {Methods} with {R}},
 	abstract = {Computational techniques based on simulation have now become an essential part of the statistician's toolbox. It is thus crucial to provide statisticians with a practical understanding of those methods, and there is no better way to develop intuition and skills for simulation than to use simulation to solve statistical problems. Introducing Monte Carlo Methods with R covers the main tools used in statistical simulation from a programmer's point of view, explaining the R implementation of each simulation technique and providing the output for better understanding and comparison. While this book constitutes a comprehensive treatment of simulation methods, the theoretical justification of those methods has been considerably reduced, compared with Robert and Casella (2004). Similarly, the more exploratory and less stable solutions are not covered here. This book does not require a preliminary exposure to the R programming language or to Monte Carlo methods, nor an advanced mathematical background. While many examples are set within a Bayesian framework, advanced expertise in Bayesian statistics is not required. The book covers basic random generation algorithms, Monte Carlo techniques for integration and optimization, convergence diagnoses, Markov chain Monte Carlo methods, including Metropolis \{\vphantom{\}}Hastings and Gibbs algorithms, and adaptive algorithms. All chapters include exercises and all R programs are available as an R package called mcsm. The book appeals to anyone with a practical interest in simulation methods but no previous exposure. It is meant to be useful for students and practitioners in areas such as statistics, signal processing, communications engineering, control theory, econometrics, finance and more. The programming parts are introduced progressively to be accessible to any reader.},
 	author = {Robert, Christian P. and Casella, George},
-	month = nov,
+	month = {nov},
 	year = {2009},
 	doi = {10.1007/978-1-4419-1576-4}
 	}
@@ -89,10 +95,11 @@ Pages: 0.3.1}
 	series = {Springer series in statistics},
 	title = {An introduction to statistical modeling of extreme values},
 	isbn = {978-1-85233-459-8},
-	url = {https://doi.org/10.1007/978-1-4471-3675-0},
+	doi = {https://doi.org/10.1007/978-1-4471-3675-0},
 	language = {en},
 	publisher = {Springer},
 	author = {Coles, Stuart},
+	month = {nov},
 	year = {2007}
 }
 
@@ -105,7 +112,7 @@ Pages: 0.3.1}
 	language = {en},
 	urldate = {2025-07-01},
 	author = {Gilleland, Eric},
-	month = may,
+	month = {may},
 	year = {2025},
 	note = {Institution: Comprehensive R Archive Network
 Pages: 2.2-1}
@@ -130,7 +137,7 @@ Pages: 2.2-1}
 	urldate = {2025-07-01},
 	journal = {Bernoulli},
 	author = {Roberts, Gareth O. and Tweedie, Richard L.},
-	month = dec,
+	month = {dec},
 	year = {1996},
 	pages = {341}
 }
@@ -141,7 +148,7 @@ Pages: 2.2-1}
   school = {The University of Memphis},
   year = {2026},
   type = {PhD dissertation},
-  doi = {add_later_from_PRO_QUEST}
+  doi = {ADD_LATER_FROM_PRO_QUEST}
 }
 
 @article{prosdocimi2015detection,
@@ -222,7 +229,8 @@ Pages: 2.2-1}
   author = {Castillo, Enrique},
   title = {Extreme Value Theory in Engineering},
   publisher = {Academic Press},
-  year = {1988}
+  year = {1988},
+  doi = {https://doi.org/10.1016/C2009-0-22169-6}
 }
 
 @article{phan2019composable,

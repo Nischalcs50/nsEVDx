@@ -70,7 +70,7 @@ The package is intentionally lightweight, relying primarily on `NumPy` and `SciP
 
 # Research Impact Statement
 
-`nsEVDx` has been developed to improve accessibility of advanced extreme value modeling methods for researchers working in Python environments. The software lowers the barrier to applying advanced Bayesian methods, including MALA and HMC sampling, by providing predefined extreme value models and inference workflows that accommodate users with different levels of statistical and programming expertise.
+`nsEVDx` is developed to improve accessibility of advanced extreme value modeling methods for researchers working in Python environments. The software lowers the barrier to applying advanced Bayesian methods, including MALA and HMC sampling, by providing predefined extreme value models and inference workflows that accommodate users with different levels of statistical and programming expertise.
 
 The package has already been applied in ongoing hydroclimatic research focused on trend detection and characterization of extreme precipitation[@kafle2026raingauge;@kafle2025detecting], and supports broader applications in climate science, water resources engineering, infrastructure design, and financial risk assessment. Since its public release, nsEVDx has received more than 3,200 downloads during its first year, providing evidence of early adoption by the research community.
 
