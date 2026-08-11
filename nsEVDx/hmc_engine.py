@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Tuple
 
 import numpy as np
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 from .evd_model import _check_acceptance
 from .utils import (
@@ -285,16 +285,19 @@ class HMCEngine:
         log_alpha : float
             The log-acceptance probability of the proposal.
         """
+        # Sampling auxiliary momentum from N(0, M)
         momentum = np.random.normal(0, 1, len(params)) * np.sqrt(M_diag)
-        H_current = self._hamiltonian(params, momentum, M_diag,T)
 
+        # Current Hamiltonian
+        H_current = self._hamiltonian(params, momentum, M_diag, T)
+
+        # Simulating the Hamiltonian dynamics 
         q_prop, p_prop = self._leapfrog(params, momentum, step_size, n_leapfrog, M_diag)
-        H_proposed = self._hamiltonian(q_prop, p_prop, M_diag,T)
+        H_proposed = self._hamiltonian(q_prop, p_prop, M_diag, T)
 
+        # Log acceptance probability 
         log_alpha = min(0.0, H_current - H_proposed)
-        if np.log(np.random.rand()) < log_alpha:
-            return q_prop, log_alpha
-        return params.copy(), log_alpha
+        return q_prop, log_alpha
 
     def _init_mass_matrix(self, params):
         """
@@ -328,8 +331,14 @@ class HMCEngine:
             d2 = (self.model._posterior_log_prob(p_fwd) -
                   2*log_p0 +
                   self.model._posterior_log_prob(p_bwd)) / eps**2
-            # M_diag = 1 / |curvature| — more curvature = more mass
-            M_diag[i] = np.clip(-d2, 1e-4, 1e4)
+            # d2 approximates second derivative of log-posterior; for a
+            # this is concave and negative
+            curvature = -d2
+            # M should be roughly the inverse curvature (i.e., variance-like)
+            
+            # Guarding non-positive or tiny curvature
+            curvature = np.maximum(curvature, 1e-8)
+            M_diag[i] = np.clip(1.0 / curvature, 1e-4, 1e4)
         return M_diag
 
     def _warmup(self,
@@ -394,10 +403,13 @@ class HMCEngine:
                     disable=not show_progress, leave=False,ascii=True)
 
         for i in pbar:
-            params, log_alpha = self._hmc_step(params,
-                                               step_size,
-                                               n_leapfrog,
-                                               M_diag, T)
+            prop_params, log_alpha = self._hmc_step(
+                params, step_size, n_leapfrog, M_diag, T
+            )
+            # Metropolis accept/reject for warmup
+            if np.log(np.random.rand()) < log_alpha:
+                params = prop_params
+
             if i < phase1 + phase2:
                 step_size, step_size_bar = self._dual_average_update(da_state,
                                                                      log_alpha)
@@ -417,10 +429,11 @@ class HMCEngine:
         pbar.close()
         # Phase 3: fix M_diag, only tune step size
         for i in range(phase3):
-            params, log_alpha = self._hmc_step(params,
-                                               step_size,
-                                               n_leapfrog,
-                                               M_diag, T)
+            prop_params, log_alpha = self._hmc_step(
+                params, step_size, n_leapfrog, M_diag, T
+            )
+            if np.log(np.random.rand()) < log_alpha:
+                params = prop_params
             step_size, step_size_bar = self._dual_average_update(da_state,
                                                                  log_alpha)
 

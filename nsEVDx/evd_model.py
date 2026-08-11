@@ -98,8 +98,14 @@ class NonStationaryEVD:
         self.n_cov = self.cov.shape[0] if self.cov.ndim > 1 else 1
         self.prior_specs = prior_specs
         self.bounds = bounds
-        self._is_gev = dist in ("genextreme", "gev")
-        self._is_gpd = dist in ("genpareto",  "gpd")
+        # Detecting distribution name whether `dist` is a string
+        # or a SciPy object with a `.name` attribute.
+        if isinstance(dist, str):
+            dist_name = dist.lower()
+        else:
+            dist_name = getattr(dist, "name", "").lower()
+        self._is_gev = dist_name in ("genextreme", "gev")
+        self._is_gpd = dist_name in ("genpareto",  "gpd")
         assert self.data.shape[0] == self.cov.shape[1], (
             "Mismatch between number of samples in data and covariates"
         )

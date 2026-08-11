@@ -31,6 +31,8 @@ Thumbs.db
 # other files
 tests/nsEVDx_run.log
 test_file.py
+test_file.ipynb
+run_quick_hmc_test.py
 examples/nsEVDx_run.log
 hmc.py
 hmc2.py
