@@ -36,7 +36,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://nischalcs50.github.io/nsEVDx/"
 Repository = "https://github.com/Nischalcs50/nsEVDx"
-Documentation = "https://github.com/Nischalcs50/nsEVDx/API_docs"
+Documentation = "https://nischalcs50.github.io/nsEVDx/"
 
 [project.optional-dependencies]
 dev = [
