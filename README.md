@@ -70,7 +70,7 @@ cd nsEVDx
 pip install -e .[dev]
 ```
 
-## Quick Start
+## Quick Start Example
 
 ``` python
 import nsEVDx as ns
@@ -130,12 +130,12 @@ full version of this example is available here: [quick_start](examples/Quick_sta
 
 ## Documentation
 -   Webpage manual is here [user manual](https://Nischalcs50.github.io/nsEVDx/)
--   See [Documentation](API_docs/) for full [API](API_docs/API.md).
+-   Quick start example 2 is [here](examples/Quick_start_example.ipynb) 
 -   See examples such as, [bayesian inference of non-stationary GEV parameters](examples/example_GEV.ipynb), [bayesian metrics example](examples/example_bayesian_metrics.ipynb), [frequentist estimation of non-stationary GPD parameter and likelihood ratio test](examples/example_GPD_frequentist.ipynb), and [generation of random variates from non-stationary GEV](examples/example_generating_rv_from_nsEVD.ipynb) . These examples highlight the library's key capabilities, including parameter estimation and simulation under non-stationary conditions.
 
 ## Usage
 
-The usage document is available [here](API_docs/usage.md). For more details, see the usage examples in the Jupyter notebooks [here](examples/).
+The usage document is available [here](https://Nischalcs50.github.io/nsEVDx/). For more details, see the usage examples in the Jupyter notebooks [here](examples/).
 
 ## Dependencies
 
