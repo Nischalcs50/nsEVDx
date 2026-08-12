@@ -2,6 +2,13 @@
 
 ### Fix
 
+- corrected some bugs in hmc_engine and fixed README quick start example
+- sphinx documentation and refs
+
+## v0.2.4 (2026-07-09)
+
+### Fix
+
 - changelog and paper updated
 
 ## v0.2.3 (2026-07-04)

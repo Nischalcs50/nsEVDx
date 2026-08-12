@@ -291,11 +291,11 @@ class HMCEngine:
         # Current Hamiltonian
         H_current = self._hamiltonian(params, momentum, M_diag, T)
 
-        # Simulating the Hamiltonian dynamics 
+        # Simulating the Hamiltonian dynamics
         q_prop, p_prop = self._leapfrog(params, momentum, step_size, n_leapfrog, M_diag)
         H_proposed = self._hamiltonian(q_prop, p_prop, M_diag, T)
 
-        # Log acceptance probability 
+        # Log acceptance probability
         log_alpha = min(0.0, H_current - H_proposed)
         return q_prop, log_alpha
 
@@ -335,7 +335,7 @@ class HMCEngine:
             # this is concave and negative
             curvature = -d2
             # M should be roughly the inverse curvature (i.e., variance-like)
-            
+
             # Guarding non-positive or tiny curvature
             curvature = np.maximum(curvature, 1e-8)
             M_diag[i] = np.clip(1.0 / curvature, 1e-4, 1e4)
