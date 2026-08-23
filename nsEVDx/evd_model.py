@@ -574,7 +574,10 @@ class NonStationaryEVD:
             if log_alpha > 0 or np.log(np.random.rand()) < log_alpha:
                 current_params = proposal
                 current_log_post = proposed_log_post
-                accept_count += 1
+                # Only production samples count toward the reported rate,
+                # matching HMCEngine._sample_hmc
+                if i >= burn_in:
+                    accept_count += 1
 
             samples[i] = current_params.copy()
 
@@ -754,7 +757,10 @@ class NonStationaryEVD:
             if accept:
                 current_params = proposal
                 current_log_post = proposed_log_post
-                accept_count += 1
+                # Only production samples count toward the reported rate,
+                # matching HMCEngine._sample_hmc
+                if i >= burn_in:
+                    accept_count += 1
 
             samples[i] = current_params
 
