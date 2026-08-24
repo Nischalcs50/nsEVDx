@@ -601,3 +601,39 @@ class Test_miscellaneous:
                                match="Optimization failed after max retries"):
                 m.frequentist_nsEVD(np.zeros(6), max_retries=2)
 
+
+
+#----Distributional correctness of the MH samplers
+class TestSamplersKnownTarget:
+    """Samplers must reproduce a known target distribution, not just run.
+
+    The posterior hooks are overridden so the target is exactly
+    independent N(0, 1) in 3 dimensions; any calibrated MCMC sampler
+    must recover unit standard deviation in every dimension.
+    """
+
+    def _gaussian_model(self):
+        m = _model([0, 0, 0])
+        m.prior_specs = []
+        m._posterior_log_prob = lambda p: float(
+            -0.5 * np.sum(np.asarray(p) ** 2))
+        m._grad_log_posterior = lambda p: -np.asarray(p, dtype=float)
+        return m
+
+    def test_mala_recovers_unit_gaussian(self):
+        np.random.seed(3)
+        m = self._gaussian_model()
+        samples, _ = m.MH_Mala(15000, [0.0, 0.0, 0.0], [1.1, 1.1, 1.1],
+                               burn_in=2000, show_progress=False)
+        stds = samples.std(axis=0)
+        assert np.all(np.abs(samples.mean(axis=0)) < 0.1)
+        assert np.all((stds > 0.9) & (stds < 1.1)), stds
+
+    def test_randwalk_recovers_unit_gaussian(self):
+        np.random.seed(4)
+        m = self._gaussian_model()
+        samples, _ = m.MH_RandWalk(15000, [0.0, 0.0, 0.0], [2.4, 2.4, 2.4],
+                                   burn_in=2000, show_progress=False)
+        stds = samples.std(axis=0)
+        assert np.all(np.abs(samples.mean(axis=0)) < 0.1)
+        assert np.all((stds > 0.9) & (stds < 1.1)), stds
