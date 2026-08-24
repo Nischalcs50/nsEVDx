@@ -567,7 +567,7 @@ class NonStationaryEVD:
 
             # Log acceptance ratio
             log_alpha = (proposed_log_post + log_q_backward) - (
-                current_log_post - log_q_forward
+                current_log_post + log_q_forward
             )
             log_alpha = log_alpha / T  # Scale by temperature factor
 
