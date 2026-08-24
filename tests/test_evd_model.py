@@ -603,6 +603,29 @@ class Test_miscellaneous:
 
 
 
+#----Reported acceptance rate is a probability even with burn-in
+class TestAcceptanceRateDenominator:
+    def test_randwalk_rate_bounded_with_burnin(self):
+        np.random.seed(5)
+        m = _model([0, 0, 0])
+        m.prior_specs = m.suggest_priors()
+        # Tiny proposal widths make nearly every proposal accepted; with
+        # burn_in == num_samples a mismatched denominator would report ~2.0
+        _, rate = m.MH_RandWalk(500, [20.0, 5.0, -0.1],
+                                [1e-3, 1e-3, 1e-3],
+                                burn_in=500, show_progress=False)
+        assert 0.0 <= rate <= 1.0, rate
+
+    def test_mala_rate_bounded_with_burnin(self):
+        np.random.seed(6)
+        m = _model([0, 0, 0])
+        m.prior_specs = m.suggest_priors()
+        _, rate = m.MH_Mala(500, [20.0, 5.0, -0.1],
+                            [1e-3, 1e-3, 1e-3],
+                            burn_in=2000, show_progress=False)
+        assert 0.0 <= rate <= 1.0, rate
+
+
 #----Distributional correctness of the MH samplers
 class TestSamplersKnownTarget:
     """Samplers must reproduce a known target distribution, not just run.
