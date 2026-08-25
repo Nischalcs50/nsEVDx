@@ -118,7 +118,7 @@ class HMCEngine:
             log_post = self.model._posterior_log_prob(params)
             if not np.isfinite(log_post):
                 return np.inf
-        return (-log_post/T) + self._kinetic(momentum, M_diag)
+        return (-log_post + self._kinetic(momentum, M_diag))/T
 
     def _leapfrog(
         self, params: np.ndarray,
@@ -334,7 +334,8 @@ class HMCEngine:
             # d2 approximates second derivative of log-posterior; for a
             # this is concave and negative
             curvature = -d2
-            # M should scale with posterior precision under K(p) = p^T M^-1 p / 2.
+            # M should scale with posterior precision under 
+            # K(p) = transpose(p) M^-1 p / 2
             # see Neal 2011
             # Guard against non-positive or tiny curvature
             curvature = np.maximum(curvature, 1e-8)
@@ -447,7 +448,7 @@ class HMCEngine:
                     step_size,
                     n_leapfrog,
                     T,
-                    target_accept=0.8,
+                    target_accept=0.7,
                     chain_id=0,
                     show_progress=True):
         """

@@ -135,7 +135,8 @@ def neg_log_likelihood_ns(
 
     elif dist_name in ["gpd", "genpareto"]:
         w = 1.0 + xi * z
-        if np.any(w <= 0):
+        # GPD support check
+        if np.any(z < 0) or np.any(w <= 0):
             return Safe_INF
 
         eps = 1e-7
@@ -330,10 +331,11 @@ def _grad_nll_gpd(
         idx_xi = idx
 
     z = (data - mu) / sigma
-    w = 1.0 + xi * z                    # GPD
-    if np.any(w <= 0):
+    w = 1.0 + xi * z      
+    # GPD support check
+    if np.any(z < 0) or np.any(w <= 0):
         return np.full(len(params), np.nan)
-
+    
     eps      = 1e-7
     xi_safe  = np.where(np.abs(xi) < eps, np.sign(xi + 1e-30) * eps, xi)
     small_xi = np.abs(xi) < eps

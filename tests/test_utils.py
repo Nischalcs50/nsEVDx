@@ -163,6 +163,24 @@ def test_ns_invalid_support_gpd():
     nll = neg_log_likelihood_ns(params, data, cov, config, genextreme)
     assert nll > 1e20
 
+def test_ns_gpd_rejects_data_below_location():
+    data = np.array([0.5, 1.0, 2.0])
+    cov = np.ones((1, len(data)))
+    params = np.array([1.0, 5.0, 0.2])
+
+    nll = neg_log_likelihood_ns(params, data, cov, [0, 0, 0], genpareto)
+
+    assert nll > 1e20
+
+def test_grad_nll_gpd_rejects_data_below_location():
+    data = np.array([0.5, 1.0, 2.0])
+    cov = np.ones((1, len(data)))
+    params = np.array([1.0, 5.0, 0.2])
+
+    grad = _grad_nll_gpd(params, data, cov, [0, 0, 0])
+
+    assert np.all(np.isnan(grad))
+
 #---- Analytical Gradients ---
 def test_grad_nll_gev():
     data = np.random.randn(20)
@@ -248,7 +266,7 @@ _GRAD_FD_CASES = [
     (genextreme, _grad_nll_gev, [1, 1, 1],
      [10.0, 0.3, 0.6, 0.05, 0.1, 0.02], -0.1, 10, 2),
     (genpareto, _grad_nll_gpd, [1, 1, 1],
-     [0.0, 0.1, 0.4, 0.05, 0.1, 0.01], 0.1, 0, 1.5),
+        [-1.0, 0.1, 0.4, 0.05, 0.1, 0.01], 0.1, 0, 1.5),
 ]
 
 
