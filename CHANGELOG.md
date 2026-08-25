@@ -2,6 +2,8 @@
 
 ### Fix
 
+- Improved GPD support check by rejecting z<0
+- mass matrix, tests and examples
 - corrected some bugs in hmc_engine and fixed README quick start example
 - sphinx documentation and refs
 

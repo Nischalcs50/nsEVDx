@@ -40,7 +40,6 @@ def test_GPD_parsViaLM():
     pars = GPD_parsViaLM(data)
     assert len(pars) == 3
 
-
 def test_GEV_parsViaLM():
     data = np.random.rand(100)
     pars = GEV_parsViaLM(data)
@@ -60,6 +59,11 @@ def test_EVD_parsViaMLE3():
     data = genpareto.rvs(-0.1, loc=22, scale=8, size=25, random_state=0)
     with pytest.raises(ValueError, match="Unsupported distribution"):
         EVD_parsViaMLE(data, chi2)
+
+def test_EVD_parsViaMLE_accepts_string_distribution():
+    data = genextreme.rvs(-0.1, loc=22, scale=8, size=25, random_state=0)
+    params = EVD_parsViaMLE(data, "genextreme")
+    assert len(params) == 3
 
 
 def test_neg_log_likelihood():
@@ -292,7 +296,6 @@ def test_total_log_prior():
     # Test out of bounds uniform
     bad_params = [5.0, 5.0]
     assert _total_log_prior(np.array(bad_params), prior_specs) == -np.inf
-
 
 def test_total_log_prior_unknowntype():
     params = [5.0, 0.1]

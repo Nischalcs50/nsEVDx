@@ -231,6 +231,11 @@ class TestSuggestBounds:
         bnds = m.suggest_bounds()
         assert len(bnds) == 3
 
+    def test_string_distribution(self):
+        m = _model([0, 0, 0], dist="genextreme")
+        bnds = m.suggest_bounds()
+        assert len(bnds) == 3
+
     def test_unsupported_dist_raises(self):
         """A dist that is neither genextreme nor genpareto should raise."""
         m = _model([0, 0, 0], dist=genextreme)
@@ -339,7 +344,7 @@ class TestNegLogLikelihood:
         m = _model([1, 0, 0])
         m.prior_specs = m.suggest_priors()
         params = np.array([20.0, 0.5, 5.0, -0.1])
-        grad = m._numerical_grad_log_posterior(params, h=1e-3)
+        grad = m._numerical_grad_log_likelihood(params, h=1e-3)
         assert grad.shape == params.shape
         assert np.all(np.isfinite(grad))
 
@@ -348,7 +353,7 @@ class TestNegLogLikelihood:
         m.prior_specs = m.suggest_priors()
         params = np.array([20.0, 0.5, 5.0, -0.1])
         h_vec = np.array([1e-2, 1e-3, 1e-2, 1e-3])
-        grad = m._numerical_grad_log_posterior(params, h=h_vec)
+        grad = m._numerical_grad_log_likelihood(params, h=h_vec)
         assert grad.shape == params.shape
 
     def test_posterior_log_prob(selfs):
@@ -376,6 +381,22 @@ class TestGradients:
         bad_params = np.array([10.0, 100, 1.0, 5.0]) # mu, sigma, xi
         grad = m._grad_log_posterior(bad_params)
         assert np.all(grad == 0)
+
+    def test_grad_log_posterior_uses_numerical_fallback(self):
+        m = _model([0, 0, 0])
+        m._is_gev = False
+        m._is_gpd = False
+        expected_grad = np.array([1.0, 2.0, 3.0])
+        m._numerical_grad_log_likelihood = (
+            lambda params: expected_grad
+        )
+        m._grad_log_prior = (
+            lambda params: np.zeros_like(params)
+        )
+        grad = m._grad_log_posterior(
+            np.array([0.1, 0.2, 0.3])
+        )
+        assert np.allclose(grad, expected_grad)
 
     def test_gev_analytical_path(self):
         """Tests the GEV analytical gradient
@@ -412,7 +433,7 @@ class TestGradients:
         grad = model._grad_log_posterior(bad_params)
         assert np.all(grad == 0.0)
 
-    def test_numerical_grad_log_posterior(self):
+    def test_numerical_grad_log_likelihood(self):
         m = _model([1,0,0])
         params = np.array([0, 100, 1.0, 100])
         h = 1e-4
@@ -421,7 +442,7 @@ class TestGradients:
         f_plus = -1 * m._neg_log_likelihood(params + np.array([h, 0, 0, 0]))
         f_minus = -1 * m._neg_log_likelihood(params - np.array([h, 0, 0, 0]))
         expected_grad_0 = (f_plus - f_minus) / (2 * h)
-        grad = m._numerical_grad_log_posterior(params, h=h)
+        grad = m._numerical_grad_log_likelihood(params, h=h)
         # Assert the returned array matches the expected manual calculation
         assert np.allclose(grad[0], expected_grad_0)
 

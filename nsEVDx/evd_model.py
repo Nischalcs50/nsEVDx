@@ -240,10 +240,12 @@ class NonStationaryEVD:
             List of (lower, upper) tuples for each parameter in order.
         """
         # Step 1: Estimate stationary parameters
-        if self.dist.name.lower() in ["genextreme", "gev"]:
+        dist_name = (self.dist if isinstance(self.dist, str)
+                 else getattr(self.dist, "name", "")).lower()
+        if dist_name in ["genextreme", "gev"]:
             shape, loc, scale = GEV_parsViaLM(self.data)
             log_scale = np.log(scale)
-        elif self.dist.name.lower() in ["genpareto", "gpd"]:
+        elif dist_name in ["genpareto", "gpd"]:
             shape, loc, scale = GPD_parsViaLM(self.data)
             log_scale = np.log(scale)
         else:
@@ -421,7 +423,7 @@ class NonStationaryEVD:
                 grad_ll = -grad_nll
         else:
             # Fallback if the distribution isn't GEV or GPD
-            grad_ll = self._numerical_grad_log_posterior(params)
+            grad_ll = self._numerical_grad_log_likelihood(params)
             grad_nll = -grad_ll
 
         # Nan-check (If we hit an impossible v <= 0 region, return 0)
@@ -434,13 +436,14 @@ class NonStationaryEVD:
         # Total Gradient
         return grad_ll + grad_prior
 
-    def _numerical_grad_log_posterior(self, params, h=1e-3):
+    def _numerical_grad_log_likelihood(self, params, h=1e-3):
         """
-        Compute the numerical gradient of the log-posterior with respect to
+        Compute the numerical gradient of the log-likelihood with respect to
         parameters.
 
         This uses the central difference method to approximate the gradient of
-        the log-posterior at the given parameter vector.
+        the log-likelihood at the given parameter vector. The prior gradient
+        is added by ``_grad_log_posterior``.
 
         Parameters
         ----------
@@ -456,8 +459,8 @@ class NonStationaryEVD:
         Returns
         -------
         grad : ndarray
-            A 1D array containing the approximate gradient of the log-posterior
-            with respect to each parameter.
+            A 1D array containing the approximate gradient of the
+            log-likelihood with respect to each parameter.
         """
         grad = np.zeros_like(params)
         h_vec = h if hasattr(h, "__len__") else np.full_like(params, h, dtype=float)
@@ -931,7 +934,7 @@ class NonStationaryEVD:
     def frequentist_nsEVD(self,
                           initial_params: Union[List[float], np.ndarray],
                           max_retries: int = 10
-                          ) -> tuple[np.ndarray, float]:
+                          ) -> np.ndarray:
         """
         Estimate non-stationary EVD parameters via MLE with retries.
         Parameters
@@ -942,8 +945,8 @@ class NonStationaryEVD:
             Number of retry attempts with modified initial guess.
         Returns
         -------
-        params : array-like
-            Estimated parameters.
+        np.ndarray
+            Estimated parameter vector.
         """
         retry = 0
         params = np.array(initial_params)

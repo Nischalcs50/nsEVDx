@@ -5,6 +5,7 @@ import numpy as np
 import seaborn as sns
 from scipy.optimize import minimize
 from scipy.special import gamma
+from scipy.stats import genextreme, genpareto
 
 
 # Utility functions
@@ -28,8 +29,17 @@ def neg_log_likelihood(params, data, dist):
         Negative log-likelihood. Returns np.inf if parameters are invalid or
         evaluation fails.
     """
-    loc, scale, shape = params
     Safe_INF = 10e25
+    if isinstance(dist, str):
+        dist_name = dist.lower()
+        if dist_name in ["genextreme", "gev"]:
+            dist = genextreme
+        elif dist_name in ["genpareto", "gpd"]:
+            dist = genpareto
+        else:
+            return Safe_INF
+
+    loc, scale, shape = params
     # Ensure parameters are within valid bounds
     if scale <= 0:  # Scale parameter must be positive
         return Safe_INF
@@ -517,6 +527,15 @@ def EVD_parsViaMLE(data, dist, verbose=False):
         If optimization fails.
     """
     X = data
+    if isinstance(dist, str):
+        dist_name = dist.lower()
+        if dist_name in ["genextreme", "gev"]:
+            dist = genextreme
+        elif dist_name in ["genpareto", "gpd"]:
+            dist = genpareto
+        else:
+            raise ValueError("Unsupported distribution. Use GEV or GPD.")
+
     # Initial guesses for mu, sigma, xi
     if dist.name.lower() in ["genpareto", "gpd"]:
         mu_guess = np.min(X)

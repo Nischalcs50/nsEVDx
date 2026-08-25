@@ -260,10 +260,11 @@ class HMCEngine:
                   T
                   ) -> Tuple[np.ndarray, float]:
         """
-        Perform a single HMC transition (Proposal + Metropolis Accept/Reject).
-        This method executes the auxiliary momentum sampling, Hamiltonian
-        dynamics simulation via leapfrog integration, and the final
-        energy-based acceptance check.
+        Perform a single HMC proposal. This method samples the
+        auxiliary momentum and simulate Hamiltonian dynamics
+        via leapfrog integration. The method returns the
+        proposed new parameters and the log-acceptance
+        probability.
 
         Parameters
         ----------
@@ -448,7 +449,7 @@ class HMCEngine:
                     step_size,
                     n_leapfrog,
                     T,
-                    target_accept=0.7,
+                    target_accept=0.6,
                     chain_id=0,
                     show_progress=True):
         """
