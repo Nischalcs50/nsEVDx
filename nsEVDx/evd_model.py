@@ -357,7 +357,8 @@ class NonStationaryEVD:
         Compute the log posterior probability for the given parameter vector.
 
         The posterior is calculated as the sum of the log-prior and the
-        log-likelihood (negated). This is used for Bayesian inference,
+        log-likelihood, where the latter is obtained by negating the
+        negative log-likelihood. This is used for Bayesian inference,
         particularly in MCMC sampling.
 
         Parameters

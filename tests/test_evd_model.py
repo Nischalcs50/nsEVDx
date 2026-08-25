@@ -319,6 +319,14 @@ class TestNegLogLikelihood:
         assert m._posterior_log_prob(params) == pytest.approx(
             -m._neg_log_likelihood(params))
 
+    def test_posterior_adds_negative_log_prior(self, monkeypatch):
+        m = _model([0, 0, 0])
+        params = np.array([20.0, 5.0, -0.1])
+        monkeypatch.setattr(m, "_neg_log_likelihood", lambda _: 7.5)
+        monkeypatch.setattr(m, "_log_prior", lambda _: -2.25)
+
+        assert m._posterior_log_prob(params) == pytest.approx(-9.75)
+
     def test_analytical_grad(self):
         m = _model([1, 0, 0])
         m.prior_specs = m.suggest_priors()

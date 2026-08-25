@@ -334,11 +334,11 @@ class HMCEngine:
             # d2 approximates second derivative of log-posterior; for a
             # this is concave and negative
             curvature = -d2
-            # M should be roughly the inverse curvature (i.e., variance-like)
-
-            # Guarding non-positive or tiny curvature
+            # M should scale with posterior precision under K(p) = p^T M^-1 p / 2.
+            # see Neal 2011
+            # Guard against non-positive or tiny curvature
             curvature = np.maximum(curvature, 1e-8)
-            M_diag[i] = np.clip(1.0 / curvature, 1e-4, 1e4)
+            M_diag[i] = np.clip(curvature, 1e-4, 1e4)
         return M_diag
 
     def _warmup(self,
@@ -353,8 +353,8 @@ class HMCEngine:
         """
         Execute a three-phase adaptation schedule for HMC tuning.
         Phase 1 (15%): Initial step-size (epsilon) adaptation.
-        Phase 2 (75%): Windowed mass matrix (M) estimation using sample
-                        variance, with epsilon reset at each window.
+        Phase 2 (75%): Windowed mass matrix (M) estimation using inverse
+                sample variance, with epsilon reset at each window.
         Phase 3 (10%): Final step-size refinement with a fixed mass matrix.
 
         Parameters
@@ -418,9 +418,9 @@ class HMCEngine:
             if phase1 <= i < phase1 + phase2:
                 window_samples.append(params.copy())
                 if len(window_samples) >= window_size:
-                    M_diag = np.clip(
-                        np.var(window_samples, axis=0, ddof=1),
-                        1e-6, 1e4)
+                    variance = np.maximum(
+                        np.var(window_samples, axis=0, ddof=1), 1e-8)
+                    M_diag = np.clip(1.0 / variance, 1e-6, 1e4)
                     # Reset dual average with current smoothed step size
                     da_state = self._dual_average_init(step_size_bar,
                                                        target_accept)
