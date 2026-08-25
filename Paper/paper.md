@@ -9,7 +9,7 @@ authors:
   orcid: 
   affiliation: 1
 affiliations:
-- name: Department of Civil Engineering, University of Memphis, USA
+- name: Department of Civil, Construction, and Environmental Engineering, University of Memphis, TN, USA
   index: 1
 date: 2026-07-05
 software_repository_url: https://github.com/Nischalcs50/nsEVDx
@@ -36,10 +36,10 @@ Traditional extreme value frequency analysis assumes that the statistical proper
 
 While several software tools support extreme value analysis, implementing and evaluating non-stationary EVD models often requires substantial statistical and programming expertise, particularly when Bayesian inference and advanced sampling algorithms are involved. `nsEVDx` provides an easy-to-use framework for fitting stationary and non-stationary Generalized Extreme Value (GEV) and Generalized Pareto (GPD) models. It makes advanced sampling methods accessible to users with varying levels of expertise in extreme value modeling while retaining the flexibility required for advanced applications.
 
-The target audience for `nsEVDx` includes hydrologists, climate scientists, infrastructure engineers, and financial risk analysts who require a reliable and flexible workflow for non-stationary extreme value modeling. By reducing the implementation effort needed to implement both frequentist optimization and advanced Markov Chain Monte Carlo (MCMC) sampling algorithms, the software allows practitioners to focus on understanding changing risks and their implications for decision-making.
+The target audience for `nsEVDx` includes hydrologists, climate scientists, infrastructure engineers, and financial risk analysts who require a reliable and flexible workflow for non-stationary extreme value modeling. By reducing the implementation effort  needed to implement both frequentist optimization and advanced Markov Chain Monte Carlo (MCMC) sampling algorithms, the software allows practicioners to focus on understanding changing risks and their implications for decision-making.
 
 
-# State of the field
+# State of the Field
 
 Extreme value distributions (EVDs), particularly the GEV and GPD distributions, are widely used to quantify the frequency and magnitude of rare events in hydrology, climatology, engineering, and finance [@katz2002statistics;@kafle2026robustness;@mcneil2000estimation;@castillo1988extreme]. Increasing evidence of non-stationarity in environmental and socioeconomic systems has motivated the development of methods that allow EVD parameters to vary with time or external covariates.
 
@@ -53,7 +53,7 @@ These differences motivate a dedicated Python tool that combines flexibility wit
 
 ![Workflow implemented in `nsEVDx` for specifying, fitting, and diagnosing stationary and non-stationary GEV and GPD models using frequentist optimization or Bayesian MCMC sampling](Fig1.png)
 
-The concepts of non-stationarity and MCMC techniques used in `nsEVDx` are based on the foundational texts by @christian_p_robert_introducing_2009 and @coles_introduction_2007. The core class `NonStationaryEVD` handles parameter parsing and specification, log-likelihood evaluation, prior assignment, optimization, and MCMC sampling. This unified design allows users to switch between frequentist and Bayesian workflows without redefining model structures. Frequentist methods use `scipy.optimize` to minimize the non-stationary negative log-likelihood, while the Bayesian MCMC methods are implemented in numpy, allowing full transparency and customization. In Bayesian estimation, `nsEVDx` can infer prior specifications based on the data and configuration or accept user-defined priors. In the frequentist mode, it can determine suitable parameter bounds automatically. However, user-defined priors or bounds are recommended for better convergence and interpretability. The implementation of L-moments in some utility methods follows the approach described by @j_r_m_hosking_regional_1997. Currently, `nsEVDx` supports linear modeling for the location and shape parameters, and exponential (log-linear) modeling for the scale parameter, to ensure positivity.
+The concepts of non-stationarity and MCMC techniques used in `nsEVDx` are based on the foundational texts by @christian_p_robert_introducing_2009 and @coles_introduction_2001. The core class `NonStationaryEVD` handles parameter parsing and specification, log-likelihood evaluation, prior assignment, optimization, and MCMC sampling. This unified design allows users to switch between frequentist and Bayesian workflows without redefining model structures. Frequentist methods uses `scipy.optimize` to minimize the non-stationary negative log-likelihood, while the Bayesian MCMC methods are implemented in numpy, allowing full transparency and customization. In Bayesian estimation, `nsEVDx` can infer prior specifications based on the data and configuration or accept user-defined priors. In the frequentist mode, it can determine suitable parameter bounds automatically. However, user-defined priors or bounds are recommended for better convergence and interpretability. The implementation of L-moments in some utility methods follows the approach described by @j_r_m_hosking_regional_1997. Currently, `nsEVDx` supports linear modeling for the location and shape parameters, and exponential (log-linear) modeling for the scale parameter, to ensure positivity.
 
 `nsEVDx` controls non-stationarity via a configuration vector `config = [a, b, c]`, where each entry specifies the number of covariates used to model the location, scale, and shape parameters of the EVD. Entry with a value of `0` implies stationarity (i.e., no covariate dependence), while integer values `> 0` indicate non-stationary modeling using the corresponding number of covariates for the parameter. This representation provides a compact and scalable mechanism for defining a wide range of stationary and non-stationary models while maintaining a consistent user interface (Figure 2). 
 
@@ -86,6 +86,6 @@ AI tools were used during the programming and development of this library, as we
 
 # Acknowledgements
 
-I gratefully acknowledge the support and encouragement of my wife, Koshika Timsina, whose constant belief in me has been a source of strength throughout this project. I also extend my heartfelt thanks to my family for their unwavering love, patience, and support. I also thank Vincent Gao for contributing to nsEVDx by identifying and fixing a software bug.
+We are deeply grateful to the JOSS Editor and reviewers for their thorough and constructive review, which substantially strengthened both the nsEVDx package and its documentation. We also thank the OpenSciPy editors and reviewers for their valuable feedback and contributions to improving the package. We gratefully acknowledge Vincent Gao for identifying and fixing a software bug. Finally, we thank my wife, Koshika Timsina, for her steadfast support and encouragement throughout this project.
 
 # References

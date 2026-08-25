@@ -357,7 +357,8 @@ class NonStationaryEVD:
         Compute the log posterior probability for the given parameter vector.
 
         The posterior is calculated as the sum of the log-prior and the
-        log-likelihood (negated). This is used for Bayesian inference,
+        log-likelihood, where the latter is obtained by negating the
+        negative log-likelihood. This is used for Bayesian inference,
         particularly in MCMC sampling.
 
         Parameters
@@ -567,14 +568,17 @@ class NonStationaryEVD:
 
             # Log acceptance ratio
             log_alpha = (proposed_log_post + log_q_backward) - (
-                current_log_post - log_q_forward
+                current_log_post + log_q_forward
             )
             log_alpha = log_alpha / T  # Scale by temperature factor
 
             if log_alpha > 0 or np.log(np.random.rand()) < log_alpha:
                 current_params = proposal
                 current_log_post = proposed_log_post
-                accept_count += 1
+                # Only production samples count toward the reported rate,
+                # matching HMCEngine._sample_hmc
+                if i >= burn_in:
+                    accept_count += 1
 
             samples[i] = current_params.copy()
 
@@ -754,7 +758,10 @@ class NonStationaryEVD:
             if accept:
                 current_params = proposal
                 current_log_post = proposed_log_post
-                accept_count += 1
+                # Only production samples count toward the reported rate,
+                # matching HMCEngine._sample_hmc
+                if i >= burn_in:
+                    accept_count += 1
 
             samples[i] = current_params
 
