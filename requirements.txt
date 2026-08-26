@@ -3,5 +3,6 @@ scipy
 matplotlib
 seaborn
 pytest
+pytest-cov
 tqdm
 

@@ -564,6 +564,16 @@ class Test_miscellaneous:
                                 params,
                                 cov, config, size=50)
 
+    def test_static_ns_EVDrvs4(self):
+            config = [1, 0, 0]
+            m = _modelgpd(config)
+            params=[20,0.1,2,0]
+            cov = np.array([[0, 1, 2, 3, 4]])
+            samples = m.ns_EVDrvs(genpareto,
+                                params,
+                                cov, config, size=5)
+            assert len(samples) ==5
+
     def test_mle_success_first_try(self):
         """Verifies success on the first L-BFGS-B attempt."""
         m = _modelgpd([1, 1, 1])

@@ -407,8 +407,37 @@ def test_bayesian_metric2s():
     assert "DIC" in metrics
 
 #---- UI Helpers ---
-def test_build_param_names():
-    config = [1, 1, 0]
-    names = _build_param_names(config)
-    expected = ["B0", "B1", "a0", "a1", "shape"]
-    assert names == expected
+class TestBuildParamNames:
+    def test_build_param_names(self):
+        config = [1, 1, 0]
+        names = _build_param_names(config)
+        expected = ["B0", "B1", "a0", "a1", "shape"]
+        assert names == expected
+
+    def test_override(self):
+        override = ["a", "b", "c"]
+        assert _build_param_names([0, 0, 0], override=override) == override
+
+    def test_all_stationary(self):
+        names = _build_param_names([0, 0, 0])
+        assert names == [
+            "loc",
+            "scale",
+            "shape"
+        ]
+
+    def test_all_nonstationary(self):
+        names = _build_param_names([2, 2, 2])
+        assert names == [
+            "B0", "B1", "B2",
+            "a0", "a1", "a2",
+            "k0", "k1", "k2"
+        ]
+
+    def test_mixed_configuration(self):
+        names = _build_param_names([1, 0, 2])
+        assert names == [
+            "B0", "B1",
+            "scale",
+            "k0", "k1", "k2"
+        ]

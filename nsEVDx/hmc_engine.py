@@ -335,7 +335,7 @@ class HMCEngine:
             # d2 approximates second derivative of log-posterior; for a
             # this is concave and negative
             curvature = -d2
-            # M should scale with posterior precision under 
+            # M should scale with posterior precision under
             # K(p) = transpose(p) M^-1 p / 2
             # see Neal 2011
             # Guard against non-positive or tiny curvature
