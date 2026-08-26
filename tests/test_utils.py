@@ -369,26 +369,30 @@ def test_gelman_rubin():
 def test_plot_trace():
     samples = np.random.randn(1000, 4)
     config = [1, 0, 0]
-    plot_trace(samples, config)
-    plt.close()
+    fig  = plot_trace(samples, config, show=False)
+    assert fig is not None
+    plt.close(fig)
 
 def test2_plot_trace():
     samples = [np.random.randn(1000, 4) for x in range(3)]
     config = [1, 0, 0]
-    plot_trace(samples, config)
-    plt.close()
+    fig =plot_trace(samples, config, show=False)
+    assert fig is not None
+    plt.close(fig)
 
 def test_plot_posterior():
     samples = np.random.randn(1000, 5)
     config = [1, 1, 0]
-    plot_posterior(samples, config)
-    plt.close()
+    fig = plot_posterior(samples, config, show=False)
+    assert fig is not None
+    plt.close(fig)
 
 def test2_plot_posterior():
     samples = [np.random.randn(1000, 4) for x in range(3)]
     config = [1, 0, 0]
-    plot_posterior(samples, config)
-    plt.close()
+    fig  = plot_posterior(samples, config, show=False)
+    assert fig is not None
+    plt.close(fig)
 
 def test_bayesian_metrics():
     samples = np.random.randn(1000, 4)

@@ -735,7 +735,9 @@ def _build_param_names(config, override=None):
     return names
 
 
-def plot_trace(chains, config, fig_size=None, param_names_override=None):
+def plot_trace(chains, config, fig_size=None,
+               param_names_override=None,
+               show=True):
     """
     Plot MCMC trace plots for each parameter based on config. vector
 
@@ -791,13 +793,15 @@ def plot_trace(chains, config, fig_size=None, param_names_override=None):
                     framealpha=0.9,
                     edgecolor='black'
                 )
-
-
     plt.tight_layout()
-    plt.show()
+    if show:
+        plt.show()
+    return fig
 
 
-def plot_posterior(chains, config, fig_size=None, param_names_override=None):
+def plot_posterior(chains, config, fig_size=None,
+                   param_names_override=None,
+                   show=True):
     """
     Plot histograms with density curves for each parameter based on config.
     vector
@@ -829,7 +833,7 @@ def plot_posterior(chains, config, fig_size=None, param_names_override=None):
     if fig_size is None:
         fig_size = (5 * cols, 3 * rows)
 
-    plt.figure(figsize=fig_size)
+    fig = plt.figure(figsize=fig_size)
     for i in range(n_params):
         plt.subplot(rows, cols, i + 1)
         sns.histplot(samples[:, i], kde=True, color="#5DADE2",
@@ -841,7 +845,9 @@ def plot_posterior(chains, config, fig_size=None, param_names_override=None):
         plt.yticks(fontsize=10)
         plt.grid(True)
     plt.tight_layout()
-    plt.show()
+    if show:
+        plt.show()
+    return fig
 
 
 def bayesian_metrics(samples, data, cov, config, dist):
