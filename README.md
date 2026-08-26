@@ -101,7 +101,7 @@ sampler = ns.NonStationaryEVD(config, data, cov,dist=genextreme,
                                   prior_specs=prior_specs)
 print(sampler.descriptions)
 
-## RUNNING BATESIAN ALGORITHM
+## RUNNING BAYESIAN ALGORITHM
 # fitting a non-stationary GEV model to the data using Hamiltonian Monte Carlo (HMC) sampler
 results = sampler.MH_Hmc(
     num_samples=1000, burn_in=1500,
