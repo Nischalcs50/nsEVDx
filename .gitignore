@@ -40,11 +40,16 @@ nsEVDx_run-HCOE-12HQ9R3.log
 nsEVDx.log
 test_nsEVDx_full.py
 nsEVDx_run.log
+hmc_mass_matrix_benchmark.py
+hmc_mass_matrix_benchmark.json
+validation.py
+validation2.py
 
 # Python coverage artifacts
 .coverage
 htmlcov/
 .pytest_cache/
+validation_results/
 nosetests.xml
 coverage.xml
 *.cover

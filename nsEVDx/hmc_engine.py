@@ -332,12 +332,12 @@ class HMCEngine:
             d2 = (self.model._posterior_log_prob(p_fwd) -
                   2*log_p0 +
                   self.model._posterior_log_prob(p_bwd)) / eps**2
-            # d2 approximates second derivative of log-posterior; for a
+            # d2 approximates second derivative of log-posterior;
             # this is concave and negative
             curvature = -d2
             # M should scale with posterior precision under
             # K(p) = transpose(p) M^-1 p / 2
-            # see Neal 2011
+            # see Neal (2011)
             # Guard against non-positive or tiny curvature
             curvature = np.maximum(curvature, 1e-8)
             M_diag[i] = np.clip(curvature, 1e-4, 1e4)
