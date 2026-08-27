@@ -107,7 +107,7 @@ results = sampler.MH_Hmc(
     num_samples=1000, burn_in=1500,
     initial_params=[28, 0, 6, 0],
     num_chains=2,
-    T = 1.25
+    T = 1
 )
 
 ## PRINT RESULTS

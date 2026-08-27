@@ -189,29 +189,37 @@ class NonStationaryEVD:
             (distribution_name, distribution_parameters_dict).
         """
         sd = np.std(self.data)
+        data_scale = max(sd, np.ptp(self.data) / 4, 1e-6)
         loc = np.percentile(self.data, 35)
 
         prior_specs = []
 
         # Location
         if self.config[0] == 0:
-            prior_specs.append(("normal", {"loc": loc, "scale": loc * 0.1}))
+            prior_specs.append(("normal", {"loc": loc, "scale": data_scale}))
         else:
             # intercept
-            prior_specs.append(("normal", {"loc": loc, "scale": loc * 0.5}))
-            for _ in range(self.config[0]):
-                prior_specs.append(("normal", {"loc": 0, "scale": 0.3}))
+            prior_specs.append(("normal", {"loc": loc, "scale": 2 * data_scale}))
+            for cov_index in range(self.config[0]):
+                cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
+                prior_specs.append(("normal", {
+                    "loc": 0, "scale": data_scale / cov_scale
+                }))
 
         # Scale
         if self.config[1] == 0:
-            prior_specs.append(("normal", {"loc": sd - 0.15, "scale": 0.3}))
+            prior_specs.append(("normal", {"loc": sd, "scale": data_scale}))
         else:
-            lower = np.log(sd * 0.5)
-            upper = np.log(sd * 1.5)
+            reference_scale = max(sd, 1e-6)
+            lower = np.log(reference_scale * 0.5)
+            upper = np.log(reference_scale * 1.5)
             # intercept on log-scale
             prior_specs.append(("normal", {"loc": lower, "scale": upper - lower}))
-            for _ in range(self.config[1]):
-                prior_specs.append(("normal", {"loc": 0, "scale": 0.025}))
+            for cov_index in range(self.config[1]):
+                cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
+                prior_specs.append(("normal", {
+                    "loc": 0, "scale": 0.5 / cov_scale
+                }))
 
         # Shape
         if self.config[2] == 0:
@@ -219,8 +227,11 @@ class NonStationaryEVD:
         else:
             # intercept
             prior_specs.append(("normal", {"loc": 0, "scale": 0.2}))
-            for _ in range(self.config[2]):
-                prior_specs.append(("normal", {"loc": 0, "scale": 0.025}))
+            for cov_index in range(self.config[2]):
+                cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
+                prior_specs.append(("normal", {
+                    "loc": 0, "scale": 0.25 / cov_scale
+                }))
 
         return prior_specs
 
@@ -244,25 +255,34 @@ class NonStationaryEVD:
                  else getattr(self.dist, "name", "")).lower()
         if dist_name in ["genextreme", "gev"]:
             shape, loc, scale = GEV_parsViaLM(self.data)
-            log_scale = np.log(scale)
         elif dist_name in ["genpareto", "gpd"]:
             shape, loc, scale = GPD_parsViaLM(self.data)
-            log_scale = np.log(scale)
         else:
             raise ValueError("Unsupported distribution. Use GEV or GPD.")
 
         bounds = []
+        data_scale = max(np.std(self.data), np.ptp(self.data) / 4, 1e-6)
+        scale = float(scale) if np.isfinite(scale) and scale > 0 else data_scale
+        log_scale = np.log(scale)
 
         # Location
-        if self.config[0] == 0:
-            bounds.append((loc * (1 - buffer), loc * (1 + buffer)))
-        else:
-            bounds.append((loc * (1 - buffer), loc * (1 + buffer)))  # B0
-            for _ in range(self.config[0]):
-                bounds.append((-0.1, 0.1))  # B_i
+        location_half_width = max(abs(loc) * buffer, data_scale * buffer, 1e-6)
+        location_bounds = (loc - location_half_width, loc + location_half_width)
+        if dist_name in ["genpareto", "gpd"]:
+            location_bounds = (location_bounds[0], min(location_bounds[1], np.min(self.data)))
+        if location_bounds[0] >= location_bounds[1]:
+            location_bounds = (location_bounds[0] - data_scale,
+                               location_bounds[1])
+        bounds.append(location_bounds)
+        if self.config[0] >= 1:
+            for cov_index in range(self.config[0]):
+                cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
+                slope_bound = max(data_scale / cov_scale, 0.1)
+                bounds.append((-slope_bound, slope_bound))
 
         # Scale
         if self.config[1] == 0:
+            scale = max(abs(scale), 1e-6)
             bounds.append((scale * 0.5, scale * 2))
         else:
             bounds.append((log_scale - 0.5, log_scale + 0.5))  # log(a0)

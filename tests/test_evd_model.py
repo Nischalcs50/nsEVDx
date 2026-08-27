@@ -231,6 +231,15 @@ class TestSuggestBounds:
         bnds = m.suggest_bounds()
         assert len(bnds) == 3
 
+    def test_bounds_fallback_for_nonpositive_lmom_scale(self):
+        data = np.array([-2.0, -1.0, 0.0, 1.0])
+        m = NonStationaryEVD([0, 0, 0], data, _make_cov_1d(4), genextreme)
+
+        bnds = m.suggest_bounds()
+
+        assert all(lower < upper for lower, upper in bnds)
+        assert bnds[1][0] > 0
+
     def test_string_distribution(self):
         m = _model([0, 0, 0], dist="genextreme")
         bnds = m.suggest_bounds()
