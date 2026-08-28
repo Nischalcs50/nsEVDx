@@ -243,6 +243,25 @@ def test_grad_gpd_nan():
     grad = _grad_nll_gpd(params, data, cov, config)
     assert np.all(np.isnan(grad))
 
+def test_grad_gpd_exponential_limit_matches_finite_difference():
+    data = np.array([1.0, 2.0, 4.0])
+    cov = np.ones((1, len(data)))
+    params = np.array([0.0, 2.0, 0.0])
+    h = 1e-6
+
+    analytic = _grad_nll_gpd(params, data, cov, [0, 0, 0])
+    numeric = np.empty_like(params)
+    for i in range(len(params)):
+        step = np.zeros_like(params)
+        step[i] = h
+        plus = neg_log_likelihood_ns(params + step, data, cov,
+                                     [0, 0, 0], genpareto)
+        minus = neg_log_likelihood_ns(params - step, data, cov,
+                                      [0, 0, 0], genpareto)
+        numeric[i] = (plus - minus) / (2 * h)
+
+    assert np.allclose(analytic, numeric, rtol=1e-4, atol=1e-5)
+
 
 #---- Analytical gradient vs finite-difference of the NLL ---
 def _fd_grad_ns(params, data, cov, config, dist, h=1e-6):

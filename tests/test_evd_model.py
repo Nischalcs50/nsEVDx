@@ -192,6 +192,19 @@ class TestSuggestPriors:
         ps = m.suggest_priors()
         assert len(ps) == 4
 
+    def test_gpd_location_prior_respects_support(self):
+        data = genpareto.rvs(0.2, loc=0, scale=5, size=50,
+                              random_state=0)
+        m = NonStationaryEVD([0, 0, 0], data, _make_cov_1d(50), genpareto)
+
+        location_prior = m.suggest_priors()[0]
+
+        assert location_prior[0] == "uniform"
+        assert location_prior[1]["loc"] < np.min(data)
+        assert location_prior[1]["loc"] + location_prior[1]["scale"] == pytest.approx(
+            np.min(data)
+        )
+
     def test_ns_scale_only(self):
         # [0,1,0] → 4 params: mu, a0, a1, xi
         m = _model([0, 1, 0])

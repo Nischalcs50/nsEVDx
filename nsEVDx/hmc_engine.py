@@ -258,7 +258,7 @@ class HMCEngine:
                   n_leapfrog,
                   M_diag,
                   T
-                  ) -> Tuple[np.ndarray, float]:
+                  ) -> Tuple[np.ndarray, float, float]:
         """
         Perform a single HMC proposal. This method samples the
         auxiliary momentum and simulate Hamiltonian dynamics
@@ -281,10 +281,12 @@ class HMCEngine:
 
         Returns
         -------
-        params_new : np.ndarray
+        q_prop : np.ndarray
             The parameter vector for the next state (either proposed or current).
         log_alpha : float
             The log-acceptance probability of the proposal.
+        delta_h : float
+            The Hamiltonian error, ``H_proposed - H_current``.
         """
         # Sampling auxiliary momentum from N(0, M)
         momentum = np.random.normal(0, 1, len(params)) * np.sqrt(M_diag)
@@ -297,8 +299,9 @@ class HMCEngine:
         H_proposed = self._hamiltonian(q_prop, p_prop, M_diag, T)
 
         # Log acceptance probability
-        log_alpha = min(0.0, H_current - H_proposed)
-        return q_prop, log_alpha
+        delta_h = H_proposed - H_current
+        log_alpha = min(0.0, -delta_h)
+        return q_prop, log_alpha, delta_h
 
     def _init_mass_matrix(self, params):
         """
@@ -320,18 +323,20 @@ class HMCEngine:
             Diagonal elements of the mass matrix, clipped to [1e-4, 1e4]
             to prevent numerical collapse or explosion.
         """
-        eps = 1e-4
+        eps = 1e-4  
         dim = len(params)
         M_diag = np.ones(dim)
         log_p0 = self.model._posterior_log_prob(params)
         for i in range(dim):
+            eps_scaling_factor = max(1.0, abs(params[i]))
+            eps_i = eps * eps_scaling_factor
             p_fwd = params.copy()
-            p_fwd[i] += eps
+            p_fwd[i] += eps_i 
             p_bwd = params.copy()
-            p_bwd[i] -= eps
+            p_bwd[i] -= eps_i 
             d2 = (self.model._posterior_log_prob(p_fwd) -
                   2*log_p0 +
-                  self.model._posterior_log_prob(p_bwd)) / eps**2
+                  self.model._posterior_log_prob(p_bwd)) / eps_i**2
             # d2 approximates second derivative of log-posterior;
             # this is concave and negative
             curvature = -d2
@@ -341,6 +346,7 @@ class HMCEngine:
             # Guard against non-positive or tiny curvature
             curvature = np.maximum(curvature, 1e-8)
             M_diag[i] = np.clip(curvature, 1e-4, 1e4)
+            print("M_diag:",M_diag)
         return M_diag
 
     def _warmup(self,
@@ -405,7 +411,7 @@ class HMCEngine:
                     disable=not show_progress, leave=False,ascii=True)
 
         for i in pbar:
-            prop_params, log_alpha = self._hmc_step(
+            prop_params, log_alpha, _ = self._hmc_step(
                 params, step_size, n_leapfrog, M_diag, T
             )
             # Metropolis accept/reject for warmup
@@ -431,7 +437,7 @@ class HMCEngine:
         pbar.close()
         # Phase 3: fix M_diag, only tune step size
         for i in range(phase3):
-            prop_params, log_alpha = self._hmc_step(
+            prop_params, log_alpha, _ = self._hmc_step(
                 params, step_size, n_leapfrog, M_diag, T
             )
             if np.log(np.random.rand()) < log_alpha:
@@ -513,16 +519,12 @@ class HMCEngine:
             dynamic_ncols=True
         )
         for i in pbar:
-            params_new, log_alpha = self._hmc_step(params,
+            params_new, log_alpha, delta_h = self._hmc_step(params,
                                                    step_size,
                                                    n_leapfrog, M_diag, T)
 
             # Divergence check
-            if abs(self._hamiltonian(params_new,
-                                     np.zeros_like(params), M_diag, T) -
-                   self._hamiltonian(params,
-                                     np.zeros_like(params),
-                                     M_diag,T)) > self._DELTA_MAX:
+            if abs(delta_h) > self._DELTA_MAX:
                 divergences += 1
 
             if np.log(np.random.rand()) < log_alpha:
@@ -546,7 +548,8 @@ class HMCEngine:
                     num_chains,
                     n_jobs,
                     show_progress,
-                    T):
+                    T,
+                    target_accept=0.8):
         """
         Execute multiple HMC chains in parallel and calculate diagnostics.
         Implements parameter jittering for different chains to ensure
@@ -582,7 +585,7 @@ class HMCEngine:
             return self._sample_hmc(
                 num_samples, np.array(initial_params) + jitter,
                 burn_in, step_size, n_leapfrog, T,
-                target_accept=0.8, chain_id=cid,
+                target_accept=target_accept, chain_id=cid,
                 show_progress=(show_progress and (n_jobs == 1 or cid == 0)))
 
         if num_chains == 1:

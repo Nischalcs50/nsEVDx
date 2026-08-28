@@ -191,15 +191,33 @@ class NonStationaryEVD:
         sd = np.std(self.data)
         data_scale = max(sd, np.ptp(self.data) / 4, 1e-6)
         loc = np.percentile(self.data, 35)
+        dist_name = (self.dist if isinstance(self.dist, str)
+                 else getattr(self.dist, "name", "")).lower()
 
         prior_specs = []
 
         # Location
         if self.config[0] == 0:
-            prior_specs.append(("normal", {"loc": loc, "scale": data_scale}))
+            if dist_name in ["genpareto", "gpd"]:
+                prior_specs.append(("uniform", {
+                    "loc": float(np.min(self.data) - data_scale*1.05),
+                    "scale": float(data_scale),
+                }))
+            else:
+                prior_specs.append(("normal", {
+                    "loc": loc, "scale": data_scale
+                }))
         else:
+            if dist_name in ["genpareto", "gpd"]:
+                prior_specs.append(("uniform", {
+                    "loc": float(np.min(self.data) - data_scale*1.05),
+                    "scale": float(data_scale),
+                }))
+            else:
+                prior_specs.append(("normal", {
+                    "loc": loc, "scale": 2 * data_scale
+                }))
             # intercept
-            prior_specs.append(("normal", {"loc": loc, "scale": 2 * data_scale}))
             for cov_index in range(self.config[0]):
                 cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
                 prior_specs.append(("normal", {
@@ -449,6 +467,7 @@ class NonStationaryEVD:
         # Nan-check (If we hit an impossible v <= 0 region, return 0)
         if np.any(np.isnan(grad_nll)):
             return np.zeros_like(params)
+            # raise ValueError(f"Invalid gradient at params={params}")
 
         # Prior Gradient (∂logπ/∂θ)
         grad_prior = self._grad_log_prior(params)
@@ -897,6 +916,7 @@ class NonStationaryEVD:
          show_progress: bool = True,
          n_jobs: int = 1,
          T: float = 1.0,
+         target_accept: float = 0.8,
      ) -> Union[Tuple[np.ndarray, float], Tuple[List[np.ndarray],
                                                 List[float], np.ndarray]]:
          """
@@ -923,6 +943,9 @@ class NonStationaryEVD:
              Parallel jobs via joblib.
          T : float
              Temperature scaling factor.
+         target_accept : float, optional
+             Desired acceptance probability for HMC step-size adaptation.
+             Defaults to 0.8.
          Returns
          -------
          dict
@@ -949,7 +972,8 @@ class NonStationaryEVD:
              num_chains=num_chains,
              n_jobs=n_jobs,
              show_progress=show_progress,
-             T=T)
+            T=T,
+            target_accept=target_accept)
 
     def frequentist_nsEVD(self,
                           initial_params: Union[List[float], np.ndarray],

@@ -67,7 +67,9 @@ Another key design decision is the implementation of Bayesian samplers directly 
 
 To support model evaluation and reproducibility, `nsEVDx` includes diagnostic tools for trace plots, posterior summaries, acceptance rates, and Gelman-Rubin ($\hat{R}$) convergence metrics. It also provides model selection options, including DIC, AIC, BIC, and likelihood-ratio tests, enabling complete workflows within a single environment.
 
-The repository also includes validation.py, a reproducible simulation benchmark designed to evaluate the ability of competing methods to recover known GEV and GPD parameters. The validation results indicate that nsEVDx achieves parameter estimation accuracy comparable to that of SciPy and pyextremes for stationary models when using both maximum likelihood estimation (MLE) and the method of L-moments (LM) (Figure 3a-b). Across all methods, the GPD scale parameter was generally estimated with lower accuracy and greater variability than the corresponding GEV scale parameter........ 
+The repository also includes `validation.py`, a reproducible simulation benchmark designed to evaluate the ability of competing methods to recover known GEV and GPD parameters. The results indicate that `nsEVDx` achieves parameter estimation accuracy comparable to that of `SciPy` and `pyextremes` for stationary models when using both maximum likelihood estimation (MLE) and the method of L-moments (LM) (Figure 3a-b). Across all methods, the GPD scale parameter was generally estimated with lower accuracy and greater variability than the corresponding GEV scale parameter......... 
+
+![Distribution of absolute error in estimating stationary GEV and GPD parameters across 100 simulations for various methods and Python packages.](Fig3.png)
 
 The package is intentionally lightweight, relying primarily on `NumPy` and `SciPy` for computation and `Matplotlib` and `Seaborn` for visualization. This minimal dependency footprint improves portability and simplifies installation while preserving extensibility for future methodological developments.
 

@@ -356,20 +356,28 @@ def _grad_nll_gpd(
     dL_dw = np.where(small_xi, -inv_w, -(1.0 + 1.0/xi_safe)* inv_w)
 
     #----Location gradient dw/dmu = -xi/sigma
-    dL_dmu = dL_dw * (-xi / sigma)
+    dL_dmu = np.where(
+        small_xi,
+        1.0 / sigma,
+        dL_dw * (-xi / sigma),
+    )
 
     #----Scale gradient dw/dsigma = -xi*z/sigma
     # dL_dsig_base = -1.0/sigma + dL_dw * (-xi * z / sigma)
     # dL/dsigma: includes log-link chain rule (dL/d_sigma * sigma)
     # dL_dsig_base * sigma =
     #  = (-1/sig + dL/dw * dw/dsig) * sig = -1 + dL/dw * (-xi * z)
-    dL_da = -1.0 + dL_dw * (-xi * z)
+    dL_da = np.where(
+        small_xi,
+        -1.0 + z,
+        -1.0 + dL_dw * (-xi * z),
+    )
 
     #----Shape gradient dL/dxi
     log_w = np.log(w)
     dL_dxi = np.where(
         small_xi,
-        -0.5 * z**2,
+        0.5 * z**2 - z,
         (1.0 / xi_safe**2) * log_w - (1.0 + 1.0/xi_safe) * z * inv_w
     )
 
