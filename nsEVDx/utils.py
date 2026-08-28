@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from scipy.optimize import minimize
-from scipy.special import gamma
+from scipy.special import gamma, ndtr
 from scipy.stats import genextreme, genpareto
 
 
@@ -434,7 +434,7 @@ def _total_log_prior(params: np.ndarray, prior_specs: list) -> float:
 
     Notes
     -----
-    - Supports 'normal', 'uniform', and 'halfnormal' priors.
+    - Supports 'normal', 'uniform', 'halfnormal', and 'truncatednormal' priors.
     - If no `prior_specs` are provided (i.e., None), returns 0.0 (flat
                                                                   prior).
     - Prior specification format:
@@ -466,6 +466,19 @@ def _total_log_prior(params: np.ndarray, prior_specs: list) -> float:
                     return -np.inf
                 logp += (-0.5 * (val / scale) ** 2 - np.log(scale)
                          - _LOG_SQRT_2PI + 0.69314718056)
+            elif ptype == "truncatednormal":
+                loc = kw["loc"]
+                scale = kw["scale"]
+                low = kw["low"]
+                high = kw["high"]
+                if scale <= 0 or low >= high or not (low <= val <= high):
+                    return -np.inf
+                normalizer = ndtr((high - loc) / scale) - ndtr((low - loc) / scale)
+                if normalizer <= 0:
+                    return -np.inf
+                logp += (-0.5 * ((val - loc) / scale) ** 2
+                         - np.log(scale) - _LOG_SQRT_2PI
+                         - np.log(normalizer))
             else:
                 return -np.inf   # unknown type — safe fallback
 

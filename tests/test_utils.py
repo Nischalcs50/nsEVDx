@@ -339,6 +339,13 @@ def test_log_prior_halfnormal_negative():
     lp = _total_log_prior(params, prior)
     assert lp == -np.inf
 
+def test_log_prior_truncatednormal_support():
+    prior = [("truncatednormal", {
+        "loc": 0.0, "scale": 0.3, "low": -0.5, "high": 0.5
+    })]
+    assert np.isfinite(_total_log_prior(np.array([0.0]), prior))
+    assert _total_log_prior(np.array([0.6]), prior) == -np.inf
+
 def test_log_prior_nonfinite_triggers_guard():
     params = np.array([1.0])
     prior = [("normal", {"loc": 0.0, "scale": -1})]

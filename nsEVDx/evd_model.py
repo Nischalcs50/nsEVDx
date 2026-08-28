@@ -241,14 +241,19 @@ class NonStationaryEVD:
 
         # Shape
         if self.config[2] == 0:
-            prior_specs.append(("normal", {"loc": 0, "scale": 0.3}))
+            prior_specs.append(("truncatednormal", {
+                "loc": 0, "scale": 0.3, "low": -0.5, "high": 0.5
+            }))
         else:
             # intercept
-            prior_specs.append(("normal", {"loc": 0, "scale": 0.2}))
+            prior_specs.append(("truncatednormal", {
+                "loc": 0, "scale": 0.2, "low": -0.5, "high": 0.5
+            }))
             for cov_index in range(self.config[2]):
                 cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
-                prior_specs.append(("normal", {
-                    "loc": 0, "scale": 0.25 / cov_scale
+                prior_specs.append(("truncatednormal", {
+                    "loc": 0, "scale": 0.25 / cov_scale,
+                    "low": -0.5, "high": 0.5
                 }))
 
         return prior_specs
