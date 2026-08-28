@@ -118,7 +118,7 @@ class HMCEngine:
             log_post = self.model._posterior_log_prob(params)
             if not np.isfinite(log_post):
                 return np.inf
-        return (-log_post + self._kinetic(momentum, M_diag))/T
+        return (-log_post/T) + self._kinetic(momentum, M_diag)
 
     def _leapfrog(
         self, params: np.ndarray,

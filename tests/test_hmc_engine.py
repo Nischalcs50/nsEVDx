@@ -97,3 +97,50 @@ def test_dual_averaging_logic():
     # Simulate a low acceptance (log(0.1)) -> step size should decrease
     eps_low, _ = engine._dual_average_update(state, log_alpha=np.log(0.1))
     assert eps_low < eps
+
+
+def _gaussian_engine(sigma=1.0, d=2):
+    """HMCEngine whose posterior is an isotropic Gaussian of known width.
+
+    The tempered target p(x)**(1/T) is then exactly N(0, T*sigma**2), so the
+    sampled standard deviation has a closed form to check against.
+    """
+    data = np.random.gumbel(loc=20, scale=5, size=50)
+    cov = np.vstack([np.ones_like(data), np.linspace(0, 1, len(data))])
+    model = NonStationaryEVD([0, 0, 0], data, cov, 'Genextreme')
+    model.prior_specs = []
+    model._posterior_log_prob = (
+        lambda p: float(-0.5 * np.sum(np.asarray(p)[:d] ** 2) / sigma ** 2))
+    model._grad_log_posterior = (
+        lambda p: -np.asarray(p, dtype=float) / sigma ** 2)
+    return HMCEngine(model)
+
+
+def _sampled_sd(engine, T, n=6000, step=0.35, n_leapfrog=20, seed=7):
+    np.random.seed(seed)
+    params = np.zeros(2)
+    M_diag = np.ones(2)
+    draws = np.empty((n, 2))
+    for i in range(n):
+        prop, log_alpha = engine._hmc_step(params, step, n_leapfrog, M_diag, T)
+        if np.log(np.random.rand()) < log_alpha:
+            params = prop
+        draws[i] = params
+    return float(draws[:, 0].std())
+
+
+def test_tempering_widens_the_sampled_posterior():
+    """T must scale the potential energy only.
+
+    Tempering the kinetic term as well leaves the sampled spread unchanged
+    while inflating the acceptance rate, so the sampler quietly targets the
+    untempered posterior.
+    """
+    engine = _gaussian_engine()
+    sd_1 = _sampled_sd(engine, T=1.0)
+    sd_4 = _sampled_sd(engine, T=4.0)
+
+    assert sd_1 == pytest.approx(1.0, abs=0.15)
+    # p(x)**(1/4) is N(0, 4), so the standard deviation should be near 2.
+    assert sd_4 == pytest.approx(2.0, rel=0.25)
+    assert sd_4 > 1.5 * sd_1
