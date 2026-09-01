@@ -119,7 +119,7 @@ class HMCEngine:
             if not np.isfinite(log_post):
                 return np.inf
         return (-log_post/T) + self._kinetic(momentum, M_diag)
-
+        
     def _leapfrog(
         self, params: np.ndarray,
         momentum: np.ndarray,
@@ -346,7 +346,7 @@ class HMCEngine:
             # Guard against non-positive or tiny curvature
             curvature = np.maximum(curvature, 1e-8)
             M_diag[i] = np.clip(curvature, 1e-4, 1e4)
-            print("M_diag:",M_diag)
+            # print("M_diag:",M_diag)
         return M_diag
 
     def _warmup(self,

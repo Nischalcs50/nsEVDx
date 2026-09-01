@@ -221,7 +221,7 @@ class NonStationaryEVD:
             for cov_index in range(self.config[0]):
                 cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
                 prior_specs.append(("normal", {
-                    "loc": 0, "scale": data_scale / cov_scale
+                    "loc": 0, "scale": max(1.0, data_scale / cov_scale)
                 }))
 
         # Scale
@@ -251,9 +251,8 @@ class NonStationaryEVD:
             }))
             for cov_index in range(self.config[2]):
                 cov_scale = max(np.ptp(self.cov[cov_index]), 1.0)
-                prior_specs.append(("truncatednormal", {
-                    "loc": 0, "scale": 0.25 / cov_scale,
-                    "low": -0.5, "high": 0.5
+                prior_specs.append(("normal", {
+                    "loc": 0, "scale": 0.25 / cov_scale
                 }))
 
         return prior_specs

@@ -84,8 +84,8 @@ config = [1, 0, 0] # means location parameter is non-stationary and scale and sh
 # See Usage.md or https://nischalcs50.github.io/nsEVDx/ for more details on config vector
 # checking the parameters corresponding to the config
 print(ns.NonStationaryEVD.get_param_description(config=config, n_cov=1)) # checking the parameters corresponding to the config
-cov  = np.array(range(50))
-data = ns.NonStationaryEVD.ns_EVDrvs(genextreme, [30, 0.1, 7, 0.2], cov, config, size=50)
+cov  = np.array(range(100))
+data = ns.NonStationaryEVD.ns_EVDrvs(genextreme, [30, 0.1, 5, -0.3], cov, config, size=100)
 plt.plot(data)
 
 
@@ -104,9 +104,9 @@ print(sampler.descriptions)
 ## RUNNING BAYESIAN ALGORITHM
 # fitting a non-stationary GEV model to the data using Hamiltonian Monte Carlo (HMC) sampler
 results = sampler.MH_Hmc(
-    num_samples=1000, burn_in=1500,
-    initial_params=[28, 0, 6, 0],
-    num_chains=2,
+    num_samples=1500, burn_in=1500,
+    initial_params=[30, 0, 5, -0.1],
+    num_chains=4,
     T = 1
 )
 
@@ -116,9 +116,13 @@ print(f"sample mean : {np.round(np.vstack(results['chains']).mean(axis=0), 3)}")
 print(f"r_hats : {np.round(results['r_hats'], 3)}")
 
 ## PLOT CONVERGENCE & POSTERIORS
-ns.plot_trace(results['chains'], config, fig_size=(8,8))
-ns.plot_posterior(results['chains'], config, fig_size=(8,8))
+ns.plot_trace(results['chains'], config, fig_size=(8,8),show=False);
+ns.plot_posterior(results['chains'], config, fig_size=(8,8),show=False);
 ```
+![Output of the traceplot.](convergence.png)
+
+![Output of the posterior plot.](posterior.png)
+
 full version of this example is available here: [quick_start](examples/Quick_start_example.ipynb)
 
 ## Documentation

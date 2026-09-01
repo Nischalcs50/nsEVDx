@@ -44,6 +44,7 @@ hmc_mass_matrix_benchmark.py
 hmc_mass_matrix_benchmark.json
 validation.py
 validation2.py
+quickstart_paper_new.ipynb
 
 # Python coverage artifacts
 .coverage

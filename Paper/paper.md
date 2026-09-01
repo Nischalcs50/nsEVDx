@@ -27,21 +27,22 @@ bibliography: paper.bib
 csl: apa.csl
 ---
 # Summary
-Infrastructure design, insurance pricing, and financial planning all rely on understanding the probability of rare, extreme events, such as extreme floods, rainfall events, and stock market crashes. Traditionally, researchers estimated the probability of extreme events of a given magnitude by assuming that their probability of occurrence remained stationary over time. However, changing global conditions such as climate change, urbanization, and economic shifts can cause the probability of extreme events to become non-stationary. `nsEVDx` is an open-source Python package developed to help researchers quantify these changing risks by fitting both stationary and non-stationary Extreme Value Distributions (EVDs) to extreme value data. It supports non-stationary modeling in which the location, scale, and shape parameters can each depend on user-defined covariates. This enables practical applications such as linking rainfall extremes to temperature or maximum stock market losses to market volatility indices. Overall, `nsEVDx` provides researchers and practitioners with an easy-to-use, flexible, and extensible Python-native interface for frequentist and Bayesian inference, including MCMC methods.
+
+`nsEVDx` is an open-source Python package for fitting stationary and non-stationary Extreme Value Distributions (EVDs) to extreme value data. It supports non-stationary models in which the location, scale, and shape parameters can each depend on user-defined covariates. Overall, `nsEVDx` provides an easy-to-use, flexible, and extensible Python-native interface for frequentist and Bayesian inference of non-stationary EVD models. This enables researchers and practitioners to quantify changing risks associated with rare and extreme events.
 
 
 # Statement of Need
 
 Traditional extreme value frequency analysis assumes that the statistical properties of extreme events remain stationary over time. However, non-stationary behavior in extreme events has been documented across hydroclimatic, engineering, and financial applications. For example, in hydroclimatic systems, non-stationary behavior has been documented in flood and extreme-rainfall processes, with changes linked to factors such as urbanization and climate change [@prosdocimi2015detection;@jayaweera2025evidence;@eccles2025substantial]. Such changes can alter the frequency and magnitude of extreme events over time. Accurately quantifying these evolving risks and return periods requires statistical tools that can incorporate arbitrary, time-varying covariates into all parameters of EVDs.
 
-While several software tools support extreme value analysis, implementing and evaluating non-stationary EVD models often requires substantial statistical and programming expertise, particularly when Bayesian inference and advanced sampling algorithms are involved. `nsEVDx` provides an easy-to-use framework for fitting stationary and non-stationary Generalized Extreme Value (GEV) and Generalized Pareto (GPD) models. It makes advanced sampling methods accessible to users with varying levels of expertise in extreme value modeling while retaining the flexibility required for advanced applications.
+Although several existing packages support extreme value analysis, modeling non-stationary EVDs requires substantial statistical and programming expertise, particularly when Bayesian sampling algorithms are involved. `nsEVDx` provides an easy-to-use framework for fitting stationary and non-stationary Generalized Extreme Value (GEV) and Generalized Pareto (GPD) distributions. It makes advanced sampling methods accessible to users with varying levels of expertise in extreme value modeling while retaining the flexibility required for advanced applications.
 
-The target audience for `nsEVDx` includes hydrologists, climate scientists, engineers, and risk analysts who require a reliable and flexible workflow for non-stationary extreme value modeling. By reducing the implementation effort  needed to implement both frequentist optimization and advanced Markov Chain Monte Carlo (MCMC) sampling algorithms, the software allows practicioners to focus on understanding changing risks and their implications for decision-making.
+The target audience for `nsEVDx` includes hydrologists, climate scientists, engineers, and risk analysts who require a reliable and flexible workflow for non-stationary extreme value modeling. By reducing the effort  needed to implement both frequentist optimization and advanced Markov Chain Monte Carlo (MCMC) sampling algorithms, the software allows practicioners to focus on understanding changing risks and their implications for decision-making.
 
 
 # State of the Field
 
-Extreme value distributions (EVDs), particularly the GEV and GPD distributions, are widely used to quantify the frequency and magnitude of rare events in hydrology, climatology, engineering, and finance [@katz2002statistics;@kafle2026robustness;@mcneil2000estimation;@castillo1988extreme]. Increasing evidence of non-stationarity in environmental and socioeconomic systems has motivated the development of methods that allow EVD parameters to vary with time or external covariates.
+Extreme value distributions (EVDs), particularly the GEV and GPD, are widely used to quantify the frequency and magnitude of rare events in hydrology, climatology, engineering, and finance [@katz2002statistics;@kafle2026robustness;@mcneil2000estimation;@castillo1988extreme]. Increasing evidence of non-stationarity in environmental and socioeconomic systems has motivated the development of methods that allow EVD parameters to vary with time or external covariates.
 
 Several established software packages support extreme value analysis. In the R ecosystem, `ismev` [@heffernan_j_e_ismev_2003], `extRemes` [@gilleland_extremes_2025], `climextRemes` [@paciorek_climextremes_2016], and `NSGEV` [@irsn_nsgev_2024] provide tools for fitting stationary and non-stationary extreme value models. These packages provide important foundations for EVD-based analysis, although their capabilities differ in areas such as non-stationary modeling and Bayesian inference. Probabilistic programming frameworks, such as python-based `PyMC` [@oriol_abril-pla_pymc_2023] and `NumPyro` [@phan2019composable], and `C++` based Stan with interfaces like `PyStan` [@noauthor_pystan_2023] and `CmdStan` [@noauthor_cmdstan_2023], offer flexible tools for building custom statistical models, including extreme value models. However, these tools require users to explicitly formulate non-stationary likelihood functions for EVDs, prior structures, parameter constraints, and sampling configurations for each application. As a result, they may be too complex for domain specific practitioners like hydrologists, climate analysts, or risk analysts seeking easy-to-use tools.
 
@@ -67,22 +68,59 @@ Another key design decision is the implementation of Bayesian samplers directly 
 
 To support model evaluation and reproducibility, `nsEVDx` includes diagnostic tools for trace plots, posterior summaries, acceptance rates, and Gelman-Rubin ($\hat{R}$) convergence metrics. It also provides model selection options, including DIC, AIC, BIC, and likelihood-ratio tests, enabling complete workflows within a single environment.
 
-The repository also includes `validation.py`, a reproducible simulation benchmark designed to evaluate the ability of competing methods to recover known GEV and GPD parameters. The results indicate that `nsEVDx` achieves parameter estimation accuracy comparable to that of `SciPy` and `pyextremes` for stationary models when using both maximum likelihood estimation (MLE) and the method of L-moments (LM) (Figure 3a-b). Across all methods, the GPD scale parameter was generally estimated with lower accuracy and greater variability than the corresponding GEV scale parameter......... 
-
-![Distribution of absolute error in estimating stationary GEV and GPD parameters across 100 simulations for various methods and Python packages.](Fig3.png)
-
 The package is intentionally lightweight, relying primarily on `NumPy` and `SciPy` for computation and `Matplotlib` and `Seaborn` for visualization. This minimal dependency footprint improves portability and simplifies installation while preserving extensibility for future methodological developments.
+
+# Benchmark Experiment
+
+A simulation-based case study was performed to compare mean absolute errors (MAE) in estimating EVD parameters across multiple packages, including `nsEVDx`. First, we generated $N=100$ stationary and $N=50$ non-stationary datasets, each consisting 500 extreme values sampled from using EVD parameter sets (hereafter referred to as the "true" parameter; Figure 3). These datasets were then used to fit EVD models, and MAE was computed by comparing estimated parameters with the corresponding true parameters.
+For stationary GEV and GPD models, `nsEVDx` produced parameter estimates comparable to those obtained with `SciPy` and `pyextremes` using both maximum likelihood estimation (MLE) and L-moments (LM) (Figure 3a-b). For non-stationary models, nsEVDx produced parameter estimates comparable to those obtained from an equivalent NumPyro-based NUTS implementation using the same priors and MCMC settings (number of chains, posterior samples, and burn-in period), demonstrating reliable recovery of non-stationary parameters in these simulated examples (Figure 3c-d). Across methods and scenarios, shape parameters generally exhibited the lowest MAE, while differences in the MAE of other parameters were relatively small.  
+
+![Mean of absolute error in estimating GEV and GPD parameters across the simulations (each using a vector of 500 random values generated using the true parameters) for various methods and Python packages.](Fig3.png)
 
 
 # Research Impact Statement
 
-`nsEVDx` is developed to improve accessibility of advanced extreme value modeling methods for researchers working in Python environments. The software lowers the barrier to applying advanced Bayesian methods, including MALA and HMC sampling, by providing predefined extreme value models and inference workflows that accommodate users with different levels of statistical and programming expertise.
-
-The package has already been applied in ongoing hydroclimatic research focused on trend detection and characterization of extreme precipitation[@kafle2026raingauge;@kafle2025detecting], and supports broader applications in climate science, water resources engineering, infrastructure design, and financial risk assessment. Since its public release, nsEVDx has received more than 3,200 downloads during its first year, providing evidence of research community interest.
-
-The software is openly developed, documented, tested, and distributed through both `GitHub` and `PyPI`, supporting long-term reuse and community contributions. Its combination of accessible model specification, flexible non-stationary formulations, and built-in Bayesian inference fills an important gap between specialized extreme-value software and general-purpose probabilistic programming environments.
+`nsEVDx` lowers the barrier in applying advanced Bayesian methods, including MALA and HMC sampling, by providing predefined extreme value models and inference workflows that accommodate users with different levels of statistical and programming expertise. The package has already been used in ongoing hydroclimatic research focused on trend detection and characterization of extreme precipitation[@kafle2026raingauge;@kafle2025detecting]. Potential applications extend to climate science, water resources engineering, infrastructure design, and financial risk assessment, e.g., linking rainfall extremes to temperature or maximum stock market losses to market volatility indices. A steady increase in downloads suggests growing interest among researchers and practitioners. The software is openly developed, tested, documented, and distributed through both `GitHub` and `PyPI`, supporting long-term reuse and community contributions. 
 
 # Installation and Example
+
+Install the package via pip or gitgub:
+```bash
+pip install nsEVDx
+```
+or
+```bash
+git clone https://github.com/Nischalcs50/nsEVDx.git
+cd nsEVDx
+pip install .
+```
+
+```python
+import nsEVDx as ns
+import numpy as np
+from scipy.stats import genextreme
+import matplotlib.pyplot as plt
+
+np.random.seed(123)
+covariate  = np.array(range(100))
+config = [1,0,0] # non-stationary location; other parameters stationary
+true_parameter = [30, 0.1, 5, -0.3]
+Observations = ns.NonStationaryEVD.ns_EVDrvs(genextreme, true_parameter, 
+                                     covariate, 
+                                     config, size=100)
+plt.plot(Observations)
+
+# Infering GEV Parameters from the Observations
+model = ns.NonStationaryEVD(config, Observations, 
+                            covariate,dist='GEV')
+results = model.MH_Hmc(num_samples=1500, burn_in=1500,
+                    initial_params=[30, 0, 5, -0.1],
+                    num_chains=4, T = 1)
+# Results
+print(f"sample mean : {np.round(np.vstack(results['chains']).mean(axis=0), 3)}")
+ns.plot_trace(results['chains'], config, fig_size=(8,8),show=False);
+ns.plot_posterior(results['chains'], config, fig_size=(8,8),show=False);
+```
 
 Installation instructions, tutorials, API documentation, and executable examples are available in the [project GitHub repository](https://github.com/Nischalcs50/nsEVDx) and [full online documentation](https://nischalcs50.github.io/nsEVDx/).
 
@@ -92,6 +130,6 @@ AI tools were used to assist the development of this library and in drafting the
 
 # Acknowledgements
 
-We thank the JOSS Editor and reviewers for their thorough and constructive feedback, which significantly improved both nsEVDx and its documentation. We also acknowledge the pyOpenSci editors and reviewers for their valuable suggestions, Vincent Gao for identifying and fixing a software bug, and my wife, Koshika Timsina, for her unwavering support and encouragement throughout this project.
+We thank the JOSS Editor and reviewers for their thorough and constructive feedback, which significantly improved `nsEVDx`. We also acknowledge the `pyOpenSci` editors and reviewers for their valuable suggestions, Vincent Gao for fixing a bug, and other contributors who helped improve the package. 
 
 # References
