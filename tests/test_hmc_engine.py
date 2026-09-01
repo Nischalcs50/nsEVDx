@@ -122,7 +122,7 @@ def _sampled_sd(engine, T, n=6000, step=0.35, n_leapfrog=20, seed=7):
     M_diag = np.ones(2)
     draws = np.empty((n, 2))
     for i in range(n):
-        prop, log_alpha = engine._hmc_step(params, step, n_leapfrog, M_diag, T)
+        prop, log_alpha, _ = engine._hmc_step(params, step, n_leapfrog, M_diag, T)
         if np.log(np.random.rand()) < log_alpha:
             params = prop
         draws[i] = params
