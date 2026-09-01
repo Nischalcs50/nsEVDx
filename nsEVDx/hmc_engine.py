@@ -119,7 +119,7 @@ class HMCEngine:
             if not np.isfinite(log_post):
                 return np.inf
         return (-log_post/T) + self._kinetic(momentum, M_diag)
-        
+
     def _leapfrog(
         self, params: np.ndarray,
         momentum: np.ndarray,
