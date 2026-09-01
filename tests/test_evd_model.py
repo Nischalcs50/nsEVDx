@@ -210,7 +210,7 @@ class TestSuggestPriors:
         assert location_prior[0] == "uniform"
         assert location_prior[1]["loc"] < np.min(data)
         assert location_prior[1]["loc"] + location_prior[1]["scale"] <= np.min(data)
-       
+
     def test_ns_scale_only(self):
         # [0,1,0] → 4 params: mu, a0, a1, xi
         m = _model([0, 1, 0])

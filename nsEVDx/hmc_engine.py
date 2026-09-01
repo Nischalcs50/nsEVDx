@@ -323,7 +323,7 @@ class HMCEngine:
             Diagonal elements of the mass matrix, clipped to [1e-4, 1e4]
             to prevent numerical collapse or explosion.
         """
-        eps = 1e-4  
+        eps = 1e-4
         dim = len(params)
         M_diag = np.ones(dim)
         log_p0 = self.model._posterior_log_prob(params)
@@ -331,9 +331,9 @@ class HMCEngine:
             eps_scaling_factor = max(1.0, abs(params[i]))
             eps_i = eps * eps_scaling_factor
             p_fwd = params.copy()
-            p_fwd[i] += eps_i 
+            p_fwd[i] += eps_i
             p_bwd = params.copy()
-            p_bwd[i] -= eps_i 
+            p_bwd[i] -= eps_i
             d2 = (self.model._posterior_log_prob(p_fwd) -
                   2*log_p0 +
                   self.model._posterior_log_prob(p_bwd)) / eps_i**2

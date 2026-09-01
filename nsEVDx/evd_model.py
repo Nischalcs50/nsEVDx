@@ -291,7 +291,8 @@ class NonStationaryEVD:
         location_half_width = max(abs(loc) * buffer, data_scale * buffer, 1e-6)
         location_bounds = (loc - location_half_width, loc + location_half_width)
         if dist_name in ["genpareto", "gpd"]:
-            location_bounds = (location_bounds[0], min(location_bounds[1], np.min(self.data)))
+            location_bounds = (location_bounds[0],
+                               min(location_bounds[1], np.min(self.data)))
         if location_bounds[0] >= location_bounds[1]:
             location_bounds = (location_bounds[0] - data_scale,
                                location_bounds[1])
