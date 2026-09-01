@@ -120,7 +120,7 @@ ns.plot_trace(results['chains'], config, fig_size=(8,8),show=False);
 ns.plot_posterior(results['chains'], config, fig_size=(8,8),show=False);
 ```
 
-Installation instructions, tutorials, API documentation, and executable examples are available in the [project GitHub repository](https://github.com/Nischalcs50/nsEVDx) and [full online documentation](https://nischalcs50.github.io/nsEVDx/).
+Detailed installation instructions, tutorials, API documentation, and executable examples are available in the [project GitHub repository](https://github.com/Nischalcs50/nsEVDx) and [full online documentation](https://nischalcs50.github.io/nsEVDx/).
 
 # AI Usage Disclosure
 
@@ -128,6 +128,10 @@ AI tools were used to assist the development of this library and in drafting the
 
 # Acknowledgements
 
-We thank the JOSS Editor and reviewers for their thorough and constructive feedback, which significantly improved `nsEVDx`. We also acknowledge the `pyOpenSci` editors and reviewers for their valuable suggestions, Vincent Gao for fixing a bug, and other contributors who helped improve the package. 
+We thank the JOSS Editor and Reviewers for their thorough and constructive feedback, which significantly improved `nsEVDx`. We also acknowledge the `pyOpenSci` Editors and Reviewers for their valuable suggestions, Vincent Gao for identifying and fixing a bug, and other contributors who helped improve the package. 
+
+# Funding
+
+No external funding was received for this work.
 
 # References
