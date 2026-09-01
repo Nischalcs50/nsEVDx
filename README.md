@@ -160,44 +160,51 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to 
 
 ## References
 
-Abril-Pla, O., Andreani, V., Carroll, C., Dong, L. Y., Fonnesbeck, C., Kochurov, M., Kumar, R., Lao, J., Luhmann, C. C., Martin, O. A., Osthege, M., Vieira, R., Wiecki, T. V., & Zinkov, R. (2023). PyMC: A modern, and comprehensive probabilistic programming framework in Python. *PeerJ Computer Science, 9*, e1516. https://doi.org/10.7717/peerj-cs.1516
+Betancourt, M. (2017). A Conceptual Introduction to Hamiltonian Monte Carlo. arXiv: Methodology. https://doi.org/10.48550/arXiv.1701.02434
 
-Betancourt, M. (2017). *A conceptual introduction to Hamiltonian Monte Carlo*. arXiv. https://arxiv.org/abs/1701.02434
+Castillo, E. (1988). Extreme value theory in engineering. Academic Press. https://doi.org/10.1016/C2009-0-22169-6
 
-Castillo, E. (1988). *Extreme value theory in engineering*. Academic Press.
+Coles, S. (2001). An introduction to statistical modeling of extreme values (4th. printing). Springer. https://doi.org/10.1007/978-1-4471-3675-0
 
-Eccles, R., Syktus, J., Trancoso, R., Chapman, S., Wasko, C., Evans, J. P., Thatcher, M., Di Virgilio, G., & Stassen, C. (2025). Substantial increases in future precipitation extremes—Insights from a large ensemble of downscaled CMIP6 models. *npj Natural Hazards, 2*(1), 60. https://doi.org/10.1038/s44304-025-00107-1
+Deville, Y. (2026). NSGEV: Non-stationary GEV time series. https://github.com/IRSN/NSGEV/
 
-Gilleland, E. (2025). *extRemes: Extreme value analysis* (Version 2.2-1) [R package]. Comprehensive R Archive Network. https://CRAN.R-project.org/package=extRemes
+Eccles, R., Syktus, J., Trancoso, R., Chapman, S., Wasko, C., Evans, J. P., Thatcher, M., Di Virgilio, G., & Stassen, C. (2025). Substantial increases in future precipitation extremes—insights from a large ensemble of downscaled CMIP6 models. Npj Natural Hazards, 2(1), 60. https://doi.org/10.1038/s44304-025-00107-1
 
-Heffernan, J. E., Stephenson, A. G., & Gilleland, E. (2003). *ismev: An introduction to statistical modeling of extreme values* (Version 1.42) [R package]. Comprehensive R Archive Network. https://CRAN.R-project.org/package=ismev
+Foreman-Mackey, D., Hogg, D. W., Lang, D., & Goodman, J. (2013). Emcee: The MCMC hammer. PASP, 125, 306–312. https://doi.org/10.1086/670067
 
-Hosking, J. R. M., & Wallis, J. R. (1997). *Regional frequency analysis: An approach based on L-moments*. Cambridge University Press.
+Gilleland, E. (2025). extRemes: Extreme Value Analysis. https://doi.org/10.1175/JTECH-D-20-0070.1
 
-Jayaweera, L., Wasko, C., & Nathan, R. (2025). Evidence for non-stationarity in the GEV shape parameter when modeling extreme rainfall. *Water Resources Research, 61*(5), e2023WR036426. https://doi.org/10.1029/2023WR036426
+Heffernan J. E., Stephenson A.G., & Gilleland E. (2003). Ismev: An Introduction to Statistical Modeling of Extreme Values. https://doi.org/10.32614/CRAN.package.ismev
 
-Kafle, N. (2026). *Rain-gauge network effects on the uncertainty and trends in short-duration extreme precipitation* [Doctoral dissertation, The University of Memphis].
+Hosking, J. R. M., & Wallis, J. R. (1997). Regional Frequency Analysis: An Approach Based on L-Moments (Vol. 93). Cambridge University Press. https://doi.org/10.1017/CBO9780511529443
 
-Kafle, N., Dell'Aira, F., Chadwick, C., & Meier, C. I. (2026). Robustness of regionally derived, short-duration rainfall depth-duration-frequency estimates to the choice of minimum interevent time: Evidence across climates, raingauge densities, and regionalization approaches. *Journal of Hydrologic Engineering*. https://doi.org/10.1061/JHYEFF/HEENG-6729
+Jayaweera, L., Wasko, C., & Nathan, R. (2025). Evidence for non-stationarity in the GEV shape parameter when modeling extreme rainfall. Water Resources Research, 61(5), e2023WR036426. https://doi.org/10.1029/2023WR036426
 
-Kafle, N., Peleg, N., & Meier, C. I. (2025). Detecting spatially consistent trends in sub-hourly extreme rainfall using a neighborhood-based method. *AGU Fall Meeting Abstracts*, H13G-07. https://ui.adsabs.harvard.edu/abs/2025AGUFMH13G...07K/abstract
+Kafle, N. (2026). Rain-gauge network effects on the uncertainty and trends in short-duration extreme precipitation (PhD Dissertation No. 32785789, The University of Memphis). https://ezproxy.memphis.edu:3443/login?url=https://www.proquest.com/dissertations-theses/rain-gauge-network-effects-on-uncertainty-trends/docview/3369343212/se-2
 
-Katz, R. W., Parlange, M. B., & Naveau, P. (2002). Statistics of extremes in hydrology. *Advances in Water Resources, 25*(8–12), 1287–1304. https://doi.org/10.1016/S0309-1708(02)00056-8
+Kafle, N., Dell’Aira, F., Chadwick, C., & Meier, C. I. (2026). (Forthcoming.) robustness of regionally derived, short-duration rainfall depth-duration-frequency estimates to the choice of minimum interevent time: Evidence across climates, raingauge densities, and regionalization approaches. Journal of Hydrologic Engineering. https://doi.org/10.1061/JHYEFF.HEENG-6729
 
-McNeil, A. J., & Frey, R. (2000). Estimation of tail-related risk measures for heteroscedastic financial time series: An extreme value approach. *Journal of Empirical Finance, 7*(3–4), 271–300. https://doi.org/10.1016/S0927-5398(00)00012-8
+Kafle, N., Peleg, N., & Meier, C. I. (2025). Detecting spatially consistent trends in sub-hourly extreme rainfall using a neighborhood-based method. AGU Fall Meeting Abstracts, 2025, H13G–07. https://ui.adsabs.harvard.edu/abs/2025AGUFMH13G...07K/abstract
 
-Paciorek, C. (2016). *climextRemes: Tools for analyzing climate extremes* (Version 0.3.1) [R package]. Comprehensive R Archive Network. https://CRAN.R-project.org/package=climextRemes
+Katz, R. W., Parlange, M. B., & Naveau, P. (2002). Statistics of extremes in hydrology. Advances in Water Resources, 25(8–12), 1287–1304. https://doi.org/10.1016/S0309-1708(02)00056-8
 
-Phan, D., Pradhan, N., & Jankowiak, M. (2019). Composable effects for flexible and accelerated probabilistic programming in NumPyro. *arXiv*. https://doi.org/10.48550/arXiv.1912.11554
+McNeil, A. J., & Frey, R. (2000). Estimation of tail-related risk measures for heteroscedastic financial time series: An extreme value approach. Journal of Empirical Finance, 7(3–4), 271–300. https://doi.org/10.1016/S0927-5398(00)00012-8
 
-Prosdocimi, I., Kjeldsen, T. R., & Miller, J. D. (2015). Detection and attribution of urbanization effect on flood extremes using nonstationary flood-frequency models. *Water Resources Research, 51*(6), 4244–4262. https://doi.org/10.1002/2015WR017065
+Neal, R. M. (2011). MCMC using hamiltonian dynamics. In S. Brooks, A. Gelman, G. L. Jones, & X.-L. Meng (Eds.), Handbook of markov chain monte carlo (pp. 113–162). CRC Press. https://doi.org/10.1201/b10905
 
-Roberts, G. O., & Tweedie, R. L. (1996). Exponential convergence of Langevin distributions and their discrete approximations. *Bernoulli, 2*(4), 341–363. https://doi.org/10.2307/3318418
+Oriol Abril-Pla, Virgile Andreani, C. Carroll, L. Y. Dong, Christopher Fonnesbeck, Maxim Kochurov, Ravin Kumar, Junpeng Lao, Christian C. Luhmann, Osvaldo A. Martin, Michael Osthege, Ricardo Vieira, Thomas V. Wiecki, & Robert Zinkov. (2023). PyMC: A modern, and comprehensive probabilistic programming framework in Python. PeerJ Computer Science, 9, e1516–e1516. https://doi.org/10.7717/peerj-cs.1516
 
-Robert, C. P., & Casella, G. (2009). *Introducing Monte Carlo methods with R*. Springer. https://doi.org/10.1007/978-1-4419-1576-4
+Paciorek, C. (2016). climextRemes: Tools for Analyzing Climate Extremes. https://doi.org/10.32614/CRAN.package.climextRemes
 
-Stan Development Team. (2023a). *CmdStan: The command-line interface to Stan*. https://mc-stan.org/users/interfaces/cmdstan
+Phan, D., Pradhan, N., & Jankowiak, M. (2019). Composable effects for flexible and accelerated probabilistic programming in NumPyro. arXiv Preprint arXiv:1912.11554. https://doi.org/10.48550/arXiv.1912.11554
 
-Stan Development Team. (2023b). *PyStan: The Python interface to Stan*. https://pystan.readthedocs.io/
+Prosdocimi, I., Kjeldsen, T. R., & Miller, J. D. (2015). Detection and attribution of urbanization effect on flood extremes using nonstationary flood-frequency models. Water Resources Research, 51(6), 4244–4262. https://doi.org/10.1002/2015WR017065
 
-Yves Deville. (2026). *NSGEV: Non-stationary GEV time series* (Version 0.2.3) [R package]. IRSN. https://github.com/IRSN/NSGEV/
+Robert, C. P., & Casella, G. (2009). Introducing Monte Carlo Methods with R. https://doi.org/10.1007/978-1-4419-1576-4
+
+Roberts, G. O., & Tweedie, R. L. (1996). Exponential Convergence of Langevin Distributions and Their Discrete Approximations. Bernoulli, 2(4), 341. https://doi.org/10.2307/3318418
+
+Stan Development Team. (2023a). CmdStan: The command-line interface to Stan. https://doi.org/10.5281/zenodo.1117248
+
+Stan Development Team. (2023b). PyStan: The python interface to Stan. https://doi.org/10.5281/zenodo.1456206
+
