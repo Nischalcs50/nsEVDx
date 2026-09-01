@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nsEVDx"
-version = "0.2.6"
+version = "0.2.7"
 description = "Modeling Nonstationary Extreme Value Distributions"
 authors = [
   { name="Nischal Kafle", email="nkafle.29@gmail.com" },
@@ -58,4 +58,4 @@ testpaths = ["tests"]
 addopts = "--cov=nsEVDx --cov-report=term-missing"
 
 [tool.setuptools.packages.find]
-where = ["nsEVDx"]
+where = ["."]
