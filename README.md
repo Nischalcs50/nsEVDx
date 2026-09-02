@@ -3,7 +3,7 @@
 | Usage | Release | Development |
 |------|--------|-------------|
 | ![Python](https://img.shields.io/badge/python-3.9%2B-blue) | [![PyPI version](https://img.shields.io/pypi/v/nsEVDx)](https://pypi.org/project/nsEVDx/) | ![CI](https://github.com/nischalcs50/nsEVDx/actions/workflows/test.yml/badge.svg) |
-| ![License](https://img.shields.io/badge/license-MIT-green) | [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.15850043-blue)](https://doi.org/10.5281/zenodo.15850043) | [![codecov](https://codecov.io/gh/nischalcs50/nsEVDx/branch/main/graph/badge.svg)](https://codecov.io/gh/nischalcs50/nsEVDx) |
+| ![License](https://img.shields.io/badge/license-MIT-green) | [[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.15850043-blue)](https://doi.org/10.5281/zenodo.15850043)](https://doi.org/10.5281/zenodo.22238904) | [![codecov](https://codecov.io/gh/nischalcs50/nsEVDx/branch/main/graph/badge.svg)](https://codecov.io/gh/nischalcs50/nsEVDx) |
 | [![PyPI downloads](https://pepy.tech/badge/nsEVDx)](https://pepy.tech/project/nsEVDx) | [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://Nischalcs50.github.io/nsEVDx/) | [![GitHub issues](https://img.shields.io/github/issues/nischalcs50/nsEVDx)](https://github.com/nischalcs50/nsEVDx/issues) |
 | [![GitHub stars](https://img.shields.io/github/stars/nischalcs50/nsEVDx?style=social)](https://github.com/nischalcs50/nsEVDx) | [![pyOpenSci Peer-Reviewed](https://pyopensci.org/badges/peer-reviewed.svg)](https://github.com/pyOpenSci/software-review/issues/265) |  |
 
@@ -150,8 +150,7 @@ If you use `nsEVDx` in your research, please cite:
 
 Kafle, N., & Meier, C. I. (2025). nsEVDx: A Python library for modeling Non-Stationary Extreme Value Distributions. arXiv preprint [arXiv:2509.07261](https://arxiv.org/abs/2509.07261).
 
-Kafle, N., & Meier, C. (2025). nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions (v0.2.3). Zenodo. https://doi.org/10.5281/zenodo.21286163
-Jul 10, 2026
+Kafle, N., & Meier, C. (2026). nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions (Version v0.2.7) [Computer software]. Zenodo.https://doi.org/10.5281/zenodo.22238904
 
 ## Contributing
 
