@@ -116,7 +116,7 @@ def run_arm(engine, M_diag, n_dim, n_keep=4000, n_adapt=1500, n_leapfrog=20,
     step = 0.1
     step_bar = step
     for _ in range(n_adapt):
-        prop, log_alpha = engine._hmc_step(params, step, n_leapfrog, M_diag, 1.0)
+        prop, log_alpha, _delta_h = engine._hmc_step(params, step, n_leapfrog, M_diag, 1.0)
         if np.log(np.random.rand()) < log_alpha:
             params = prop
         step, step_bar = engine._dual_average_update(da, log_alpha)
@@ -126,7 +126,7 @@ def run_arm(engine, M_diag, n_dim, n_keep=4000, n_adapt=1500, n_leapfrog=20,
     accepted = 0
     t0 = time.perf_counter()
     for i in range(n_keep):
-        prop, log_alpha = engine._hmc_step(params, step, n_leapfrog, M_diag, 1.0)
+        prop, log_alpha, _delta_h = engine._hmc_step(params, step, n_leapfrog, M_diag, 1.0)
         if np.log(np.random.rand()) < log_alpha:
             params = prop
             accepted += 1
