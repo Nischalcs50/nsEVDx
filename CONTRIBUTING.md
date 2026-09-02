@@ -72,14 +72,17 @@ We try to follow the [GitHub flow](https://guides.github.com/introduction/flow/)
 
 2. If you have forked and cloned the project before and it has been a while since you worked on it, [pull changes from the original repo](https://help.github.com/articles/merging-an-upstream-repository-into-your-fork/) to your clone by using `git pull upstream master`.
 
-3. Make your changes and test the modified code.
+3. Create a development environment and install the package with test dependencies:
+   ```bash
+   pip install -e ".[test]"
+   ```
+5. Make your changes and test the modified code.
 
-4. Commit and push your changes.
+6. Commit and push your changes.
 
-5. Submit a [pull request](https://guides.github.com/activities/forking/#making-a-pull-request).
+7. Submit a [pull request](https://guides.github.com/activities/forking/#making-a-pull-request).
 
     
-
 ---
 
 This file was adapted from a template created by [peterdesmet](https://gist.github.com/peterdesmet/e90a1b0dc17af6c12daf6e8b2f044e7c).
