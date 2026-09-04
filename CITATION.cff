@@ -7,8 +7,8 @@ authors:
   - family-names: Meier
     given-names: Claudio
     
-title: 'nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions'
+title: 'nsEVDx: A Python Library for Stationary and Non-Stationary Extreme Value Modeling'
 version: 0.2.7
-doi: https://doi.org/10.5281/zenodo.15850043
+doi: https://doi.org/10.5281/zenodo.22238904
 url: 'https://github.com/Nischalcs50/nsEVDx'
 date-released: 2025-07-09

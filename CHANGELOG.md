@@ -1,5 +1,11 @@
 ## Unreleased
 
+## v0.2.7 (2026-09-01)
+
+## v0.2.6 (2026-09-01)
+
+## v0.2.5 (2026-09-01)
+
 ### Fix
 
 - addressing ISSUE #11: API contracts and drifted docstrings

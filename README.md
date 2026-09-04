@@ -1,4 +1,4 @@
-# nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions
+# nsEVDx: A Python Library for Stationary and Non-Stationary Extreme Value Modeling
 
 | Usage | Release | Development |
 |------|--------|-------------|

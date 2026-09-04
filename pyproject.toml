@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nsEVDx"
-version = "0.2.7"
-description = "Modeling Nonstationary Extreme Value Distributions"
+version = "0.2.8"
+description = "A Python Library for Stationary and Non-Stationary Extreme Value Modeling"
 authors = [
   { name="Nischal Kafle", email="nkafle.29@gmail.com" },
   { name = "Claudio Meier", email = "cimeier@memphis.edu" }

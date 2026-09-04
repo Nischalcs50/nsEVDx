@@ -2,9 +2,9 @@ from setuptools import find_packages, setup
 
 setup(
     name="nsEVDx",
-    version="0.2.7",
+    version="0.2.8",
     author="Nischal Kafle",
-    description="Modeling Non-stationary Extreme Value Distributions",
+    description="Modeling Stationary and Non-stationary Extreme Value Distributions",
     packages=find_packages(),
     install_requires=[
         "numpy",
