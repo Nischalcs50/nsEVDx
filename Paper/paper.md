@@ -6,7 +6,7 @@ authors:
   affiliation: 1
   corresponding: true
 - name: Claudio Meier
-  orcid: 
+  orcid: 0000-0002-5918-6001
   affiliation: 1
 affiliations:
 - name: Department of Civil, Construction, and Environmental Engineering, University of Memphis, TN, USA
