@@ -13,7 +13,7 @@ affiliations:
   index: 1
 date: 2026-07-05
 software_repository_url: https://github.com/Nischalcs50/nsEVDx
-archive_url: https://doi.org/10.5281/zenodo.21286163
+archive_url: https://doi.org/10.5281/zenodo.22307685
 license: MIT
 tags:
   - Generalized Extreme Value
