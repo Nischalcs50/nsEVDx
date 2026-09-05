@@ -46,7 +46,7 @@ Extreme value distributions (EVDs), particularly the GEV and GPD, are widely use
 
 Several software packages support extreme value analysis. In the R ecosystem, `ismev` [@heffernan_j_e_ismev_2003], `extRemes` [@gilleland_extremes_2025], `climextRemes` [@paciorek_climextremes_2016], and `NSGEV` [@irsn_nsgev_2024] provide tools for fitting stationary and non-stationary extreme value models. These packages provide important foundations for EVD-based analysis, although their capabilities differ in areas such as non-stationary modeling and Bayesian inference. Probabilistic programming frameworks, such as Python-based `PyMC` [@oriol_abril-pla_pymc_2023] and `NumPyro` [@phan2019composable], and `C++`-based Stan with interfaces like `PyStan` [@noauthor_pystan_2023] and `CmdStan` [@noauthor_cmdstan_2023], offer flexible tools for building custom statistical models, including extreme value models. However, these tools require users to formulate non-stationary likelihood functions explicitly for EVDs along with prior specifications, parameter constraints, and sampling configurations for each application. As a result, they may be too complex for domain-specific practitioners like hydrologists, climate analysts, or risk analysts seeking easy-to-use tools. Within Python, `pyextremes` supports extreme value analysis with features such as block maxima and peaks-over-threshold extraction, return-level estimation, frequentist inference through `SciPy`, and Bayesian inference using the affine-invariant ensemble sampler, `emcee` [@emcee]. However, `pyextremes` is primarily focused on stationary extreme value workflows. 
 
-These differences motivate `nsEVDx`, a flexible Python tool that provides a unified framework for both stationary and non-stationary modeling. In particular, `nsEVDx` supports user-defined covariates, parameter constraints, custom priors, and MCMC algorithms such as Metropolis-Adjusted Langevin Algorithm, MALA [@roberts_exponential_1996] and Hamiltonian Monte Carlo, HMC [@michael_betancourt_conceptual_2017;@neal2011mcmc] for fitting non-stationary GEV and GPD models. Compared with general-purpose probabilistic programming frameworks, `nsEVDx` provides predefined EVD likelihoods, parameterizations, and inference workflows, reducing the amount of model construction required for common extreme value analyses. 
+These differences motivate `nsEVDx`, a flexible Python tool that provides a unified framework for both stationary and non-stationary modeling. In particular, `nsEVDx` supports user-defined covariates, parameter constraints, custom priors, and MCMC algorithms such as Metropolis-Adjusted Langevin Algorithm (MALA) and Hamiltonian Monte Carlo (HMC) for fitting non-stationary GEV and GPD models [@michael_betancourt_conceptual_2017;@neal2011mcmc;@roberts_exponential_1996]. Compared with general-purpose probabilistic programming frameworks, `nsEVDx` provides predefined EVD likelihoods, parameterizations, and inference workflows, reducing the amount of model construction required for common extreme value analyses. 
 
 
 # Software Design
@@ -108,7 +108,7 @@ Observations = ns.NonStationaryEVD.ns_EVDrvs(genextreme, true_parameter,
                                      config, size=100)
 plt.plot(Observations)
 
-# Infering GEV Parameters from the Observations
+# Inferring GEV Parameters from the Observations
 model = ns.NonStationaryEVD(config, Observations, 
                             covariate,dist='GEV')
 results = model.MH_Hmc(num_samples=1500, burn_in=1500,
@@ -124,7 +124,8 @@ Detailed installation instructions, tutorials, API documentation, and executable
 
 # AI Usage Disclosure
 
-AI tools were used to assist the development of this library and in drafting the manuscript. All underlying scientific content, software architecture, analyses, and final interpretations were conceived, verified, and approved by the authors.
+AI tools were used in a limited and supportive role to assist in the development of this library and in drafting the manuscript. Specifically, ChatGPT and Claude were used to refine docstrings and documentation, and to suggest code improvements. All AI-generated docstrings and documentation were carefully reviewed by the authors to ensure that they accurately reflected the intended function and design of the software. Any code suggestions from AI tools were independently tested, verified, and revised before incorporation. The original draft of the manuscript was written by the authors and subsequently improved through feedback and revisions from the advisor, reviewers, editors, and ChatGPT. All underlying scientific motivation, software architecture, analyses, and final interpretations were conceived, verified, and approved by the authors.
+
 
 # Acknowledgements
 
