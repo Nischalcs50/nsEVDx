@@ -122,6 +122,50 @@ class NonStationaryEVD:
             )
         self.descriptions = self.get_param_description(self.config, self.n_cov)
 
+    def predict_params(self, params=None, covariates=None, time=None):
+        from .return_period_and_risk_utils import predict_params
+        return predict_params(self, params, covariates, time)
+
+    def nonstationary_risk(self, threshold, horizon, params=None,
+                           covariates=None, time=None,
+                           posterior_samples=None, quantiles=(0.05, 0.95)):
+        from .return_period_and_risk_utils import nonstationary_risk
+        return nonstationary_risk(self, threshold, horizon, params, covariates,
+                                  time, posterior_samples, quantiles)
+
+    def nonstationary_reliability(self, threshold, horizon, params=None,
+                                  covariates=None, time=None,
+                                  posterior_samples=None,
+                                  quantiles=(0.05, 0.95)):
+        from .return_period_and_risk_utils import nonstationary_reliability
+        return nonstationary_reliability(self, threshold, horizon, params,
+                                         covariates, time, posterior_samples,
+                                         quantiles)
+
+    def first_exceedance_pmf(self, threshold, horizon, params=None,
+                             covariates=None, time=None,
+                             posterior_samples=None,
+                             quantiles=(0.05, 0.95)):
+        from .return_period_and_risk_utils import first_exceedance_pmf
+        return first_exceedance_pmf(self, threshold, horizon, params, covariates,
+                                    time, posterior_samples, quantiles)
+
+    def nonstationary_return_period(self, threshold, horizon=None, params=None,
+                                    covariates=None, time=None,
+                                    posterior_samples=None,
+                                    quantiles=(0.05, 0.95)):
+        from .return_period_and_risk_utils import nonstationary_return_period
+        return nonstationary_return_period(self, threshold, horizon, params,
+                                           covariates, time, posterior_samples,
+                                           quantiles)
+
+    def plot_return_levels(self, return_periods=(2, 5, 10, 25, 50, 100),
+                           params=None, covariates=None, time=None, ax=None,
+                           posterior_samples=None, quantiles=(0.05, 0.95)):
+        from .return_period_and_risk_utils import plot_return_levels
+        return plot_return_levels(self, return_periods, params, covariates,
+                                  time, ax, posterior_samples, quantiles)
+
     @staticmethod
     def get_param_description(config: List[int], n_cov: int) -> List[str]:
         """
