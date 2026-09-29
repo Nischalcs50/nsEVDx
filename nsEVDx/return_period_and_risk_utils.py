@@ -218,9 +218,19 @@ def nonstationary_risk(model, design_level, horizon, params=None, covariates=Non
     This is the complement of nonstationary reliability. Posterior samples
     can be supplied to quantify uncertainty in the risk estimate.
 
+    The design-life risk follows the nonstationary exceedance framework of
+    Salas and Obeysekera (2014), where risk over ``n`` time steps is
+    ``1 - prod_t(1 - p_t)``.
+
     For a GPD model, these results describe the conditional excess above the
     design_level only. Because the Poisson exceedance rate is not modeled, they
     do not represent the full frequency of design_level exceedances.
+
+    References
+    ----------
+    Salas, J. D., & Obeysekera, J. (2014). Revisiting the concepts of return
+    period and risk for nonstationary hydrologic extreme events. Journal of
+    Hydrologic Engineering, 19(3), 554-568.
 
     Parameters
     ----------
@@ -561,4 +571,3 @@ def plot_return_periods(model, design_level, params=None, covariates=None,
     if period_uncertainty is not None:
         result["uncertainty"] = {"return_period": period_uncertainty}
     return result
-

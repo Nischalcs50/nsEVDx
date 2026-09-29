@@ -6,8 +6,7 @@ Citation
 
 If you use **nsEVDx** in your research, please cite the following:
 
-* Kafle, N., & Meier, C. I. (2025). *nsEVDx: A Python library for modeling Non-Stationary Extreme Value Distributions*. arXiv preprint `arXiv:2509.07261 <https://arxiv.org/abs/2509.07261>`_.
-* Kafle, N., & Meier, C. (2025). *nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions (v0.1.0)*. Zenodo. `https://doi.org/10.5281/zenodo.21286163 <https://doi.org/10.5281/zenodo.21286163>`_
+* Kafle, N., & Meier. (2026). *nsEVDx: A Python Library for Stationary and Non-Stationary Extreme Value Modeling*. Journal of Open Source Software, 11(125), 11187. `https://doi.org/10.21105/joss.11187 <https://doi.org/10.21105/joss.11187>`_
 
 References
 ----------
@@ -31,6 +30,7 @@ References
 * Paciorek, C. (2016). *climextRemes: Tools for analyzing climate extremes*. `https://CRAN.R-project.org/package=climextRemes <https://CRAN.R-project.org/package=climextRemes>`_
 * Phan, D., Pradhan, N., & Jankowiak, M. (2019). *Composable effects for flexible and accelerated probabilistic programming in NumPyro*. arXiv. `https://doi.org/10.48550/arXiv.1912.11554 <https://doi.org/10.48550/arXiv.1912.11554>`_
 * Prosdocimi, I., Kjeldsen, T. R., & Miller, J. D. (2015). *Detection and attribution of urbanization effect on flood extremes using nonstationary flood-frequency models*. Water Resources Research, 51(6), 4244–4262. `https://doi.org/10.1002/2015WR017065 <https://doi.org/10.1002/2015WR017065>`_
+* Salas, J. D., & Obeysekera, J. (2014). *Revisiting the concepts of return period and risk for nonstationary hydrologic extreme events*. Journal of Hydrologic Engineering, 19(3), 554–568.
 * Robert, C. P., & Casella, G. (2009). *Introducing Monte Carlo Methods with R*. Springer. `https://doi.org/10.1007/978-1-4419-1576-4 <https://doi.org/10.1007/978-1-4419-1576-4>`_
 * Roberts, G. O., & Tweedie, R. L. (1996). *Exponential convergence of Langevin distributions and their discrete approximations*. Bernoulli, 2(4), 341–363. `https://doi.org/10.2307/3318418 <https://doi.org/10.2307/3318418>`_
 * Stan Development Team. (2023a). *CmdStan: The command-line interface to Stan*. `https://mc-stan.org/users/interfaces/cmdstan <https://mc-stan.org/users/interfaces/cmdstan>`_

@@ -134,11 +134,6 @@ ns.plot_posterior(results['chains'], config, fig_size=(8,8),show=False);
 full version of this example is available here: [quick_start](examples/Quick_start_example.ipynb)
 
 
-
-
-
-
-
 ## Documentation
 -   Webpage manual is here [user manual](https://Nischalcs50.github.io/nsEVDx/)
 -   Quick start example 2 is [here](examples/Quick_start_example.ipynb) 
@@ -162,9 +157,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you use `nsEVDx` in your research, please cite:
 
-Kafle, N., & Meier, C. I. (2025). nsEVDx: A Python library for modeling Non-Stationary Extreme Value Distributions. arXiv preprint [arXiv:2509.07261](https://arxiv.org/abs/2509.07261).
-
-Kafle, N., & Meier, C. (2026). nsEVDx: A Python Library for Modeling Non-Stationary Extreme Value Distributions (Version v0.2.7) [Computer software]. Zenodo.https://doi.org/10.5281/zenodo.22238904
+Kafle, N., & Meier. (2026). nsEVDx: A Python Library for Stationary and Non-Stationary Extreme Value Modeling. *Journal of Open Source Software*, 11(125), 11187. https://doi.org/10.21105/joss.11187.
 
 ## Contributing
 
@@ -216,6 +209,8 @@ Prosdocimi, I., Kjeldsen, T. R., & Miller, J. D. (2015). Detection and attributi
 Robert, C. P., & Casella, G. (2009). Introducing Monte Carlo Methods with R. https://doi.org/10.1007/978-1-4419-1576-4
 
 Roberts, G. O., & Tweedie, R. L. (1996). Exponential Convergence of Langevin Distributions and Their Discrete Approximations. Bernoulli, 2(4), 341. https://doi.org/10.2307/3318418
+
+Salas, J. D., & Obeysekera, J. (2014). Revisiting the concepts of return period and risk for nonstationary hydrologic extreme events. Journal of hydrologic engineering, 19(3), 554-568.
 
 Stan Development Team. (2023a). CmdStan: The command-line interface to Stan. https://doi.org/10.5281/zenodo.1117248
 

@@ -148,6 +148,43 @@ Each element in the configuration specifies the number of covariates for the **l
 
 This framework allows flexible, parsimonious modeling of non-stationary extreme value distributions, including covariates only where supported by data.
 
+Nonstationary Risk and Return Period
+------------------------------------
+
+For a fixed ``design_level`` (denoted by :math:`z`), let
+:math:`p_t = 1 - F_t(z)` be the probability of exceeding that level at time
+:math:`t`. Reliability over a design life of :math:`n` time steps is
+
+.. math::
+
+   \mathrm{Rel}(n) = \prod_{t=1}^{n}(1-p_t),
+
+and the corresponding risk of at least one exceedance is
+
+.. math::
+
+   \mathrm{Risk}(n) = 1-\mathrm{Rel}(n).
+
+The first-exceedance distribution is
+
+.. math::
+
+   P(X=x) = p_x \prod_{t=1}^{x-1}(1-p_t).
+
+Following Salas and Obeysekera (2014), the nonstationary return period is the
+expected waiting time :math:`E(X)`, rather than a separate return level
+calculated independently for each year. The functions
+``nonstationary_risk``, ``nonstationary_reliability``,
+``first_exceedance_pmf``, and ``nonstationary_return_period`` implement these
+quantities. Bayesian users can pass posterior parameter draws through
+``posterior_samples`` to obtain median estimates and credible intervals.
+
+For GPD models, these calculations use the conditional excess distribution
+only. Since the current model does not include a Poisson exceedance intensity,
+GPD risk and return-period results do not represent the complete frequency of
+threshold exceedances. The ``design_level`` name is used consistently for the
+level being evaluated in both GEV and GPD workflows.
+
 
 Log-Likelihood
 --------------
@@ -256,5 +293,3 @@ maximum computational efficiency. Numerical gradients remain available
 as a fallback option, ensuring compatibility across all stationary and
 non-stationary GEV and GPD model configurations.
 ``
-
-
