@@ -49,6 +49,10 @@ Note: Polynomial relationships between the covariates and the parameters can be 
 
 Splines : Comming soon...
 
+![Non-stationary return levels (design levels).](return_levels.png)
+
+*Non-stationary return levels show how estimated design levels change with the covariate.*
+
 ## Installation
 
 **For regular users**
@@ -121,9 +125,19 @@ ns.plot_posterior(results['chains'], config, fig_size=(8,8),show=False);
 ```
 ![Output of the traceplot.](convergence.png)
 
+*Trace plots show the sampling behavior of each parameter across MCMC iterations.*
+
 ![Output of the posterior plot.](posterior.png)
 
+*Posterior plots summarize the estimated parameter distributions and their uncertainty.*
+
 full version of this example is available here: [quick_start](examples/Quick_start_example.ipynb)
+
+
+
+
+
+
 
 ## Documentation
 -   Webpage manual is here [user manual](https://Nischalcs50.github.io/nsEVDx/)
@@ -206,4 +220,3 @@ Roberts, G. O., & Tweedie, R. L. (1996). Exponential Convergence of Langevin Dis
 Stan Development Team. (2023a). CmdStan: The command-line interface to Stan. https://doi.org/10.5281/zenodo.1117248
 
 Stan Development Team. (2023b). PyStan: The python interface to Stan. https://doi.org/10.5281/zenodo.1456206
-

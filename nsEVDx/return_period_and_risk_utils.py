@@ -134,9 +134,9 @@ def predict_params(model, params=None, covariates=None, time=None):
     return {"mu": values[0], "sigma": values[1], "xi": values[2]}
 
 
-def _exceedance_prob(model, threshold, horizon, params=None, covariates=None,
+def _exceedance_prob(model, design_level, horizon, params=None, covariates=None,
                      time=None):
-    """Calculate the probability of exceeding a threshold at each time."""
+    """Calculate the probability of exceeding a design level at each time."""
     if horizon is not None:
         horizon = int(horizon)
         if horizon < 1:
@@ -146,16 +146,16 @@ def _exceedance_prob(model, threshold, horizon, params=None, covariates=None,
     p = predict_params(model, params, covariates, time)
     if horizon is not None and len(p["mu"]) != horizon:
         raise ValueError("Covariates/time length must equal horizon.")
-    cdf = _dist(model).cdf(threshold, c=p["xi"], loc=p["mu"],
+    cdf = _dist(model).cdf(design_level, c=p["xi"], loc=p["mu"],
                             scale=p["sigma"])
     return np.clip(1.0 - np.asarray(cdf, dtype=float), 0.0, 1.0), p
 
 
-def nonstationary_reliability(model, threshold, horizon, params=None,
+def nonstationary_reliability(model, design_level, horizon, params=None,
                               covariates=None, time=None,
                               posterior_samples=None, quantiles=(0.05, 0.95)):
     """Reliability represents the probability that a structure, system,
-    threshold (threshold in general sense not a POT) survives an
+    design level (not necessarily a POT threshold) survives an
     entire design life without exceedance.
 
     Reliability is the product of the year-by-year non-exceedance
@@ -166,8 +166,8 @@ def nonstationary_reliability(model, threshold, horizon, params=None,
     ----------
     model : NonStationaryEVD
         Fitted nonstationary extreme-value model.
-    threshold : float
-        Design threshold or level.
+    design_level : float
+        Fixed design level being evaluated.
     horizon : int
         Number of future time steps in the design life.
     params : array-like, optional
@@ -194,23 +194,23 @@ def nonstationary_reliability(model, threshold, horizon, params=None,
     if posterior_samples is not None:
         draws = _posterior_results(
             model, nonstationary_reliability, posterior_samples,
-            {"threshold": threshold, "horizon": horizon,
+            {"design_level": design_level, "horizon": horizon,
              "covariates": covariates, "time": time}, quantiles)
         point = nonstationary_reliability(
-            model, threshold, horizon, _point_params(params, posterior_samples),
+            model, design_level, horizon, _point_params(params, posterior_samples),
             covariates, time)
         point["uncertainty"] = {
             "reliability": _summary([d["reliability"] for d in draws], quantiles),
             "risk": _summary([d["risk"] for d in draws], quantiles),
         }
         return point
-    p, _ = _exceedance_prob(model, threshold, horizon, params, covariates, time)
+    p, _ = _exceedance_prob(model, design_level, horizon, params, covariates, time)
     reliability = float(np.prod(1.0 - p))
     return {"reliability": reliability, "risk": 1.0 - reliability,
             "exceedance_probability": p}
 
 
-def nonstationary_risk(model, threshold, horizon, params=None, covariates=None,
+def nonstationary_risk(model, design_level, horizon, params=None, covariates=None,
                        time=None, posterior_samples=None,
                        quantiles=(0.05, 0.95)):
     """Estimate the chance of at least one exceedance during a design life.
@@ -219,15 +219,15 @@ def nonstationary_risk(model, threshold, horizon, params=None, covariates=None,
     can be supplied to quantify uncertainty in the risk estimate.
 
     For a GPD model, these results describe the conditional excess above the
-    threshold only. Because the Poisson exceedance rate is not modeled, they
-    do not represent the full frequency of threshold exceedances.
+    design_level only. Because the Poisson exceedance rate is not modeled, they
+    do not represent the full frequency of design_level exceedances.
 
     Parameters
     ----------
     model : NonStationaryEVD
         Fitted nonstationary extreme-value model.
-    threshold : float
-        Design threshold or level.
+    design_level : float
+        Fixed design level being evaluated.
     horizon : int
         Number of future time steps in the design life.
     params : array-like, optional
@@ -252,21 +252,21 @@ def nonstationary_risk(model, threshold, horizon, params=None, covariates=None,
     """
     if posterior_samples is not None:
         result = nonstationary_reliability(
-            model, threshold, horizon, params, covariates, time,
+            model, design_level, horizon, params, covariates, time,
             posterior_samples, quantiles)
         return {"risk": result["risk"], "reliability": result["reliability"],
                 "exceedance_probability": result["exceedance_probability"],
                 "uncertainty": result["uncertainty"]}
-    result = nonstationary_reliability(model, threshold, horizon, params,
+    result = nonstationary_reliability(model, design_level, horizon, params,
                                        covariates, time)
     return {"risk": result["risk"], "reliability": result["reliability"],
             "exceedance_probability": result["exceedance_probability"]}
 
 
-def first_exceedance_pmf(model, threshold, horizon, params=None,
+def first_exceedance_pmf(model, design_level, horizon, params=None,
                          covariates=None, time=None, posterior_samples=None,
                          quantiles=(0.05, 0.95)):
-    """Calculate when the first threshold exceedance is expected to occur.
+    """Calculate when the first design-level exceedance is expected to occur.
 
     The returned PMF gives the probability that the first exceedance occurs
     in each year, along with the probability that no exceedance occurs within
@@ -280,8 +280,8 @@ def first_exceedance_pmf(model, threshold, horizon, params=None,
     ----------
     model : NonStationaryEVD
         Fitted nonstationary extreme-value model.
-    threshold : float
-        Design threshold or level.
+    design_level : float
+        Fixed design level being evaluated.
     horizon : int
         Number of time steps to evaluate.
     params : array-like, optional
@@ -306,10 +306,10 @@ def first_exceedance_pmf(model, threshold, horizon, params=None,
     if posterior_samples is not None:
         draws = _posterior_results(
             model, first_exceedance_pmf, posterior_samples,
-            {"threshold": threshold, "horizon": horizon,
+            {"design_level": design_level, "horizon": horizon,
              "covariates": covariates, "time": time}, quantiles)
         point = first_exceedance_pmf(
-            model, threshold, horizon, _point_params(params, posterior_samples),
+            model, design_level, horizon, _point_params(params, posterior_samples),
             covariates, time)
         point["uncertainty"] = {
             "pmf": _summary([d["pmf"] for d in draws], quantiles),
@@ -317,7 +317,7 @@ def first_exceedance_pmf(model, threshold, horizon, params=None,
                 [d["no_exceedance"] for d in draws], quantiles),
         }
         return point
-    p, _ = _exceedance_prob(model, threshold, horizon, params, covariates, time)
+    p, _ = _exceedance_prob(model, design_level, horizon, params, covariates, time)
     survival_before = np.concatenate(([1.0], np.cumprod(1.0 - p[:-1])))
     pmf = p * survival_before
     return {"time": np.arange(1, len(p) + 1), "pmf": pmf,
@@ -325,7 +325,7 @@ def first_exceedance_pmf(model, threshold, horizon, params=None,
             "exceedance_probability": p}
 
 
-def nonstationary_return_period(model, threshold, horizon=None, params=None,
+def nonstationary_return_period(model, design_level, horizon=None, params=None,
                                 covariates=None, time=None,
                                 posterior_samples=None, quantiles=(0.05, 0.95)):
     """Estimate the expected waiting time to the first exceedance.
@@ -343,8 +343,8 @@ def nonstationary_return_period(model, threshold, horizon=None, params=None,
     ----------
     model : NonStationaryEVD
         Fitted nonstationary extreme-value model.
-    threshold : float
-        Design threshold or level.
+    design_level : float
+        Fixed design level being evaluated.
     horizon : int, optional
         Number of time steps used to approximate the expected waiting time.
         Defaults to 10,000.
@@ -372,10 +372,10 @@ def nonstationary_return_period(model, threshold, horizon=None, params=None,
     if posterior_samples is not None:
         draws = _posterior_results(
             model, nonstationary_return_period, posterior_samples,
-            {"threshold": threshold, "horizon": horizon,
+            {"design_level": design_level, "horizon": horizon,
              "covariates": covariates, "time": time}, quantiles)
         point = nonstationary_return_period(
-            model, threshold, horizon,
+            model, design_level, horizon,
             _point_params(params, posterior_samples), covariates, time)
         point["uncertainty"] = {
             "return_period": _summary(
@@ -386,7 +386,7 @@ def nonstationary_return_period(model, threshold, horizon=None, params=None,
         return point
     if horizon is None:
         horizon = 10000
-    result = first_exceedance_pmf(model, threshold, horizon, params,
+    result = first_exceedance_pmf(model, design_level, horizon, params,
                                   covariates, time)
     survival = np.cumprod(1.0 - result["exceedance_probability"])
     return {"return_period": float(1.0 + np.sum(survival)),
@@ -484,5 +484,81 @@ def plot_return_levels(model, return_periods=(2, 5, 10, 25, 50, 100),
     return result
 
 
-# A hydrology example: use annual maxima and a time covariate to estimate the
-# risk that a flood threshold is exceeded at least once during a design life.
+def plot_return_periods(model, design_level, params=None, covariates=None,
+                        time=None, ax=None, posterior_samples=None,
+                        quantiles=(0.05, 0.95)):
+    """Plot the time-varying return period for one fixed design level.
+
+    The plotted period is ``1 / p_t``, where ``p_t`` is the modelled
+    probability of exceeding ``design_level`` at time ``t``. For a GPD model,
+    this is conditional on an exceedance above the design_level because no
+    Poisson exceedance rate is modeled.
+
+    Parameters
+    ----------
+    model : NonStationaryEVD
+        Fitted nonstationary extreme-value model.
+    design_level : float
+        Fixed level whose return period is plotted.
+    params : array-like, optional
+        Parameter vector used for the point estimate.
+    covariates, time : array-like, optional
+        Future covariates or time values.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes. A new axes is created when omitted.
+    posterior_samples : array-like, optional
+        Posterior draws with shape ``(n_draws, n_parameters)``.
+    quantiles : tuple[float, float], optional
+        Lower and upper posterior interval probabilities.
+
+    Returns
+    -------
+    dict[str, object]
+        ``time``: NumPy array of plotted time values.
+        ``design_level``: float design level used for the plot.
+        ``return_period``: NumPy array of ``1 / p_t`` values.
+        ``ax``: Matplotlib ``Axes`` object containing the plot.
+        ``uncertainty``: optional posterior summaries for
+        ``return_period``.
+    """
+    import matplotlib.pyplot as plt
+
+    p, _ = _exceedance_prob(model, design_level, None, params, covariates, time)
+    periods = 1.0 / np.maximum(p, np.finfo(float).tiny)
+    period_uncertainty = None
+    if posterior_samples is not None:
+        draws = np.asarray(posterior_samples, dtype=float)
+        if draws.ndim == 1:
+            draws = draws[None, :]
+        if draws.ndim != 2:
+            raise ValueError(
+                "posterior_samples must have shape (draws, parameters)."
+            )
+        period_draws = []
+        for draw in draws:
+            draw_p, _ = _exceedance_prob(
+                model, design_level, None, draw, covariates, time
+            )
+            period_draws.append(1.0 / np.maximum(
+                draw_p, np.finfo(float).tiny
+            ))
+        period_uncertainty = _summary(period_draws, quantiles)
+
+    if ax is None:
+        _, ax = plt.subplots()
+    x = np.arange(len(periods)) if time is None else np.asarray(time)
+    ax.plot(x, periods, label=f"design_level={design_level:g}")
+    if period_uncertainty is not None:
+        ax.fill_between(
+            x, period_uncertainty["lower"], period_uncertainty["upper"],
+            alpha=0.2, label="credible interval"
+        )
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Return period")
+    ax.legend()
+    result = {"time": x, "design_level": float(design_level),
+              "return_period": periods, "ax": ax}
+    if period_uncertainty is not None:
+        result["uncertainty"] = {"return_period": period_uncertainty}
+    return result
+
